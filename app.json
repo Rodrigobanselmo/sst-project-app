@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "sst-project-app",
+    "slug": "sst-project-app",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
