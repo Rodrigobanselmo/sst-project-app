@@ -1,0 +1,13 @@
+{
+  "plugins": [
+    "simple-import-sort"
+  ],
+  "rules": {
+    "camelcase": "off",
+    "no-useless-catch": "off",
+    "simple-import-sort/imports": "error"
+  },
+  "globals": {
+    "__DEV__": true
+  }
+}
