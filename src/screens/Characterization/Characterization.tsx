@@ -10,12 +10,16 @@ import { AppError } from '@utils/errors';
 import { Box, FlatList, Heading, HStack, Icon, ScrollView, Text, useToast, VStack, Image } from 'native-base';
 import { useCallback, useEffect, useState } from 'react';
 import { CharParamsProps } from './tyoes';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import BodySvg from '@assets/body.svg';
 import SeriesSvg from '@assets/series.svg';
 import RepetitionsSvg from '@assets/repetitions.svg';
-import * as ImagePicker from 'expo-image-picker';
+// import * as ImagePicker from 'expo-image-picker';
 import PhotoEditor from '@baronha/react-native-photo-editor';
+import ImagePicker from 'react-native-image-crop-picker';
+import * as ImagePickerExpo from 'expo-image-picker';
+import { Camera, CameraType } from 'expo-camera';
+import { CameraPage, CameraScreen } from '@components/Camera/Camera';
 
 export const Characterization = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -80,79 +84,142 @@ export const Characterization = () => {
     const [image, setImage] = useState<string | null>(null);
 
     const pickImage = async () => {
-        // No permissions request is necessary for launching the image library
-        // let result2 = await ImagePicker.launchCameraAsync({
-        //     mediaTypes: ImagePicker.MediaTypeOptions.All,
-        //     allowsEditing: true,
-        //     aspect: [4, 3],
-        //     quality: 1,
-        // });
-
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
+        let result = await ImagePicker.openPicker({
+            cropping: false,
+            // mediaType: 'photo',
+            // multiple: true,
         });
-        2438911;
 
         console.log(result);
 
-        if (!result.canceled) {
-            const uri = result?.assets?.[0]?.uri;
+        // const result = [];
+
+        // for await (const image of images) {
+        //     const img = await ImagePicker.openCropper({
+        //         mediaType: "photo",
+        //         path: image.path,
+        //         width: 1000,
+        //         height: 1000,
+        //     });
+        //     result.push(img.path);
+        // }
+
+        if (result?.sourceURL) {
+            const uri = result?.sourceURL;
+
+            let resultCrop = await ImagePicker.openCropper({
+                path: uri,
+                width: 300,
+                height: 400,
+                cropping: true,
+                mediaType: 'photo',
+            });
+
             const resultEdit = await PhotoEditor.open({ path: uri, stickers: [] });
             console.log(resultEdit);
             setImage(uri);
         }
+        // if (!result?.[0]?.path) {
+        //     const uri = result?.[0]?.path;
+        //     const resultEdit = await PhotoEditor.open({ path: uri, stickers: [] });
+        //     console.log(resultEdit);
+        //     setImage(uri);
+        // }
     };
 
     const openCamera = async () => {
-        // Ask the user for the permission to access the camera
-        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+        const permissionResult = await ImagePickerExpo.requestCameraPermissionsAsync();
 
         if (permissionResult.granted === false) {
             alert('Você recusou permitir que este aplicativo acesse sua câmera!');
             return;
         }
 
-        const result = await ImagePicker.launchCameraAsync({
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 0.7,
-            // allowsMultipleSelection: true,
-            // mediaTypes: ImagePicker.MediaTypeOptions.All,
+        const result = await ImagePicker.openCamera({
+            mediaType: 'photo',
+            cropping: false,
         });
 
-        // Explore the result
-        console.log(result);
+        const result2 = await ImagePickerExpo.launchCameraAsync({
+            allowsEditing: false,
+            aspect: [4, 3],
+        });
+        console.log(999988888, result2);
 
-        if (!result.canceled) {
-            const uri = result?.assets?.[0]?.uri;
-            setImage(uri);
+        if (result?.path) {
+            console.log(999, result);
+            const resultCrop = await ImagePicker.openCropper({
+                path: result?.path,
+                cropping: true,
+                compressImageQuality: 0.5,
+                mediaType: 'photo',
+                ...(result.height > result.width
+                    ? {
+                          width: 900,
+                          height: 1200,
+                          compressImageMaxWidth: 900,
+                      }
+                    : {
+                          width: 1200,
+                          height: 900,
+                          compressImageMaxWidth: 1200,
+                      }),
+            });
 
-            const resultEdit = await PhotoEditor.open({ path: uri, stickers: [] });
+            console.log(resultCrop);
+
+            if (resultCrop?.path) {
+                const uri = resultCrop?.path;
+                // const resultEdit = await PhotoEditor.open({ path: uri, stickers: [] });
+                setImage(uri);
+            }
         }
     };
+
+    const [type, setType] = useState(CameraType.back);
+    function toggleCameraType() {
+        setType((current) => (current === CameraType.back ? CameraType.front : CameraType.back));
+    }
+
+    return <CameraPage />;
 
     return (
         <VStack flex={1}>
             <ScreenHeader title="Atividade" backButton navidateArgs={['task', {}]} />
 
-            {image && <Image source={{ uri: image }} resizeMode="contain" style={{ width: 200, height: 200 }} />}
-            <Box style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Button title="camera" onPress={openCamera} />
-            </Box>
-            <Box style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Button title="Pick an image from camera roll" onPress={pickImage} />
-            </Box>
-
             {/* <HStack alignItems="center">
             <BodySvg />
             <Text color="gray.200" ml={1} textTransform="capitalize">
-              exercise.group
+            exercise.group
             </Text>
-          </HStack> */}
+        </HStack> */}
             <ScrollView>
+                <CameraScreen />
+
+                {/* <Box style={styles.container}>
+                    <Camera style={styles.camera} type={type}>
+                        <Box style={styles.buttonContainer}>
+                            <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
+                                <Text style={styles.text}>Flip Camera</Text>
+                            </TouchableOpacity>
+                        </Box>
+                    </Camera>
+                </Box> */}
+
+                {image && (
+                    <Image
+                        alt="preview"
+                        source={{ uri: image }}
+                        resizeMode="contain"
+                        style={{ width: 600, height: 600 }}
+                    />
+                )}
+                <Box style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <Button title="camera" onPress={openCamera} />
+                </Box>
+                <Box style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <Button title="Pick an image from camera roll" onPress={pickImage} />
+                </Box>
                 {isLoading ? (
                     <Loading />
                 ) : (
@@ -197,3 +264,30 @@ export const Characterization = () => {
         </VStack>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        height: 600,
+    },
+    camera: {
+        flex: 1,
+    },
+    buttonContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: 'transparent',
+        margin: 64,
+    },
+    button: {
+        flex: 1,
+        alignSelf: 'flex-end',
+        alignItems: 'center',
+    },
+    text: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+});

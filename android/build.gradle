@@ -9,7 +9,7 @@ buildscript {
         if (findProperty('android.kotlinVersion')) {
             kotlinVersion = findProperty('android.kotlinVersion')
         } else {
-            kotlinVersion = '1.6.0'
+            kotlinVersion = '1.6.20'
         }
 
         
@@ -37,6 +37,9 @@ allprojects {
         maven {
             // Android JSC is installed from npm
             url(new File(['node', '--print', "require.resolve('jsc-android/package.json')"].execute(null, rootDir).text.trim(), '../dist'))
+        }
+        maven {
+            url "$rootDir/../node_modules/expo-camera/android/maven"
         }
 
         google()

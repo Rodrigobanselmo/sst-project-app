@@ -14,6 +14,7 @@
     "plugins": [
       [
         "expo-image-picker",
+        
         {
           "photosPermission": "A aplicação acessa suas fotos para permitir que você as compartilhe com o banco de dados de imagens do Projeto SST.",
           "cameraPermission": "A aplicação acessa sua camera para permitir enviar fotos ao banco de imagens do Projeto SST."
