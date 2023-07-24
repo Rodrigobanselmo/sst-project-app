@@ -1,6 +1,7 @@
 /* eslint-disable no-async-promise-executor */
+import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
 import { API_URL } from '@env';
-import { storageAuthTokenGet, storageAuthTokenSave } from '@storage/token';
+import { storageAuthTokenGet, storageAuthTokenSave } from '@libs/storage/token';
 import { AppError } from '@utils/errors';
 import axios, { AxiosError, AxiosInstance } from 'axios';
 
@@ -55,7 +56,7 @@ api.registerInterceptTokenManager = (singOut) => {
 
 					return new Promise(async (resolve, reject) => {
 						try {
-							const { data } = await api.post('/refresh', { refresh_token, isApp: true });
+							const { data } = await api.post(ApiRoutesEnum.REFRESH, { refresh_token, isApp: true });
 							await storageAuthTokenSave({ token: data.token, refresh_token: data.refresh_token });
 
 							if (originalRequestConfig.data) {

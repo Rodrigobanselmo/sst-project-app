@@ -3,6 +3,7 @@ module.exports = function (api) {
   return {
     presets: ["babel-preset-expo"],
     plugins: [
+      ["@babel/plugin-proposal-decorators", { "legacy": true }],
       [
         "module:react-native-dotenv",
         {
@@ -25,9 +26,10 @@ module.exports = function (api) {
             "@assets": "./src/assets",
             "@components": "./src/components",
             "@screens": "./src/screens",
-            "@storage": "./src/storage",
+            "@libs": "./src/libs",
             "@utils": "./src/utils",
             "@services": "./src/services",
+            "@constants": "./src/constants",
             "@hooks": "./src/hooks",
             "@contexts": "./src/contexts",
             "@routes": "./src/routes",

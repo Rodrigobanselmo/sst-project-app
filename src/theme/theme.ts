@@ -20,7 +20,8 @@ export const THEME = extendTheme({
       400: "#323238",
       300: "#7C7C8A",
       200: "#C4C4CC",
-      100: "#E1E1E6"
+      100: "#E1E1E6",
+      50: "#ebebf0"
     },
     status: {
       error: "#F44336"
@@ -32,6 +33,7 @@ export const THEME = extendTheme({
     },
     text: {
       main: "#121214",
+      label: "#63636f",
       light: "#7C7C8A",
       placeholder: "#7C7C8A"
     },

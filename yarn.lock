@@ -307,7 +307,7 @@
     "@babel/helper-create-class-features-plugin" "^7.18.6"
     "@babel/helper-plugin-utils" "^7.18.6"
 
-"@babel/plugin-proposal-decorators@^7.12.9":
+"@babel/plugin-proposal-decorators@^7.12.9", "@babel/plugin-proposal-decorators@^7.22.7":
   version "7.22.7"
   resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-decorators/-/plugin-proposal-decorators-7.22.7.tgz#9b5b73c2e404f0869ef8a8a53765f8203c5467a7"
   integrity sha512-omXqPF7Onq4Bb7wHxXjM3jSMSJvUUbvDvmmds7KI5n9Cq6Ln5I05I1W2nRlRof1rGdiUxJrxwe285WF96XlBXQ==
@@ -1120,6 +1120,13 @@
   resolved "https://registry.yarnpkg.com/@babel/regjsgen/-/regjsgen-0.8.0.tgz#f0ba69b075e1f05fb2825b7fad991e7adbb18310"
   integrity sha512-x/rqGMdzj+fWZvCOYForTghzbtqPDZ5gPwaoNGHdgDfF2QA/XZbCBp4Moo5scrkAMPhB7z26XM/AaHuIJdgauA==
 
+"@babel/runtime@7.21.0":
+  version "7.21.0"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.21.0.tgz#5b55c9d394e5fcf304909a8b00c07dc217b56673"
+  integrity sha512-xwII0//EObnq89Ji5AKYQaRYiW/nZ3llSv29d49IuxPhKbtJoLP+9QUUZ4nVragQVtaVGeZrpB+ZtG/Pdy/POw==
+  dependencies:
+    regenerator-runtime "^0.13.11"
+
 "@babel/runtime@^7.0.0", "@babel/runtime@^7.15.4", "@babel/runtime@^7.18.6", "@babel/runtime@^7.20.0", "@babel/runtime@^7.20.7", "@babel/runtime@^7.6.2", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7":
   version "7.22.6"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.22.6.tgz#57d64b9ae3cff1d67eb067ae117dac087f5bd438"
@@ -1160,6 +1167,11 @@
     "@babel/helper-string-parser" "^7.22.5"
     "@babel/helper-validator-identifier" "^7.22.5"
     to-fast-properties "^2.0.0"
+
+"@baronha/react-native-photo-editor@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@baronha/react-native-photo-editor/-/react-native-photo-editor-1.1.6.tgz#ac9648c388a74d8f9ca95edcb8d3d6a1bb324092"
+  integrity sha512-Dfcv+bR83PU5PK/LUKxoI0mX4tK1vSMfE4D+ycuVgupbeZItnrwNjI3Ton4RETv4Kv2aZkUtpihh+CBdV7PWTg==
 
 "@eslint-community/eslint-utils@^4.2.0":
   version "4.4.0"
@@ -1771,6 +1783,37 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@nozbe/simdjson@3.1.0-wmelon1":
+  version "3.1.0-wmelon1"
+  resolved "https://registry.yarnpkg.com/@nozbe/simdjson/-/simdjson-3.1.0-wmelon1.tgz#e02048b41d2b3662ddf1dc8c979a3a36fd389dfb"
+  integrity sha512-PQaHHQyvASrcrfzqkZ4ona43m0UjN81NuTWt6rJkOUePGDjxc8MNp2Q7jcod1CIdTsXJ13wRWeFbquwNfhpIQQ==
+
+"@nozbe/sqlite@3.40.1":
+  version "3.40.1"
+  resolved "https://registry.yarnpkg.com/@nozbe/sqlite/-/sqlite-3.40.1.tgz#4218074ce8c87c859465dd2db28cd4b2fc7192b9"
+  integrity sha512-uKJOW4sQi3neCmgKhqLr0IJKlb2y5q2p05U5CEDJrCxSyD2uVYvSdh7IMrPjF4sWtzc/Lnk462M4vde7Dn5NSw==
+
+"@nozbe/watermelondb@^0.26.0":
+  version "0.26.0"
+  resolved "https://registry.yarnpkg.com/@nozbe/watermelondb/-/watermelondb-0.26.0.tgz#0b7472a0b885a51237529c9cabc6227aec6c227e"
+  integrity sha512-MIbCIE7Djyn5gNmO6OtAmf7IJHuFq2biKSDzK2ymMhHSJE5L5QjZPnrv3UFoGdTfEPUUGfi/87gwWwZecGiT3A==
+  dependencies:
+    "@babel/runtime" "7.21.0"
+    "@nozbe/simdjson" "3.1.0-wmelon1"
+    "@nozbe/sqlite" "3.40.1"
+    "@nozbe/with-observables" "^1.5.0-2"
+    hoist-non-react-statics "^3.3.2"
+    lokijs "npm:@nozbe/lokijs@1.5.12-wmelon6"
+    rxjs "^7.8.0"
+    sql-escape-string "^1.1.0"
+
+"@nozbe/with-observables@^1.5.0-2":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@nozbe/with-observables/-/with-observables-1.6.0.tgz#498bcabcf0106f8adc135fd1ed7a77e5c95ad7a0"
+  integrity sha512-X/qGRBrmXLBVP3pqGQKD461UNx4sKfNoKWe4dlM/Gvtd12BOmv+nYOxw8PXiUr28yXxVYi03LpwDBd+JFo1Adg==
+  dependencies:
+    hoist-non-react-statics "^3.3.2"
 
 "@npmcli/fs@^1.0.0":
   version "1.1.1"
@@ -4344,7 +4387,7 @@ damerau-levenshtein@^1.0.8:
   resolved "https://registry.yarnpkg.com/damerau-levenshtein/-/damerau-levenshtein-1.0.8.tgz#b43d286ccbd36bc5b2f7ed41caf2d0aba1f8a6e7"
   integrity sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA==
 
-dayjs@^1.8.15:
+dayjs@^1.11.9, dayjs@^1.8.15:
   version "1.11.9"
   resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.9.tgz#9ca491933fadd0a60a2c19f6c237c03517d71d1a"
   integrity sha512-QvzAURSbQ0pKdIye2txOzNaHmxtUBXerpY0FJsFXUMKbIZeFm5ht1LS/jFsrncjnmtv8HsG0W2g6c0zUjZWmpA==
@@ -5127,6 +5170,13 @@ expo-image-loader@~4.1.0:
   resolved "https://registry.yarnpkg.com/expo-image-loader/-/expo-image-loader-4.1.1.tgz#efadbb17de1861106864820194900f336dd641b6"
   integrity sha512-ciEHVokU0f6w0eTxdRxLCio6tskMsjxWIoV92+/ZD37qePUJYMfEphPhu1sruyvMBNR8/j5iyOvPFVGTfO8oxA==
 
+expo-image-manipulator@~11.1.1:
+  version "11.1.1"
+  resolved "https://registry.yarnpkg.com/expo-image-manipulator/-/expo-image-manipulator-11.1.1.tgz#bb54df80e98abc9798876e3f70596a5b880168c9"
+  integrity sha512-W9LfJK/IL7EhhkkC1JQnEX/1S9B09rcGasJiQjXc2s1bEsrQnqXvXEv7shUW8b/L8rE+ynf+XvvDE+YIDL7oFg==
+  dependencies:
+    expo-image-loader "~4.1.0"
+
 expo-image-picker@~14.1.1:
   version "14.1.1"
   resolved "https://registry.yarnpkg.com/expo-image-picker/-/expo-image-picker-14.1.1.tgz#181f1348ba6a43df7b87cee4a601d45c79b7c2d7"
@@ -5812,6 +5862,13 @@ hermes-profile-transformer@^0.0.6:
   integrity sha512-cnN7bQUm65UWOy6cbGcCcZ3rpwW8Q/j4OP5aWRhEry4Z2t2aR1cjrbp0BS+KiBN0smvP1caBgAuxutvyvJILzQ==
   dependencies:
     source-map "^0.7.3"
+
+hoist-non-react-statics@^3.3.2:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-3.3.2.tgz#ece0acaf71d62c2969c2ec59feff42a4b1a85b45"
+  integrity sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==
+  dependencies:
+    react-is "^16.7.0"
 
 hosted-git-info@^3.0.2:
   version "3.0.8"
@@ -6750,6 +6807,11 @@ logkitty@^0.7.1:
     ansi-fragments "^0.2.1"
     dayjs "^1.8.15"
     yargs "^15.1.0"
+
+"lokijs@npm:@nozbe/lokijs@1.5.12-wmelon6":
+  version "1.5.12-wmelon6"
+  resolved "https://registry.yarnpkg.com/@nozbe/lokijs/-/lokijs-1.5.12-wmelon6.tgz#e457d934d614d5df80105c86314252a6e614df9b"
+  integrity sha512-GXsaqY8qTJ6xdCrGyno2t+ON2aj6PrUDdvhbrkxK/0Fp12C4FGvDg1wS+voLU9BANYHEnr7KRWfItDZnQkjoAg==
 
 loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.3.1, loose-envify@^1.4.0:
   version "1.4.0"
@@ -8212,7 +8274,7 @@ react-hook-form@^7.38.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-18.2.0.tgz#199431eeaaa2e09f86427efbb4f1473edb47609b"
   integrity sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==
 
-react-is@^16.13.0, react-is@^16.13.1:
+react-is@^16.13.0, react-is@^16.13.1, react-is@^16.7.0:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
@@ -8243,6 +8305,11 @@ react-native-gradle-plugin@^0.71.18:
   version "0.71.19"
   resolved "https://registry.yarnpkg.com/react-native-gradle-plugin/-/react-native-gradle-plugin-0.71.19.tgz#3379e28341fcd189bc1f4691cefc84c1a4d7d232"
   integrity sha512-1dVk9NwhoyKHCSxcrM6vY6cxmojeATsBobDicX0ZKr7DgUF2cBQRTKsimQFvzH8XhOVXyH8p4HyDSZNIFI8OlQ==
+
+react-native-image-crop-picker@^0.40.0:
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/react-native-image-crop-picker/-/react-native-image-crop-picker-0.40.0.tgz#cf378a4cbdb64b9b6ff94399b8515ff3bdccbf9c"
+  integrity sha512-FpqiCS4CiPQp8qIorlELWKbpi1d9lyhJki9spZr4LShv9hk65GWo6tYJupfTV19o5XcRwJn8d4MHIUoyWMJRTQ==
 
 react-native-safe-area-context@4.5.0:
   version "4.5.0"
@@ -8609,6 +8676,13 @@ run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
+rxjs@^7.8.0:
+  version "7.8.1"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.8.1.tgz#6f6f3d99ea8044291efd92e7c7fcf562c4057543"
+  integrity sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==
+  dependencies:
+    tslib "^2.1.0"
+
 safe-array-concat@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/safe-array-concat/-/safe-array-concat-1.0.0.tgz#2064223cba3c08d2ee05148eedbc563cd6d84060"
@@ -8937,6 +9011,11 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
+
+sql-escape-string@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/sql-escape-string/-/sql-escape-string-1.1.0.tgz#fe744b8514868c0eb4bfb9e4a989271d40f30eb9"
+  integrity sha512-/kqO4pLZSLfV0KsBM2xkVh2S3GbjJJone37d7gYwLyP0c+REh3vnmkhQ7VwNrX76igC0OhJWpTg0ukkdef9vvA==
 
 ssri@^8.0.1:
   version "8.0.1"

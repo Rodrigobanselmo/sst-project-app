@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { UserPhoto } from '@components/UserPhoto';
-import { Center, ScrollView, VStack, Skeleton, Text, Heading, useToast } from 'native-base';
+import { Center, ScrollView, VStack, Skeleton, Text, Heading, useToast, Box } from 'native-base';
 import { Controller, useForm } from 'react-hook-form';
 import { PHOTO_SIZE } from './constants';
 import { TouchableOpacity } from 'react-native';
@@ -16,6 +16,7 @@ import { profileFormSchema } from './schemas';
 import UserPhotoDefaultImg from '@assets/userPhotoDefault.png';
 import { AppError } from '@utils/errors';
 import { api } from '@services/api';
+import { updateUser } from '@services/api/user/updateUser';
 
 export const Profile = () => {
   const { user, updateUserProfile, signOut } = useAuth();
@@ -41,7 +42,16 @@ export const Profile = () => {
 
       const userUpdated = user;
       userUpdated.name = data.name;
-      await api.put('/users', data);
+
+      const changePass = data.password && data.password === data.confirm_password && data.old_password;
+
+      await updateUser({
+        name: data.name,
+        ...(changePass && {
+          password: data.password,
+          oldPassword: data.old_password,
+        })
+      });
 
       await updateUserProfile(userUpdated);
 
@@ -143,21 +153,23 @@ export const Profile = () => {
       <ScreenHeader title="Perfil" />
       <ScrollView contentContainerStyle={{ paddingBottom: 36 }}>
         <Center mt={6} px={10}>
-          {photoIsLoading ? (
-            <Skeleton w={PHOTO_SIZE} h={PHOTO_SIZE} rounded="full" startColor="gray.500" endColor="gray.400" />
-          ) : (
-            <UserPhoto
-              source={user.photoUrl || UserPhotoDefaultImg}
-              alt="avatar"
-              size={PHOTO_SIZE}
-            />
-          )}
+          <Box mb={6}>
+            {photoIsLoading ? (
+              <Skeleton w={PHOTO_SIZE} h={PHOTO_SIZE} rounded="full" startColor="gray.500" endColor="gray.400" />
+            ) : (
+              <UserPhoto
+                source={user.photoUrl || UserPhotoDefaultImg}
+                alt="avatar"
+                size={PHOTO_SIZE}
+              />
+            )}
+          </Box>
 
-          <TouchableOpacity onPress={handleUserPhotoSelect}>
+          {/* <TouchableOpacity onPress={handleUserPhotoSelect}>
             <Text color="green.500" fontWeight="bold" fontSize="md" mt={2} mb={8}>
               Alterar foto
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <Controller
             control={control}
@@ -186,7 +198,7 @@ export const Profile = () => {
             )}
           />
 
-          <Heading color="gray.200" fontSize="md" fontFamily="heading" mb={2} alignSelf="flex-start" mt={12}>
+          <Heading color="text.label" fontSize="md" fontFamily="heading" mb={2} alignSelf="flex-start" mt={12}>
             Alterar senha
           </Heading>
 
@@ -194,7 +206,7 @@ export const Profile = () => {
             control={control}
             name="old_password"
             render={({ field: { onChange } }) => (
-              <Input placeholder="Senha antiga" bg="gray.600" secureTextEntry onChangeText={onChange} />
+              <Input placeholder="Senha antiga" secureTextEntry onChangeText={onChange} />
             )}
           />
 
@@ -225,6 +237,7 @@ export const Profile = () => {
           />
 
           <Button title="Atualizar" mt={4} onPress={handleSubmit(handleProfileUpdate)} isLoading={isUpdating} />
+          <Button variant='outline' title="Sair" mt={12} onPress={signOut} isLoading={isUpdating} />
         </Center>
       </ScrollView>
     </VStack>

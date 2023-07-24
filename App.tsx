@@ -7,6 +7,7 @@ import { AuthProvider } from '@contexts/AuthContext';
 import { THEME } from './src/theme/theme'
 import * as NavigationBar from 'expo-navigation-bar';
 import { isAndroid } from '@utils/helpers/plataform';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 LogBox.ignoreLogs([
   'In React 18, SSRProvider is not necessary and is a noop. You can remove it from your app.',
@@ -24,10 +25,13 @@ export default function App() {
     NavigationBar.setButtonStyleAsync("dark");
   }
 
+
   return (
     <NativeBaseProvider theme={THEME}>
-      <AuthProvider>{fontsLoaded ? <Routes /> : <Loading />}</AuthProvider>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      <SafeAreaProvider>
+        <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+        <AuthProvider>{fontsLoaded ? <Routes /> : <Loading />}</AuthProvider>
+      </SafeAreaProvider>
     </NativeBaseProvider>
   );
 }

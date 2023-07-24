@@ -1,6 +1,6 @@
 import { TouchableOpacity } from "react-native";
 import { Heading, HStack, Text, VStack, Icon } from "native-base";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, Feather } from "@expo/vector-icons";
 
 import { useAuth } from "@hooks/useAuth";
 
@@ -9,36 +9,41 @@ import { api } from "@services/api";
 import { UserPhoto } from "@components/UserPhoto";
 
 import defaultUserPhotoImage from "@assets/userPhotoDefault.png";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppNavigatorRoutesProps } from "@routes/app/AppRoutesProps";
+import { useNavigation } from "@react-navigation/native";
 
 export function HomeHeader() {
-	const { user, signOut } = useAuth();
+	const { user } = useAuth();
+	const insets = useSafeAreaInsets()
+	const { navigate } = useNavigation<AppNavigatorRoutesProps>();
+
+	const onNavigate = () => {
+		navigate("profile");
+	};
+
+	const paddingTop = insets.top + 20
 
 	return (
-		<HStack bg="gray.600" pt={16} pb={5} px={8} alignItems="center">
+		<HStack bg="background.default" pt={paddingTop + 'px'} pb={'16px'} px={6} alignItems="center" shadow={'1'}>
 			<UserPhoto
-				source={
-					user.avatar
-						? {
-							uri: `${api.defaults.baseURL}/avatar/${user.avatar}`
-						}
-						: defaultUserPhotoImage
-				}
+				source={defaultUserPhotoImage}
 				mr={4}
-				size={16}
+				size={10}
 			/>
 
 			<VStack flex={1}>
-				<Text color="gray.100" fontSize="md">
+				<Text color="text.main" fontSize="md">
 					Olá,
 				</Text>
 
-				<Heading color="gray.100" fontSize="md" fontFamily="heading">
+				<Heading color="text.main" fontSize="md" fontFamily="heading">
 					{user.name}
 				</Heading>
 			</VStack>
 
-			<TouchableOpacity onPress={signOut}>
-				<Icon as={MaterialIcons} name="logout" color="gray.200" size={7} />
+			<TouchableOpacity onPress={onNavigate}>
+				<Icon as={Feather} name="settings" color="text.main" size={5} />
 			</TouchableOpacity>
 		</HStack>
 	);

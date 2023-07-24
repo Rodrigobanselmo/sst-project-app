@@ -2,10 +2,10 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 export type AppRoutesProps = {
   home: undefined;
-  history: undefined;
+  task: undefined;
   profile: undefined;
-  exercise: {
-    id: number;
+  characterization: {
+    id?: number;
   };
 };
 

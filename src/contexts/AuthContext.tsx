@@ -1,10 +1,12 @@
-import { IUser } from 'src/interfaces/IUser';
+import { IUser } from '@interfaces/IUser';
 import { api } from '@services/api';
-import { storageAuthTokenGet, storageAuthTokenRemove, storageAuthTokenSave } from '@storage/token';
-import { storageUserGet, storageUserRemove, storageUserSave } from '@storage/user';
+import { storageAuthTokenGet, storageAuthTokenRemove, storageAuthTokenSave } from '@libs/storage/token';
+import { storageUserGet, storageUserRemove, storageUserSave } from '@libs/storage/user';
 import { createContext, useEffect, useState } from 'react';
 import { ReactNode } from 'react';
 import { ISession } from '@interfaces/ISession';
+import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
+import { createSession } from '@services/api/session/createSession';
 
 export const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
 
@@ -71,11 +73,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
 	const signIn = async (email: string, password: string) => {
 		try {
-			const { data } = await api.post<ISession>('/session', {
+			const data = await createSession({
 				email,
 				password,
-				isApp: true,
-			});
+			})
 
 			if (data.user && data.token && data.refresh_token) {
 				const user = {

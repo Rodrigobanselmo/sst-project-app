@@ -19,7 +19,7 @@ export function Input({
 		<FormControl isInvalid={invalid} mb={4}>
 			<NativeBaseInput
 				bg="background.paper"
-				h={14}
+				h={12}
 				px={4}
 				borderWidth={0}
 				fontSize="md"

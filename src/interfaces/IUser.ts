@@ -1,5 +1,5 @@
-import { ProfessionalTypeEnum } from "src/constants/enums/professional-type.enum";
-import { StatusEnum } from "src/constants/enums/status.enum";
+import { ProfessionalTypeEnum } from "@constants/enums/professional-type.enum";
+import { StatusEnum } from "@constants/enums/status.enum";
 
 export type IUserCompany = {
 	roles: string[];

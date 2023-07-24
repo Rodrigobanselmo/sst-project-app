@@ -1,1 +1,1 @@
-export const PHOTO_SIZE = 33;
+export const PHOTO_SIZE = 100;
