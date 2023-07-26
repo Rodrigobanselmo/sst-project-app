@@ -21,6 +21,8 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import type { Camera, PhotoFile, TakePhotoOptions, TakeSnapshotOptions, VideoFile } from 'react-native-vision-camera';
 import { CAPTURE_BUTTON_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH } from '../constants';
+import { Box } from 'native-base';
+import { Button } from '@components/Button';
 
 const PAN_GESTURE_HANDLER_FAIL_X = [-SCREEN_WIDTH, SCREEN_WIDTH];
 const PAN_GESTURE_HANDLER_ACTIVE_Y = [-2, 2];
@@ -75,7 +77,7 @@ const _CaptureButton: React.FC<Props> = ({
         try {
             if (camera.current == null) throw new Error('Camera ref is null!');
 
-            console.log('Taking photo...');
+            console.log('Taking photo...', enabled, props);
             const photo = await camera.current.takePhoto(takePhotoOptions);
             onMediaCaptured(photo, 'photo');
         } catch (e) {
@@ -273,30 +275,39 @@ const _CaptureButton: React.FC<Props> = ({
     }, [enabled, isPressingButton]);
 
     return (
-        <TapGestureHandler
-            enabled={enabled}
-            ref={tapHandler}
-            onHandlerStateChange={onHandlerStateChanged}
-            shouldCancelWhenOutside={false}
-            maxDurationMs={99999999} // <-- this prevents the TapGestureHandler from going to State.FAILED when the user moves his finger outside of the child view (to zoom)
-            simultaneousHandlers={panHandler}
-        >
-            <Reanimated.View {...props} style={[buttonStyle, style]}>
-                <PanGestureHandler
-                    enabled={enabled}
-                    ref={panHandler}
-                    failOffsetX={PAN_GESTURE_HANDLER_FAIL_X}
-                    activeOffsetY={PAN_GESTURE_HANDLER_ACTIVE_Y}
-                    onGestureEvent={onPanGestureEvent}
-                    simultaneousHandlers={tapHandler}
-                >
-                    <Reanimated.View style={styles.flex}>
-                        <Reanimated.View style={[styles.shadow, shadowStyle]} />
-                        <View style={styles.button} />
-                    </Reanimated.View>
-                </PanGestureHandler>
-            </Reanimated.View>
-        </TapGestureHandler>
+        <Box position={'absolute'} bottom={0} left={0} right={0}>
+            <Button
+                title="Criar conta"
+                variant="outline"
+                onPress={() => {
+                    takePhoto();
+                }}
+            />
+            <TapGestureHandler
+                enabled={enabled}
+                ref={tapHandler}
+                onHandlerStateChange={onHandlerStateChanged}
+                shouldCancelWhenOutside={false}
+                maxDurationMs={99999999} // <-- this prevents the TapGestureHandler from going to State.FAILED when the user moves his finger outside of the child view (to zoom)
+                simultaneousHandlers={panHandler}
+            >
+                <Reanimated.View {...props} style={[buttonStyle, style]}>
+                    <PanGestureHandler
+                        enabled={enabled}
+                        ref={panHandler}
+                        failOffsetX={PAN_GESTURE_HANDLER_FAIL_X}
+                        activeOffsetY={PAN_GESTURE_HANDLER_ACTIVE_Y}
+                        onGestureEvent={onPanGestureEvent}
+                        simultaneousHandlers={tapHandler}
+                    >
+                        <Reanimated.View style={styles.flex}>
+                            <Reanimated.View style={[styles.shadow, shadowStyle]} />
+                            <View style={styles.button} />
+                        </Reanimated.View>
+                    </PanGestureHandler>
+                </Reanimated.View>
+            </TapGestureHandler>
+        </Box>
     );
 };
 

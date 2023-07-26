@@ -11,6 +11,7 @@ import { calculateActualDimensions } from '@utils/helpers/calculateAspectRatio';
 import { Box, Card, FlatList, Icon, Image } from 'native-base';
 import { useCameraEffects } from './hooks/useCameraEffects';
 import { CaptureButton } from './views/CaptureButton';
+import { isAndroid } from '@utils/helpers/getPlataform';
 
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({
@@ -57,7 +58,8 @@ export function CameraPage({ navigation }: any): React.ReactElement {
         (media: PhotoFile | VideoFile, type: 'photo' | 'video') => {
             console.log(`Media captured! ${JSON.stringify(media)}`);
 
-            setGalleryImages((prev) => [...prev, { uri: media.path }]);
+            const uri = isAndroid() ? 'file://' + media.path : media.path;
+            setGalleryImages((prev) => [...prev, { uri }]);
             // navigation.navigate('MediaPage', {
             //     path: media.path,
             //     type: type,
