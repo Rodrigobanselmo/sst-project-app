@@ -4,6 +4,7 @@ export type AppRoutesProps = {
   home: undefined;
   task: undefined;
   profile: undefined;
+  camera: undefined;
   characterization: {
     id?: number;
   };

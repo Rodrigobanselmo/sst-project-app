@@ -10,70 +10,65 @@ import { FlatList, Heading, HStack, Text, useToast, VStack } from 'native-base';
 import { useCallback, useEffect, useState } from 'react';
 
 export const Task = () => {
-  const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
 
-  const { navigate } = useNavigation<AppNavigatorRoutesProps>();
-  const toast = useToast();
+    const { navigate } = useNavigation<AppNavigatorRoutesProps>();
+    const toast = useToast();
 
-  const handleCreateCharacterization = () => {
-    navigate('characterization', {});
-  };
+    const handleCreateCharacterization = () => {
+        navigate('camera');
+    };
 
-  // const fetchGroups = async () => {
-  //   try {
-  //     const { data } = await api.get('/groups');
-  //     setGroups(data);
-  //   } catch (error) {
-  //     const isAppError = error instanceof AppError;
-  //     const message = isAppError ? error.message : 'Erro ao buscar grupos musculares. Tente novamente mais tarde.';
-  //     toast.show({
-  //       title: 'Erro ao buscar grupos musculares',
-  //       description: message,
-  //       placement: 'top',
-  //       bgColor: 'status.error',
-  //     });
-  //   }
-  // };
+    // const fetchGroups = async () => {
+    //   try {
+    //     const { data } = await api.get('/groups');
+    //     setGroups(data);
+    //   } catch (error) {
+    //     const isAppError = error instanceof AppError;
+    //     const message = isAppError ? error.message : 'Erro ao buscar grupos musculares. Tente novamente mais tarde.';
+    //     toast.show({
+    //       title: 'Erro ao buscar grupos musculares',
+    //       description: message,
+    //       placement: 'top',
+    //       bgColor: 'status.error',
+    //     });
+    //   }
+    // };
 
-  // const fetchExercisesByGroup = async () => {
-  //   try {
-  //     setIsLoading(true);
-  //     const { data } = await api.get(`/exercises/bygroup/${groupSelected}`);
-  //     setExercises(data);
-  //   } catch (error) {
-  //     const isAppError = error instanceof AppError;
-  //     const message = isAppError ? error.message : 'Erro ao buscar exercícios. Tente novamente mais tarde.';
-  //     toast.show({
-  //       title: 'Erro ao buscar exercícios',
-  //       description: message,
-  //       placement: 'top',
-  //       bgColor: 'status.error',
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+    // const fetchExercisesByGroup = async () => {
+    //   try {
+    //     setIsLoading(true);
+    //     const { data } = await api.get(`/exercises/bygroup/${groupSelected}`);
+    //     setExercises(data);
+    //   } catch (error) {
+    //     const isAppError = error instanceof AppError;
+    //     const message = isAppError ? error.message : 'Erro ao buscar exercícios. Tente novamente mais tarde.';
+    //     toast.show({
+    //       title: 'Erro ao buscar exercícios',
+    //       description: message,
+    //       placement: 'top',
+    //       bgColor: 'status.error',
+    //     });
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
 
-  // useEffect(() => {
-  //   fetchGroups();
-  // }, []);
+    // useEffect(() => {
+    //   fetchGroups();
+    // }, []);
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     fetchExercisesByGroup();
-  //   }, [groupSelected]),
-  // );
+    // useFocusEffect(
+    //   useCallback(() => {
+    //     fetchExercisesByGroup();
+    //   }, [groupSelected]),
+    // );
 
-  return (
-    <VStack flex={1}>
-      <ScreenHeader title="Atividade" />
-      <Button
-            mt={10}
-						title="Criar conta"
-						variant="outline"
-						onPress={handleCreateCharacterization}
-					/>
-      {/* <FlatList
+    return (
+        <VStack flex={1}>
+            <ScreenHeader title="Atividade" />
+            <Button mt={10} title="Criar conta" variant="outline" onPress={handleCreateCharacterization} />
+            {/* <FlatList
         data={groups}
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
@@ -92,6 +87,6 @@ export const Task = () => {
         maxH={10}
         minH={10}
       /> */}
-    </VStack>
-  );
+        </VStack>
+    );
 };

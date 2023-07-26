@@ -9,46 +9,57 @@ import HomeSvg from '@assets/home.svg';
 import ProfileSvg from '@assets/profile.svg';
 import { Task } from '@screens/Task';
 import { Characterization } from '@screens/Characterization';
+import { CameraPage } from '@screens/Camera';
 
 const { Navigator, Screen } = createBottomTabNavigator<AppRoutesProps>();
 
 export const AppRoutes = () => {
-  const { sizes, colors } = useTheme();
-  const iconSize = sizes[6];
+    const { sizes, colors } = useTheme();
+    const iconSize = sizes[6];
 
-  return (
-    <Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.primary.main,
-        tabBarShowLabel: false,
-      }}
-    >
-      <Screen
-        name="home"
-        component={Home}
-        options={{
-          tabBarLabel: 'Início',
-          tabBarIcon: ({ color }) => <HomeSvg fill={color} width={iconSize} height={iconSize} />
-        }}
-      />
-      <Screen
-        name="task"
-        component={Task}
-        options={{
-          tabBarLabel: 'Atividade',
-          tabBarIcon: ({ color }) => <HistorySvg fill={color} width={iconSize} height={iconSize} />
-        }}
-      />
-      <Screen
-        name="profile"
-        component={Profile}
-        options={{
-          tabBarLabel: 'Perfil',
-          tabBarIcon: ({ color }) => <ProfileSvg fill={color} width={iconSize} height={iconSize} />
-        }}
-      />
-      <Screen name="characterization" component={Characterization} options={{ tabBarButton: () => null }} />
-    </Navigator>
-  );
+    return (
+        <Navigator
+            screenOptions={{
+                headerShown: false,
+                tabBarActiveTintColor: colors.primary.main,
+                tabBarShowLabel: false,
+            }}
+        >
+            <Screen
+                name="home"
+                component={Home}
+                options={{
+                    tabBarLabel: 'Início',
+                    tabBarIcon: ({ color }) => <HomeSvg fill={color} width={iconSize} height={iconSize} />,
+                }}
+            />
+            <Screen
+                name="task"
+                component={Task}
+                options={{
+                    tabBarLabel: 'Atividade',
+                    tabBarIcon: ({ color }) => <HistorySvg fill={color} width={iconSize} height={iconSize} />,
+                }}
+            />
+            <Screen
+                name="profile"
+                component={Profile}
+                options={{
+                    tabBarLabel: 'Perfil',
+                    tabBarIcon: ({ color }) => <ProfileSvg fill={color} width={iconSize} height={iconSize} />,
+                }}
+            />
+            <Screen name="characterization" component={Characterization} options={{ tabBarButton: () => null }} />
+            <Screen
+                name="camera"
+                component={CameraPage}
+                options={{
+                    tabBarStyle: {
+                        display: 'none',
+                        height: 0,
+                    },
+                }}
+            />
+        </Navigator>
+    );
 };

@@ -3,7 +3,7 @@
     "name": "sst-project-app",
     "slug": "sst-project-app",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
@@ -12,6 +12,12 @@
       "backgroundColor": "#ffffff"
     },
     "plugins": [
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
+        }
+      ],
       [
         "expo-image-picker",
         
@@ -28,6 +34,7 @@
       "**/*"
     ],
     "ios": {
+      "requireFullScreen": true,
       "supportsTablet": true
     },
     "android": {

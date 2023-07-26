@@ -19,7 +19,6 @@ import PhotoEditor from '@baronha/react-native-photo-editor';
 import ImagePicker from 'react-native-image-crop-picker';
 import * as ImagePickerExpo from 'expo-image-picker';
 import { Camera, CameraType } from 'expo-camera';
-import { CameraPage, CameraScreen } from '@components/Camera/Camera';
 
 export const Characterization = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -181,7 +180,11 @@ export const Characterization = () => {
         setType((current) => (current === CameraType.back ? CameraType.front : CameraType.back));
     }
 
-    return <CameraPage />;
+    // return (
+    //     <Box width={'100%'} height={'100%'}>
+    //         <CameraPage />
+    //     </Box>
+    // );
 
     return (
         <VStack flex={1}>
@@ -194,8 +197,6 @@ export const Characterization = () => {
             </Text>
         </HStack> */}
             <ScrollView>
-                <CameraScreen />
-
                 {/* <Box style={styles.container}>
                     <Camera style={styles.camera} type={type}>
                         <Box style={styles.buttonContainer}>

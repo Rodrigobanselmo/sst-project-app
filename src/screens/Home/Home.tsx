@@ -6,66 +6,68 @@ import { api } from '@services/api';
 import { AppError } from '@utils/errors';
 import { FlatList, Heading, HStack, Text, useToast, VStack } from 'native-base';
 import { useCallback, useEffect, useState } from 'react';
+import { Dimensions } from 'react-native';
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 export const Home = () => {
-  const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
 
-  const { navigate } = useNavigation<AppNavigatorRoutesProps>();
-  const toast = useToast();
+    const { navigate } = useNavigation<AppNavigatorRoutesProps>();
+    const toast = useToast();
 
-  // const handleOpenExerciseDetail = (id: number) => {
-  //   navigate('exercise', { id });
-  // };
+    // const handleOpenExerciseDetail = (id: number) => {
+    //   navigate('exercise', { id });
+    // };
 
-  // const fetchGroups = async () => {
-  //   try {
-  //     const { data } = await api.get('/groups');
-  //     setGroups(data);
-  //   } catch (error) {
-  //     const isAppError = error instanceof AppError;
-  //     const message = isAppError ? error.message : 'Erro ao buscar grupos musculares. Tente novamente mais tarde.';
-  //     toast.show({
-  //       title: 'Erro ao buscar grupos musculares',
-  //       description: message,
-  //       placement: 'top',
-  //       bgColor: 'status.error',
-  //     });
-  //   }
-  // };
+    // const fetchGroups = async () => {
+    //   try {
+    //     const { data } = await api.get('/groups');
+    //     setGroups(data);
+    //   } catch (error) {
+    //     const isAppError = error instanceof AppError;
+    //     const message = isAppError ? error.message : 'Erro ao buscar grupos musculares. Tente novamente mais tarde.';
+    //     toast.show({
+    //       title: 'Erro ao buscar grupos musculares',
+    //       description: message,
+    //       placement: 'top',
+    //       bgColor: 'status.error',
+    //     });
+    //   }
+    // };
 
-  // const fetchExercisesByGroup = async () => {
-  //   try {
-  //     setIsLoading(true);
-  //     const { data } = await api.get(`/exercises/bygroup/${groupSelected}`);
-  //     setExercises(data);
-  //   } catch (error) {
-  //     const isAppError = error instanceof AppError;
-  //     const message = isAppError ? error.message : 'Erro ao buscar exercícios. Tente novamente mais tarde.';
-  //     toast.show({
-  //       title: 'Erro ao buscar exercícios',
-  //       description: message,
-  //       placement: 'top',
-  //       bgColor: 'status.error',
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+    // const fetchExercisesByGroup = async () => {
+    //   try {
+    //     setIsLoading(true);
+    //     const { data } = await api.get(`/exercises/bygroup/${groupSelected}`);
+    //     setExercises(data);
+    //   } catch (error) {
+    //     const isAppError = error instanceof AppError;
+    //     const message = isAppError ? error.message : 'Erro ao buscar exercícios. Tente novamente mais tarde.';
+    //     toast.show({
+    //       title: 'Erro ao buscar exercícios',
+    //       description: message,
+    //       placement: 'top',
+    //       bgColor: 'status.error',
+    //     });
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
 
-  // useEffect(() => {
-  //   fetchGroups();
-  // }, []);
+    // useEffect(() => {
+    //   fetchGroups();
+    // }, []);
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     fetchExercisesByGroup();
-  //   }, [groupSelected]),
-  // );
+    // useFocusEffect(
+    //   useCallback(() => {
+    //     fetchExercisesByGroup();
+    //   }, [groupSelected]),
+    // );
 
-  return (
-    <VStack flex={1}>
-      <HomeHeader />
-      {/* <FlatList
+    return (
+        <VStack flex={1}>
+            <HomeHeader />
+            {/* <FlatList
         data={groups}
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
@@ -84,6 +86,6 @@ export const Home = () => {
         maxH={10}
         minH={10}
       /> */}
-    </VStack>
-  );
+        </VStack>
+    );
 };

@@ -5263,6 +5263,18 @@ expo-navigation-bar@~2.1.1:
     "@react-native/normalize-color" "^2.0.0"
     debug "^4.3.2"
 
+expo-screen-orientation@~5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/expo-screen-orientation/-/expo-screen-orientation-5.1.1.tgz#d586f035cca8eb4e4620a774f9510bd77083258d"
+  integrity sha512-rYpHUwHpuKlEErxupl3wM+KWcySrSJTXb5Une5gDINMmjWbLBx0N1P2MG1aSPA2eT7bShTO/xDJyegjf438l8w==
+
+expo-sensors@~12.1.1:
+  version "12.1.1"
+  resolved "https://registry.yarnpkg.com/expo-sensors/-/expo-sensors-12.1.1.tgz#68dd7a1426c7c40d6e0435e9528064aa3102174b"
+  integrity sha512-b5vaz1vAXO9kPXZ06a0hxoSkL4VXtJyEb6Qatpu7jLgThhzKcHOWjOHFvr/hqB4nat6uaRLXii+F1CwcoBMnpQ==
+  dependencies:
+    invariant "^2.2.4"
+
 expo-splash-screen@~0.18.2:
   version "0.18.2"
   resolved "https://registry.yarnpkg.com/expo-splash-screen/-/expo-splash-screen-0.18.2.tgz#dde246204da875785ba40c7143a70013cdefdbb6"

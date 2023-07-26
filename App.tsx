@@ -6,7 +6,7 @@ import { Routes } from '@routes/index';
 import { AuthProvider } from '@contexts/AuthContext';
 import { THEME } from './src/theme/theme';
 import * as NavigationBar from 'expo-navigation-bar';
-import { isAndroid } from '@utils/helpers/plataform';
+import { isAndroid } from '@utils/helpers/getPlataform';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 LogBox.ignoreLogs([
