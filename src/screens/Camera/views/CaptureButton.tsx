@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { StyleSheet, View, ViewProps } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, ViewProps } from 'react-native';
 import {
     PanGestureHandler,
     PanGestureHandlerGestureEvent,
     State,
     TapGestureHandler,
     TapGestureHandlerStateChangeEvent,
+    gestureHandlerRootHOC,
 } from 'react-native-gesture-handler';
 import Reanimated, {
     cancelAnimation,
@@ -23,6 +24,7 @@ import type { Camera, PhotoFile, TakePhotoOptions, TakeSnapshotOptions, VideoFil
 import { CAPTURE_BUTTON_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH } from '../constants';
 import { Box } from 'native-base';
 import { Button } from '@components/Button';
+import { Orientation } from 'expo-screen-orientation';
 
 const PAN_GESTURE_HANDLER_FAIL_X = [-SCREEN_WIDTH, SCREEN_WIDTH];
 const PAN_GESTURE_HANDLER_ACTIVE_Y = [-2, 2];
@@ -32,11 +34,15 @@ const BORDER_WIDTH = CAPTURE_BUTTON_SIZE * 0.1;
 
 interface Props extends ViewProps {
     camera: React.RefObject<Camera>;
-    onMediaCaptured: (media: PhotoFile | VideoFile, type: 'photo' | 'video') => void;
+    onMediaCaptured: (
+        media: PhotoFile | VideoFile,
+        options: { type: 'photo' | 'video'; orientation: Orientation },
+    ) => void;
 
     minZoom: number;
     maxZoom: number;
     cameraZoom: Reanimated.SharedValue<number>;
+    orientation: Orientation;
 
     flash: 'off' | 'on';
 
@@ -55,6 +61,7 @@ const _CaptureButton: React.FC<Props> = ({
     enabled,
     setIsPressingButton,
     style,
+    orientation,
     ...props
 }): React.ReactElement => {
     const pressDownDate = useRef<Date | undefined>(undefined);
@@ -77,13 +84,12 @@ const _CaptureButton: React.FC<Props> = ({
         try {
             if (camera.current == null) throw new Error('Camera ref is null!');
 
-            console.log('Taking photo...', enabled, props);
             const photo = await camera.current.takePhoto(takePhotoOptions);
-            onMediaCaptured(photo, 'photo');
+            onMediaCaptured(photo, { type: 'photo', orientation });
         } catch (e) {
             console.error('Failed to take photo!', e);
         }
-    }, [camera, onMediaCaptured, takePhotoOptions]);
+    }, [camera, onMediaCaptured, takePhotoOptions, orientation]);
 
     const onStoppedRecording = useCallback(() => {
         isRecording.current = false;
@@ -101,6 +107,7 @@ const _CaptureButton: React.FC<Props> = ({
             console.error('failed to stop recording!', e);
         }
     }, [camera]);
+
     const startRecording = useCallback(() => {
         try {
             if (camera.current == null) throw new Error('Camera ref is null!');
@@ -114,7 +121,7 @@ const _CaptureButton: React.FC<Props> = ({
                 },
                 onRecordingFinished: (video) => {
                     console.log(`Recording successfully finished! ${video.path}`);
-                    onMediaCaptured(video, 'video');
+                    onMediaCaptured(video, { type: 'video', orientation });
                     onStoppedRecording();
                 },
             });
@@ -151,7 +158,7 @@ const _CaptureButton: React.FC<Props> = ({
                     setTimeout(() => {
                         if (pressDownDate.current === now) {
                             // user is still pressing down after 200ms, so his intention is to create a video
-                            startRecording();
+                            // startRecording();
                         }
                     }, START_RECORDING_DELAY);
                     setIsPressingButton(true);
@@ -171,7 +178,8 @@ const _CaptureButton: React.FC<Props> = ({
                             await takePhoto();
                         } else {
                             // user has held the button for more than 200ms, so he has been recording this entire time.
-                            await stopRecording();
+                            await takePhoto();
+                            // await stopRecording();
                         }
                     } finally {
                         setTimeout(() => {
@@ -275,43 +283,40 @@ const _CaptureButton: React.FC<Props> = ({
     }, [enabled, isPressingButton]);
 
     return (
-        <Box position={'absolute'} bottom={0} left={0} right={0}>
-            <Button
-                title="Criar conta"
-                variant="outline"
-                onPress={() => {
-                    takePhoto();
-                }}
-            />
-            <TapGestureHandler
-                enabled={enabled}
-                ref={tapHandler}
-                onHandlerStateChange={onHandlerStateChanged}
-                shouldCancelWhenOutside={false}
-                maxDurationMs={99999999} // <-- this prevents the TapGestureHandler from going to State.FAILED when the user moves his finger outside of the child view (to zoom)
-                simultaneousHandlers={panHandler}
-            >
-                <Reanimated.View {...props} style={[buttonStyle, style]}>
-                    <PanGestureHandler
-                        enabled={enabled}
-                        ref={panHandler}
-                        failOffsetX={PAN_GESTURE_HANDLER_FAIL_X}
-                        activeOffsetY={PAN_GESTURE_HANDLER_ACTIVE_Y}
-                        onGestureEvent={onPanGestureEvent}
-                        simultaneousHandlers={tapHandler}
-                    >
-                        <Reanimated.View style={styles.flex}>
-                            <Reanimated.View style={[styles.shadow, shadowStyle]} />
-                            <View style={styles.button} />
-                        </Reanimated.View>
-                    </PanGestureHandler>
-                </Reanimated.View>
-            </TapGestureHandler>
-        </Box>
+        <TapGestureHandler
+            enabled={enabled}
+            ref={tapHandler}
+            onHandlerStateChange={onHandlerStateChanged}
+            shouldCancelWhenOutside={false}
+            maxDurationMs={99999999} // <-- this prevents the TapGestureHandler from going to State.FAILED when the user moves his finger outside of the child view (to zoom)
+            simultaneousHandlers={panHandler}
+        >
+            <Reanimated.View {...props} style={[buttonStyle, style]}>
+                <PanGestureHandler
+                    enabled={enabled}
+                    ref={panHandler}
+                    failOffsetX={PAN_GESTURE_HANDLER_FAIL_X}
+                    activeOffsetY={PAN_GESTURE_HANDLER_ACTIVE_Y}
+                    onGestureEvent={onPanGestureEvent}
+                    simultaneousHandlers={tapHandler}
+                >
+                    <Reanimated.View style={styles.flex}>
+                        <Reanimated.View style={[styles.shadow, shadowStyle]} />
+                        <View style={styles.button} />
+                    </Reanimated.View>
+                </PanGestureHandler>
+            </Reanimated.View>
+        </TapGestureHandler>
     );
 };
 
-export const CaptureButton = React.memo(_CaptureButton);
+export const CaptureButtonMemo = React.memo(_CaptureButton);
+
+export const CaptureButton = gestureHandlerRootHOC((props: any) => (
+    <Box position={'absolute'} bottom={0} left={0} right={0}>
+        <CaptureButtonMemo {...props} />
+    </Box>
+));
 
 const styles = StyleSheet.create({
     flex: {

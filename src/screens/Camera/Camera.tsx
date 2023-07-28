@@ -4,14 +4,22 @@ import { StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { PinchGestureHandler, TapGestureHandler } from 'react-native-gesture-handler';
 import Reanimated from 'react-native-reanimated';
 import { Camera, PhotoFile, VideoFile } from 'react-native-vision-camera';
-import { CONTENT_SPACING, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from './constants';
+import { CONTENT_SPACING, GALLERY_IMAGE_Width, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from './constants';
 // import { StatusBarBlurBackground } from './views/StatusBarBlurBackground';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { calculateActualDimensions } from '@utils/helpers/calculateAspectRatio';
-import { Box, Card, FlatList, Icon, Image } from 'native-base';
+import { Box, Text, FlatList, Icon, Image, Center, HStack } from 'native-base';
 import { useCameraEffects } from './hooks/useCameraEffects';
 import { CaptureButton } from './views/CaptureButton';
 import { isAndroid } from '@utils/helpers/getPlataform';
+import { manipulateAsync, FlipType, SaveFormat, ImageResult } from 'expo-image-manipulator';
+import { Orientation, OrientationChangeEvent } from 'expo-screen-orientation';
+import * as FileSystem from 'expo-file-system';
+import { saveImageToGallery, saveImageToStorage } from '@utils/helpers/saveImage';
+import { Button } from '@components/Button';
+import { useNavigation } from '@react-navigation/native';
+import { AppNavigatorRoutesProps, AppRoutesProps } from '@routes/app/AppRoutesProps';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({
@@ -22,10 +30,14 @@ const BUTTON_SIZE = 40;
 
 interface IImageGallery {
     uri: string;
+    orientation: Orientation;
 }
 
-export function CameraPage({ navigation }: any): React.ReactElement {
+type CameraPageProps = NativeStackScreenProps<AppRoutesProps, 'camera'>;
+
+export function CameraPage({ navigation }: CameraPageProps): React.ReactElement {
     const camera = useRef<Camera>(null);
+    const { goBack } = useNavigation<AppNavigatorRoutesProps>();
 
     const {
         isActive,
@@ -50,16 +62,49 @@ export function CameraPage({ navigation }: any): React.ReactElement {
         zoom,
         minZoom,
         maxZoom,
+        orientation,
     } = useCameraEffects();
 
     const [galleryImages, setGalleryImages] = useState<IImageGallery[]>([]);
 
     const onMediaCaptured = useCallback(
-        (media: PhotoFile | VideoFile, type: 'photo' | 'video') => {
-            console.log(`Media captured! ${JSON.stringify(media)}`);
-
+        async (media: PhotoFile | VideoFile, options: { type: 'photo' | 'video'; orientation: Orientation }) => {
             const uri = isAndroid() ? 'file://' + media.path : media.path;
-            setGalleryImages((prev) => [...prev, { uri }]);
+
+            // const isLandscape = [Orientation.LANDSCAPE_LEFT, Orientation.LANDSCAPE_RIGHT].includes(options.orientation);
+
+            // const { height, width } = calculateActualDimensions({
+            //     aspectRatio: '9:16',
+            //     maxWidth: 900,
+            //     maxHeight: 1200,
+            //     ...(isLandscape && {
+            //         aspectRatio: '16:9',
+            //         maxWidth: 1200,
+            //         maxHeight: 900,
+            //     }),
+            // });
+
+            // let manipResult: ImageResult;
+            // if (options.orientation === Orientation.LANDSCAPE_RIGHT) {
+            //     manipResult = await manipulateAsync(uri, [{ rotate: -90 }, { resize: { height, width } }], {
+            //         compress: 0.6,
+            //     });
+            // } else if (options.orientation === Orientation.LANDSCAPE_LEFT) {
+            //     manipResult = await manipulateAsync(uri, [{ rotate: 90 }, { resize: { height, width } }], {
+            //         compress: 0.6,
+            //     });
+            // } else {
+            //     manipResult = await manipulateAsync(uri, [{ resize: { height, width } }], {
+            //         compress: 0.6,
+            //     });
+            // }
+
+            // const asset = await saveImageToGallery(manipResult.uri);
+
+            // if (asset) {
+            // }
+
+            setGalleryImages((prev) => [...prev, { uri, orientation: options.orientation }]);
             // navigation.navigate('MediaPage', {
             //     path: media.path,
             //     type: type,
@@ -67,6 +112,10 @@ export function CameraPage({ navigation }: any): React.ReactElement {
         },
         [navigation],
     );
+
+    const handleCancel = () => {
+        goBack();
+    };
 
     const { height, width } = calculateActualDimensions({
         aspectRatio: '9:16',
@@ -90,7 +139,11 @@ export function CameraPage({ navigation }: any): React.ReactElement {
                             <TapGestureHandler onEnded={onDoubleTap} numberOfTaps={2}>
                                 <ReanimatedCamera
                                     ref={camera}
-                                    style={StyleSheet.absoluteFill}
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: 'black',
+                                        aspectRatio: 9 / 16,
+                                    }}
                                     device={device}
                                     lowLightBoost={device.supportsLowLightBoost && enableNightMode}
                                     isActive={isActive}
@@ -118,6 +171,7 @@ export function CameraPage({ navigation }: any): React.ReactElement {
                     flash={supportsFlash ? flash : 'off'}
                     enabled={isCameraInitialized && isActive}
                     setIsPressingButton={setIsPressingButton}
+                    orientation={orientation}
                 />
                 <View
                     style={
@@ -149,29 +203,95 @@ export function CameraPage({ navigation }: any): React.ReactElement {
                         </TouchableOpacity>
                     )}
                 </View>
+
+                <View style={styles.galleryContainer}>
+                    <FlatList
+                        data={galleryImages}
+                        ItemSeparatorComponent={() => <Box style={{ height: 10 }} />}
+                        renderItem={({ item, index }) => (
+                            <Box
+                                style={
+                                    item.orientation === Orientation.PORTRAIT_UP
+                                        ? { flex: 1, backgroundColor: 'red' }
+                                        : styles.imageBoxH
+                                }
+                            >
+                                <Image
+                                    alt="gallery image"
+                                    source={{ uri: item.uri }}
+                                    style={
+                                        item.orientation === Orientation.PORTRAIT_UP
+                                            ? styles.image
+                                            : item.orientation == Orientation.LANDSCAPE_LEFT
+                                            ? styles.imageLL
+                                            : styles.imageLR
+                                    }
+                                />
+                                <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteImage(index)}>
+                                    <Icon as={MaterialIcons} name="close" fontSize={5} color="white" />
+                                </TouchableOpacity>
+                            </Box>
+                        )}
+                        keyExtractor={(item, index) => index.toString()}
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
+                    />
+                    {galleryImages.length > 2 && (
+                        <Center px={2} borderRadius={10} position={'absolute'} bottom={-30} mt={2} bg="#00000044">
+                            <Text fontSize={12} color="white">
+                                Total: {galleryImages.length}
+                            </Text>
+                        </Center>
+                    )}
+                </View>
+
+                <TouchableOpacity onPress={handleCancel}>
+                    <Center
+                        py={1}
+                        px={4}
+                        borderRadius={10}
+                        position={'absolute'}
+                        left={10}
+                        bottom={SAFE_AREA_PADDING.paddingBottom + 28}
+                        bg="#00000044"
+                        borderStyle={'solid'}
+                        borderWidth={1}
+                        width={85}
+                        borderColor={'gray.300'}
+                    >
+                        <Text fontSize={12} color="gray.200">
+                            Cancelar
+                        </Text>
+                    </Center>
+                </TouchableOpacity>
+
+                {!!galleryImages.length && (
+                    <TouchableOpacity disabled={!galleryImages.length} onPress={() => console.log(1)}>
+                        <Center
+                            px={4}
+                            py={1}
+                            borderRadius={10}
+                            position={'absolute'}
+                            right={10}
+                            bottom={SAFE_AREA_PADDING.paddingBottom + 28}
+                            borderStyle={'solid'}
+                            borderWidth={1}
+                            width={85}
+                            borderColor={'primary.main'}
+                            bg="#00000044"
+                        >
+                            <Text fontSize={12} color="primary.main">
+                                Salvar
+                            </Text>
+                        </Center>
+                    </TouchableOpacity>
+                )}
             </Box>
 
-            <View style={styles.galleryContainer}>
-                <FlatList
-                    data={galleryImages}
-                    renderItem={({ item, index }) => (
-                        <Card>
-                            <Image
-                                alt="gallery image"
-                                source={{ uri: item.uri }}
-                                resizeMode="contain"
-                                style={styles.image}
-                            />
-                            <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteImage(index)}>
-                                <Icon as={MaterialIcons} name="delete" fontSize={5} color="red.400" />
-                            </TouchableOpacity>
-                        </Card>
-                    )}
-                    keyExtractor={(item, index) => index.toString()}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                />
-            </View>
+            {/* <HStack justifyContent={'space-between'} width={'100%'} px={5}>
+                <Button title="Cancelar" onPress={console.log} variant="outline" width={100} />
+                <Button title="Salvar" onPress={console.log} width={100} />
+            </HStack> */}
         </View>
     );
 }
@@ -180,6 +300,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'black',
+        justifyContent: 'center',
+        alignItems: 'center',
         // width: '300px',
         // height: '200px',
     },
@@ -200,19 +322,19 @@ const styles = StyleSheet.create({
     rightButtonRow: {
         position: 'absolute',
         right: SAFE_AREA_PADDING.paddingRight,
-        top: SAFE_AREA_PADDING.paddingTop,
+        top: isAndroid() ? SAFE_AREA_PADDING.paddingTop + 30 : SAFE_AREA_PADDING.paddingTop,
     },
     rightButtonRowRight: {
         position: 'absolute',
         transform: [{ rotate: '90deg' }],
-        right: SAFE_AREA_PADDING.paddingTop + 20,
-        top: SAFE_AREA_PADDING.paddingRight,
+        right: SAFE_AREA_PADDING.paddingTop + 30,
+        top: isAndroid() ? SAFE_AREA_PADDING.paddingRight + 20 : SAFE_AREA_PADDING.paddingRight,
     },
     rightButtonRowLeft: {
         position: 'absolute',
         transform: [{ rotate: '-90deg' }],
-        left: SAFE_AREA_PADDING.paddingTop + 20,
-        top: SAFE_AREA_PADDING.paddingRight,
+        right: SAFE_AREA_PADDING.paddingTop + 30,
+        top: isAndroid() ? SAFE_AREA_PADDING.paddingRight + 20 : SAFE_AREA_PADDING.paddingRight,
     },
     text: {
         color: 'white',
@@ -222,24 +344,52 @@ const styles = StyleSheet.create({
     },
 
     galleryContainer: {
-        height: 200,
+        position: 'absolute',
+        height: 350,
+        top: 50,
+        left: 10,
     },
     image: {
         flex: 1,
-        height: 150,
-        width: 200,
-        resizeMode: 'cover',
+        height: (GALLERY_IMAGE_Width * 16) / 9,
+        width: GALLERY_IMAGE_Width,
+        resizeMode: 'stretch',
+    },
+    imageLR: {
+        flex: 1,
+        width: (GALLERY_IMAGE_Width * 9) / 16,
+        height: GALLERY_IMAGE_Width,
+        transform: [{ rotate: '-90deg' }],
+        resizeMode: 'stretch',
+        position: 'absolute',
+        top: -17.5,
+        left: 17.5,
+    },
+    imageLL: {
+        flex: 1,
+        width: (GALLERY_IMAGE_Width * 9) / 16,
+        height: GALLERY_IMAGE_Width,
+        transform: [{ rotate: '90deg' }],
+        resizeMode: 'stretch',
+        position: 'absolute',
+        top: -17.5,
+        left: 17.5,
+    },
+    imageBoxH: {
+        flex: 1,
+        height: (GALLERY_IMAGE_Width * 9) / 16,
+        width: GALLERY_IMAGE_Width,
+        position: 'relative',
     },
     deleteButton: {
         position: 'absolute',
         top: 8,
         right: 8,
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         borderRadius: 15,
         padding: 5,
     },
     deleteIcon: {
         fontSize: 20,
-        color: 'red',
     },
 });

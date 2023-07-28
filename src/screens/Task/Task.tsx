@@ -16,7 +16,7 @@ export const Task = () => {
     const toast = useToast();
 
     const handleCreateCharacterization = () => {
-        navigate('camera');
+        navigate('characterization', {});
     };
 
     // const fetchGroups = async () => {

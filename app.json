@@ -13,6 +13,14 @@
     },
     "plugins": [
       [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow SimpleSST to access your photos.",
+          "savePhotosPermission": "Allow SimpleSST to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
         "expo-screen-orientation",
         {
           "initialOrientation": "DEFAULT"

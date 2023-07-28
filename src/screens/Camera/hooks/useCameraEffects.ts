@@ -176,5 +176,6 @@ export const useCameraEffects = () => {
         zoom,
         minZoom,
         maxZoom,
+        orientation,
     };
 };

@@ -1,28 +1,25 @@
+import RepetitionsSvg from '@assets/repetitions.svg';
+import SeriesSvg from '@assets/series.svg';
 import { Button } from '@components/Button';
-import { HomeHeader } from '@components/HomeHeader';
 import { Loading } from '@components/Loading';
 import { ScreenHeader } from '@components/ScreenHeader';
-import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
-import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { api } from '@services/api';
-import { Feather } from '@expo/vector-icons';
-import { AppError } from '@utils/errors';
-import { Box, FlatList, Heading, HStack, Icon, ScrollView, Text, useToast, VStack, Image } from 'native-base';
-import { useCallback, useEffect, useState } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { AppNavigatorRoutesProps, AppRoutesProps } from '@routes/app/AppRoutesProps';
+import { Box, HStack, Image, ScrollView, Text, VStack, useToast } from 'native-base';
+import { useState } from 'react';
+import { StyleSheet } from 'react-native';
 import { CharParamsProps } from './tyoes';
-import { TouchableOpacity, StyleSheet } from 'react-native';
-import BodySvg from '@assets/body.svg';
-import SeriesSvg from '@assets/series.svg';
-import RepetitionsSvg from '@assets/repetitions.svg';
 // import * as ImagePicker from 'expo-image-picker';
 import PhotoEditor from '@baronha/react-native-photo-editor';
-import ImagePicker from 'react-native-image-crop-picker';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { CameraType } from 'expo-camera';
 import * as ImagePickerExpo from 'expo-image-picker';
-import { Camera, CameraType } from 'expo-camera';
+import ImagePicker from 'react-native-image-crop-picker';
 
-export const Characterization = () => {
+type CameraPageProps = NativeStackScreenProps<AppRoutesProps, 'characterization'>;
+
+export function Characterization({ navigation }: CameraPageProps): React.ReactElement {
     const [isLoading, setIsLoading] = useState(false);
-    const { goBack } = useNavigation();
     const { params } = useRoute();
     const toast = useToast();
 
@@ -264,7 +261,7 @@ export const Characterization = () => {
             </ScrollView>
         </VStack>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {

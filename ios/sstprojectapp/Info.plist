@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Dar permissão ao SimpleSST para salvar fotos em seu album</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -36,11 +38,11 @@
 		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>We require access to your camera to take photos and videos for creating a gallery of the company environment.</string>
+	<string>Dar permissão ao SimpleSST para acessar sua camera</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>We need access to your microphone to record audio of videos to have company video in gallery.</string>
+	<string>Dar permissão ao SimpleSST para acessar o audio do seu despositivo</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to allow you to choose and upload photos for your profile and creating a gallery of the company environment.</string>
+	<string>Dar permissão ao SimpleSST para ter acesso as fotos em seu album</string>
 	<key>UILaunchStoryboardName</key>
 	<string>SplashScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
