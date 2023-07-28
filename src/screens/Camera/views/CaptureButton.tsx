@@ -21,13 +21,14 @@ import Reanimated, {
     withRepeat,
 } from 'react-native-reanimated';
 import type { Camera, PhotoFile, TakePhotoOptions, TakeSnapshotOptions, VideoFile } from 'react-native-vision-camera';
-import { CAPTURE_BUTTON_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH } from '../constants';
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../../constants/constants';
 import { Box } from 'native-base';
 import { Button } from '@components/Button';
 import { Orientation } from 'expo-screen-orientation';
 
 const PAN_GESTURE_HANDLER_FAIL_X = [-SCREEN_WIDTH, SCREEN_WIDTH];
 const PAN_GESTURE_HANDLER_ACTIVE_Y = [-2, 2];
+const CAPTURE_BUTTON_SIZE = 78;
 
 const START_RECORDING_DELAY = 200;
 const BORDER_WIDTH = CAPTURE_BUTTON_SIZE * 0.1;

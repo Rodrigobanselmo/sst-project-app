@@ -17,7 +17,7 @@ import {
     sortFormats,
     useCameraDevices,
 } from 'react-native-vision-camera';
-import { MAX_ZOOM_FACTOR } from '../constants';
+import { MAX_ZOOM_FACTOR } from '../../../constants/constants';
 import { useIsForeground } from './useIsForeground';
 import { useDeviceRotation } from '@hooks/useDeviceRotation';
 import { useIsFocused } from '@react-navigation/core';

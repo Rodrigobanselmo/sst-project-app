@@ -17,7 +17,6 @@ export const SAFE_AREA_PADDING = {
 
 // The maximum zoom _factor_ you should be able to zoom in
 export const MAX_ZOOM_FACTOR = 20;
-export const GALLERY_IMAGE_Width = 80;
 
 export const SCREEN_WIDTH = Dimensions.get('window').width;
 export const SCREEN_HEIGHT = Platform.select<number>({
@@ -26,4 +25,3 @@ export const SCREEN_HEIGHT = Platform.select<number>({
 }) as number;
 
 // Capture Button
-export const CAPTURE_BUTTON_SIZE = 78;

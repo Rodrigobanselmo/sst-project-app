@@ -5,27 +5,33 @@ import { Loading } from '@components/Loading';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { AppNavigatorRoutesProps, AppRoutesProps } from '@routes/app/AppRoutesProps';
-import { Box, HStack, Image, ScrollView, Text, VStack, useToast } from 'native-base';
-import { useState } from 'react';
-import { StyleSheet } from 'react-native';
-import { CharParamsProps } from './tyoes';
+import { Box, Center, FlatList, HStack, Icon, Image, ScrollView, Text, VStack, useToast } from 'native-base';
+import React, { useState } from 'react';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+import { CharParamsProps } from './types';
 // import * as ImagePicker from 'expo-image-picker';
 import PhotoEditor from '@baronha/react-native-photo-editor';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CameraType } from 'expo-camera';
 import * as ImagePickerExpo from 'expo-image-picker';
 import ImagePicker from 'react-native-image-crop-picker';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Orientation } from 'expo-screen-orientation';
+import PlaceholderImage from '@assets/placeholder-image.png';
+import { SCREEN_WIDTH } from '@constants/constants';
+import { PhotoComponent } from './components/PhotoComponent';
 
 type CameraPageProps = NativeStackScreenProps<AppRoutesProps, 'characterization'>;
+export const GALLERY_IMAGE_Width = 300;
+export const GALLERY_IMAGE_PORTRAIT_WIDTH = (((GALLERY_IMAGE_Width * 9) / 16) * 9) / 16;
+export const GALLERY_IMAGE_HEIGHT = (GALLERY_IMAGE_Width * 9) / 16;
 
-export function Characterization({ navigation }: CameraPageProps): React.ReactElement {
+export function Characterization({ navigation, route }: CameraPageProps): React.ReactElement {
     const [isLoading, setIsLoading] = useState(false);
     const { params } = useRoute();
     const toast = useToast();
 
-    const { id } = params as CharParamsProps;
-
-    const { navigate } = useNavigation<AppNavigatorRoutesProps>();
+    const { id, images } = route.params;
 
     // const fetchExerciseDetails = async () => {
     //   try {
@@ -79,50 +85,6 @@ export function Characterization({ navigation }: CameraPageProps): React.ReactEl
 
     const [image, setImage] = useState<string | null>(null);
 
-    const pickImage = async () => {
-        let result = await ImagePicker.openPicker({
-            cropping: false,
-            // mediaType: 'photo',
-            // multiple: true,
-        });
-
-        console.log(result);
-
-        // const result = [];
-
-        // for await (const image of images) {
-        //     const img = await ImagePicker.openCropper({
-        //         mediaType: "photo",
-        //         path: image.path,
-        //         width: 1000,
-        //         height: 1000,
-        //     });
-        //     result.push(img.path);
-        // }
-
-        if (result?.sourceURL) {
-            const uri = result?.sourceURL;
-
-            let resultCrop = await ImagePicker.openCropper({
-                path: uri,
-                width: 300,
-                height: 400,
-                cropping: true,
-                mediaType: 'photo',
-            });
-
-            const resultEdit = await PhotoEditor.open({ path: uri, stickers: [] });
-            console.log(resultEdit);
-            setImage(uri);
-        }
-        // if (!result?.[0]?.path) {
-        //     const uri = result?.[0]?.path;
-        //     const resultEdit = await PhotoEditor.open({ path: uri, stickers: [] });
-        //     console.log(resultEdit);
-        //     setImage(uri);
-        // }
-    };
-
     const openCamera = async () => {
         const permissionResult = await ImagePickerExpo.requestCameraPermissionsAsync();
 
@@ -131,133 +93,79 @@ export function Characterization({ navigation }: CameraPageProps): React.ReactEl
             return;
         }
 
-        const result = await ImagePicker.openCamera({
-            mediaType: 'photo',
-            cropping: false,
-        });
-
-        const result2 = await ImagePickerExpo.launchCameraAsync({
-            allowsEditing: false,
-            aspect: [4, 3],
-        });
-        console.log(999988888, result2);
-
-        if (result?.path) {
-            console.log(999, result);
-            const resultCrop = await ImagePicker.openCropper({
-                path: result?.path,
-                cropping: true,
-                compressImageQuality: 0.5,
-                mediaType: 'photo',
-                ...(result.height > result.width
-                    ? {
-                          width: 900,
-                          height: 1200,
-                          compressImageMaxWidth: 900,
-                      }
-                    : {
-                          width: 1200,
-                          height: 900,
-                          compressImageMaxWidth: 1200,
-                      }),
-            });
-
-            console.log(resultCrop);
-
-            if (resultCrop?.path) {
-                const uri = resultCrop?.path;
-                // const resultEdit = await PhotoEditor.open({ path: uri, stickers: [] });
-                setImage(uri);
-            }
-        }
+        navigation.navigate('camera');
     };
 
-    const [type, setType] = useState(CameraType.back);
-    function toggleCameraType() {
-        setType((current) => (current === CameraType.back ? CameraType.front : CameraType.back));
-    }
-
-    // return (
-    //     <Box width={'100%'} height={'100%'}>
-    //         <CameraPage />
-    //     </Box>
-    // );
+    const handleDeleteImage = (index: number) => {
+        const updatedImages = [...(images || [])];
+        updatedImages.splice(index, 1);
+        navigation.setParams({ ...route.params, images: updatedImages });
+    };
 
     return (
         <VStack flex={1}>
             <ScreenHeader title="Atividade" backButton navidateArgs={['task', {}]} />
 
-            {/* <HStack alignItems="center">
-            <BodySvg />
-            <Text color="gray.200" ml={1} textTransform="capitalize">
-            exercise.group
-            </Text>
-        </HStack> */}
-            <ScrollView>
-                {/* <Box style={styles.container}>
-                    <Camera style={styles.camera} type={type}>
-                        <Box style={styles.buttonContainer}>
-                            <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
-                                <Text style={styles.text}>Flip Camera</Text>
-                            </TouchableOpacity>
-                        </Box>
-                    </Camera>
-                </Box> */}
+            <ScrollView paddingTop={3} paddingBottom={3}>
+                <Center style={styles.galleryContainer}>
+                    {!images?.length && (
+                        <TouchableOpacity onPress={openCamera}>
+                            <PhotoComponent orientation={Orientation.LANDSCAPE_LEFT} uri={''} />
+                        </TouchableOpacity>
+                    )}
 
-                {image && (
-                    <Image
-                        alt="preview"
-                        source={{ uri: image }}
-                        resizeMode="contain"
-                        style={{ width: 600, height: 600 }}
-                    />
-                )}
-                <Box style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                    <Button title="camera" onPress={openCamera} />
-                </Box>
-                <Box style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                    <Button title="Pick an image from camera roll" onPress={pickImage} />
-                </Box>
-                {isLoading ? (
-                    <Loading />
-                ) : (
-                    <VStack p={8}>
-                        <Box rounded="lg" mb={3} overflow="hidden">
-                            {/* <Image
-                source={{
-                  uri: `${api.defaults.baseURL}/exercise/demo/${exercise.demo}`,
-                }}
-                alt="exercise"
-                w="full"
-                h={80}
-                resizeMode="cover"
-                rounded="lg"
-              /> */}
-                        </Box>
+                    {!!images?.length && (
+                        <FlatList
+                            data={images || []}
+                            ItemSeparatorComponent={() => <Box style={{ height: 10 }} />}
+                            contentContainerStyle={{
+                                paddingHorizontal: 10,
+                                gap: 10,
+                                ...((!images || images.length <= 1) && {
+                                    paddingLeft:
+                                        (SCREEN_WIDTH -
+                                            (images?.[0]?.orientation === Orientation.PORTRAIT_UP
+                                                ? GALLERY_IMAGE_PORTRAIT_WIDTH
+                                                : GALLERY_IMAGE_Width)) /
+                                        2,
+                                }),
+                            }}
+                            renderItem={({ item, index }) => (
+                                <PhotoComponent
+                                    maxHeight={null}
+                                    key={item.uri}
+                                    handleDeleteImage={() => handleDeleteImage(index)}
+                                    orientation={item.orientation}
+                                    uri={item.uri}
+                                />
+                            )}
+                            horizontal
+                            keyExtractor={(item, index) => index.toString()}
+                            showsVerticalScrollIndicator={false}
+                            showsHorizontalScrollIndicator={false}
+                        />
+                    )}
 
-                        <Box bg="gray.600" rounded="md" pb={4} px={4}>
-                            <HStack justifyContent="space-around" mb={6} mt={5}>
-                                <HStack>
-                                    <SeriesSvg />
-                                    <Text color="gray.200" ml={2}>
-                                        séries
-                                    </Text>
-                                </HStack>
-                                <HStack>
-                                    <RepetitionsSvg />
-                                    <Text color="gray.200" ml={2}>
-                                        repetições
-                                    </Text>
-                                </HStack>
-                            </HStack>
-                            {/* <Button
-                title="Marcar como realizado"
-                isLoading={sendingRegister}
-                onPress={handleExerciseHistoryRegister}
-              /> */}
-                        </Box>
-                    </VStack>
-                )}
+                    {images && images.length > 2 && (
+                        <Center px={2} borderRadius={10} position={'absolute'} bottom={-30} mt={2} bg="#00000044">
+                            <Text fontSize={12} color="white">
+                                Total: {images.length}
+                            </Text>
+                        </Center>
+                    )}
+                </Center>
+
+                <HStack justifyContent="center" mt={3}>
+                    <Button mr={2} variant="outline" w="30%" title="Galeria" onPress={openCamera} addColor />
+                    <Button w="30%" title="Tirar Foto" onPress={openCamera} addColor />
+                </HStack>
+
+                <HStack alignItems="center" justifyContent="center">
+                    <Text color="text.label" fontSize={16} ml={4} mb={3} mt={10}>
+                        Fotos
+                    </Text>
+                </HStack>
+                {isLoading ? <Loading /> : <VStack p={8}></VStack>}
             </ScrollView>
         </VStack>
     );
@@ -287,5 +195,8 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         color: 'white',
+    },
+    galleryContainer: {
+        width: '100%',
     },
 });

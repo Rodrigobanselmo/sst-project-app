@@ -4,7 +4,7 @@ import { StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { PinchGestureHandler, TapGestureHandler } from 'react-native-gesture-handler';
 import Reanimated from 'react-native-reanimated';
 import { Camera, PhotoFile, VideoFile } from 'react-native-vision-camera';
-import { CONTENT_SPACING, GALLERY_IMAGE_Width, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from './constants';
+import { CONTENT_SPACING, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from '../../constants/constants';
 // import { StatusBarBlurBackground } from './views/StatusBarBlurBackground';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { calculateActualDimensions } from '@utils/helpers/calculateAspectRatio';
@@ -27,6 +27,7 @@ Reanimated.addWhitelistedNativeProps({
 });
 
 const BUTTON_SIZE = 40;
+const GALLERY_IMAGE_Width = 80;
 
 interface IImageGallery {
     uri: string;
@@ -112,6 +113,59 @@ export function CameraPage({ navigation }: CameraPageProps): React.ReactElement 
         },
         [navigation],
     );
+
+    const handleSave = useCallback(async () => {
+        const saveImages: IImageGallery[] = [];
+
+        await Promise.all(
+            galleryImages.map(async (image) => {
+                const uri = image.uri;
+
+                const isLandscape = [Orientation.LANDSCAPE_LEFT, Orientation.LANDSCAPE_RIGHT].includes(
+                    image.orientation,
+                );
+
+                const { height, width } = calculateActualDimensions({
+                    aspectRatio: '9:16',
+                    maxWidth: 900,
+                    maxHeight: 1200,
+                    ...(isLandscape && {
+                        aspectRatio: '16:9',
+                        maxWidth: 1200,
+                        maxHeight: 900,
+                    }),
+                });
+
+                let manipResult: ImageResult;
+                if (image.orientation === Orientation.LANDSCAPE_RIGHT) {
+                    manipResult = await manipulateAsync(uri, [{ rotate: -90 }, { resize: { height, width } }], {
+                        compress: 0.6,
+                    });
+                } else if (image.orientation === Orientation.LANDSCAPE_LEFT) {
+                    manipResult = await manipulateAsync(uri, [{ rotate: 90 }, { resize: { height, width } }], {
+                        compress: 0.6,
+                    });
+                } else {
+                    manipResult = await manipulateAsync(uri, [{ resize: { height, width } }], {
+                        compress: 0.6,
+                    });
+                }
+
+                const asset = await saveImageToGallery(manipResult.uri);
+
+                if (asset) {
+                    saveImages.push({
+                        uri: asset.uri,
+                        orientation: image.orientation,
+                    });
+                }
+            }),
+        );
+
+        navigation.navigate('characterization', {
+            images: saveImages,
+        });
+    }, [navigation, galleryImages]);
 
     const handleCancel = () => {
         goBack();
@@ -209,13 +263,7 @@ export function CameraPage({ navigation }: CameraPageProps): React.ReactElement 
                         data={galleryImages}
                         ItemSeparatorComponent={() => <Box style={{ height: 10 }} />}
                         renderItem={({ item, index }) => (
-                            <Box
-                                style={
-                                    item.orientation === Orientation.PORTRAIT_UP
-                                        ? { flex: 1, backgroundColor: 'red' }
-                                        : styles.imageBoxH
-                                }
-                            >
+                            <Box style={item.orientation === Orientation.PORTRAIT_UP ? { flex: 1 } : styles.imageBoxH}>
                                 <Image
                                     alt="gallery image"
                                     source={{ uri: item.uri }}
@@ -266,7 +314,7 @@ export function CameraPage({ navigation }: CameraPageProps): React.ReactElement 
                 </TouchableOpacity>
 
                 {!!galleryImages.length && (
-                    <TouchableOpacity disabled={!galleryImages.length} onPress={() => console.log(1)}>
+                    <TouchableOpacity disabled={!galleryImages.length} onPress={handleSave}>
                         <Center
                             px={4}
                             py={1}
@@ -342,7 +390,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
-
     galleryContainer: {
         position: 'absolute',
         height: 350,
