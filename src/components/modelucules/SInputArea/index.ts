@@ -1,0 +1,1 @@
+export { SInputArea } from './SInputArea';

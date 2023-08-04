@@ -54,7 +54,11 @@ export const useCameraEffects = () => {
 
     useEffect(() => {
         async function changeScreenOrientation() {
-            await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+            try {
+                await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+            } catch (e) {
+                console.log(e);
+            }
         }
 
         changeScreenOrientation();

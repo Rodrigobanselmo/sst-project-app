@@ -5,21 +5,16 @@ import { PinchGestureHandler, TapGestureHandler } from 'react-native-gesture-han
 import Reanimated from 'react-native-reanimated';
 import { Camera, PhotoFile, VideoFile } from 'react-native-vision-camera';
 import { CONTENT_SPACING, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from '../../constants/constants';
-// import { StatusBarBlurBackground } from './views/StatusBarBlurBackground';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { calculateActualDimensions } from '@utils/helpers/calculateAspectRatio';
-import { Box, Text, FlatList, Icon, Image, Center, HStack } from 'native-base';
-import { useCameraEffects } from './hooks/useCameraEffects';
-import { CaptureButton } from './views/CaptureButton';
 import { isAndroid } from '@utils/helpers/getPlataform';
-import { manipulateAsync, FlipType, SaveFormat, ImageResult } from 'expo-image-manipulator';
-import { Orientation, OrientationChangeEvent } from 'expo-screen-orientation';
-import * as FileSystem from 'expo-file-system';
-import { saveImageToGallery, saveImageToStorage } from '@utils/helpers/saveImage';
-import { Button } from '@components/Button';
-import { useNavigation } from '@react-navigation/native';
-import { AppNavigatorRoutesProps, AppRoutesProps } from '@routes/app/AppRoutesProps';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { saveImageToGallery } from '@utils/helpers/saveImage';
+import { ImageResult, manipulateAsync } from 'expo-image-manipulator';
+import { Orientation } from 'expo-screen-orientation';
+import { Box, Center, FlatList, Icon, Image, Spinner, Text, useToast } from 'native-base';
+import { useCameraEffects } from './hooks/useCameraEffects';
+import { IImageGallery } from './types';
+import { CaptureButton } from './views/CaptureButton';
 
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({
@@ -29,16 +24,15 @@ Reanimated.addWhitelistedNativeProps({
 const BUTTON_SIZE = 40;
 const GALLERY_IMAGE_Width = 80;
 
-interface IImageGallery {
-    uri: string;
-    orientation: Orientation;
-}
+type CameraPageProps = {
+    onCancel: () => void;
+    onSave: (args: { photos: IImageGallery[] }) => void;
+};
 
-type CameraPageProps = NativeStackScreenProps<AppRoutesProps, 'camera'>;
-
-export function CameraPage({ navigation }: CameraPageProps): React.ReactElement {
+export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactElement {
     const camera = useRef<Camera>(null);
-    const { goBack } = useNavigation<AppNavigatorRoutesProps>();
+    const [isLoading, setIsLoading] = useState(false);
+    const toast = useToast();
 
     const {
         isActive,
@@ -71,104 +65,76 @@ export function CameraPage({ navigation }: CameraPageProps): React.ReactElement 
     const onMediaCaptured = useCallback(
         async (media: PhotoFile | VideoFile, options: { type: 'photo' | 'video'; orientation: Orientation }) => {
             const uri = isAndroid() ? 'file://' + media.path : media.path;
-
-            // const isLandscape = [Orientation.LANDSCAPE_LEFT, Orientation.LANDSCAPE_RIGHT].includes(options.orientation);
-
-            // const { height, width } = calculateActualDimensions({
-            //     aspectRatio: '9:16',
-            //     maxWidth: 900,
-            //     maxHeight: 1200,
-            //     ...(isLandscape && {
-            //         aspectRatio: '16:9',
-            //         maxWidth: 1200,
-            //         maxHeight: 900,
-            //     }),
-            // });
-
-            // let manipResult: ImageResult;
-            // if (options.orientation === Orientation.LANDSCAPE_RIGHT) {
-            //     manipResult = await manipulateAsync(uri, [{ rotate: -90 }, { resize: { height, width } }], {
-            //         compress: 0.6,
-            //     });
-            // } else if (options.orientation === Orientation.LANDSCAPE_LEFT) {
-            //     manipResult = await manipulateAsync(uri, [{ rotate: 90 }, { resize: { height, width } }], {
-            //         compress: 0.6,
-            //     });
-            // } else {
-            //     manipResult = await manipulateAsync(uri, [{ resize: { height, width } }], {
-            //         compress: 0.6,
-            //     });
-            // }
-
-            // const asset = await saveImageToGallery(manipResult.uri);
-
-            // if (asset) {
-            // }
-
             setGalleryImages((prev) => [...prev, { uri, orientation: options.orientation }]);
-            // navigation.navigate('MediaPage', {
-            //     path: media.path,
-            //     type: type,
-            // });
         },
-        [navigation],
+        [],
     );
 
     const handleSave = useCallback(async () => {
+        setIsLoading(true);
         const saveImages: IImageGallery[] = [];
 
-        await Promise.all(
-            galleryImages.map(async (image) => {
-                const uri = image.uri;
+        try {
+            await Promise.all(
+                galleryImages.map(async (image) => {
+                    const uri = image.uri;
 
-                const isLandscape = [Orientation.LANDSCAPE_LEFT, Orientation.LANDSCAPE_RIGHT].includes(
-                    image.orientation,
-                );
+                    const isLandscape = [Orientation.LANDSCAPE_LEFT, Orientation.LANDSCAPE_RIGHT].includes(
+                        image.orientation,
+                    );
 
-                const { height, width } = calculateActualDimensions({
-                    aspectRatio: '9:16',
-                    maxWidth: 900,
-                    maxHeight: 1200,
-                    ...(isLandscape && {
-                        aspectRatio: '16:9',
-                        maxWidth: 1200,
-                        maxHeight: 900,
-                    }),
-                });
-
-                let manipResult: ImageResult;
-                if (image.orientation === Orientation.LANDSCAPE_RIGHT) {
-                    manipResult = await manipulateAsync(uri, [{ rotate: -90 }, { resize: { height, width } }], {
-                        compress: 0.6,
+                    const { height, width } = calculateActualDimensions({
+                        aspectRatio: '9:16',
+                        maxWidth: 900,
+                        maxHeight: 1200,
+                        ...(isLandscape && {
+                            aspectRatio: '16:9',
+                            maxWidth: 1200,
+                            maxHeight: 900,
+                        }),
                     });
-                } else if (image.orientation === Orientation.LANDSCAPE_LEFT) {
-                    manipResult = await manipulateAsync(uri, [{ rotate: 90 }, { resize: { height, width } }], {
-                        compress: 0.6,
-                    });
-                } else {
-                    manipResult = await manipulateAsync(uri, [{ resize: { height, width } }], {
-                        compress: 0.6,
-                    });
-                }
 
-                const asset = await saveImageToGallery(manipResult.uri);
+                    let manipResult: ImageResult;
+                    if (image.orientation === Orientation.LANDSCAPE_RIGHT) {
+                        manipResult = await manipulateAsync(uri, [{ rotate: -90 }, { resize: { height, width } }], {
+                            compress: 0.6,
+                        });
+                    } else if (image.orientation === Orientation.LANDSCAPE_LEFT) {
+                        manipResult = await manipulateAsync(uri, [{ rotate: 90 }, { resize: { height, width } }], {
+                            compress: 0.6,
+                        });
+                    } else {
+                        manipResult = await manipulateAsync(uri, [{ resize: { height, width } }], {
+                            compress: 0.6,
+                        });
+                    }
 
-                if (asset) {
-                    saveImages.push({
-                        uri: asset.uri,
-                        orientation: image.orientation,
-                    });
-                }
-            }),
-        );
+                    const asset = await saveImageToGallery(manipResult.uri);
 
-        navigation.navigate('characterization', {
-            images: saveImages,
-        });
-    }, [navigation, galleryImages]);
+                    if (asset) {
+                        saveImages.push({
+                            uri: asset.uri,
+                            orientation: image.orientation,
+                        });
+                    }
+                }),
+            );
+        } catch (error) {
+            toast.show({
+                placement: 'top',
+                title: 'Erro ao salvar imagem',
+                bgColor: 'status.error',
+                description: 'Ocorreu um erro ao salvar a imagem, tente novamente.',
+            });
+        }
+
+        onSave({ photos: saveImages });
+
+        setIsLoading(false);
+    }, [onSave, galleryImages, toast]);
 
     const handleCancel = () => {
-        goBack();
+        onCancel();
     };
 
     const { height, width } = calculateActualDimensions({
@@ -223,7 +189,7 @@ export function CameraPage({ navigation }: CameraPageProps): React.ReactElement 
                     minZoom={minZoom}
                     maxZoom={maxZoom}
                     flash={supportsFlash ? flash : 'off'}
-                    enabled={isCameraInitialized && isActive}
+                    enabled={!isLoading && isCameraInitialized && isActive}
                     setIsPressingButton={setIsPressingButton}
                     orientation={orientation}
                 />
@@ -275,7 +241,11 @@ export function CameraPage({ navigation }: CameraPageProps): React.ReactElement 
                                             : styles.imageLR
                                     }
                                 />
-                                <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteImage(index)}>
+                                <TouchableOpacity
+                                    disabled={isLoading}
+                                    style={styles.deleteButton}
+                                    onPress={() => handleDeleteImage(index)}
+                                >
                                     <Icon as={MaterialIcons} name="close" fontSize={5} color="white" />
                                 </TouchableOpacity>
                             </Box>
@@ -293,150 +263,138 @@ export function CameraPage({ navigation }: CameraPageProps): React.ReactElement 
                     )}
                 </View>
 
-                <TouchableOpacity onPress={handleCancel}>
-                    <Center
-                        py={1}
-                        px={4}
-                        borderRadius={10}
-                        position={'absolute'}
-                        left={10}
-                        bottom={SAFE_AREA_PADDING.paddingBottom + 28}
-                        bg="#00000044"
-                        borderStyle={'solid'}
-                        borderWidth={1}
-                        width={85}
-                        borderColor={'gray.300'}
-                    >
-                        <Text fontSize={12} color="gray.200">
-                            Cancelar
-                        </Text>
-                    </Center>
-                </TouchableOpacity>
-
-                {!!galleryImages.length && (
-                    <TouchableOpacity disabled={!galleryImages.length} onPress={handleSave}>
+                <Box bottom={SAFE_AREA_PADDING.paddingBottom + 28} position={'absolute'} left={10}>
+                    <TouchableOpacity onPress={() => handleCancel()}>
                         <Center
-                            px={4}
                             py={1}
+                            px={4}
                             borderRadius={10}
-                            position={'absolute'}
-                            right={10}
-                            bottom={SAFE_AREA_PADDING.paddingBottom + 28}
+                            bg="#00000044"
                             borderStyle={'solid'}
                             borderWidth={1}
                             width={85}
-                            borderColor={'primary.main'}
-                            bg="#00000044"
+                            borderColor={'gray.300'}
                         >
-                            <Text fontSize={12} color="primary.main">
-                                Salvar
+                            <Text fontSize={12} color="gray.200">
+                                Cancelar
                             </Text>
                         </Center>
                     </TouchableOpacity>
+                </Box>
+
+                {!!galleryImages.length && (
+                    <Box bottom={SAFE_AREA_PADDING.paddingBottom + 28} position={'absolute'} right={10}>
+                        <TouchableOpacity disabled={isLoading || !galleryImages.length} onPress={handleSave}>
+                            {isLoading ? (
+                                <Spinner color="primary.main" size={32} />
+                            ) : (
+                                <Center
+                                    px={4}
+                                    py={1}
+                                    borderRadius={10}
+                                    borderStyle={'solid'}
+                                    borderWidth={1}
+                                    width={85}
+                                    borderColor={'primary.main'}
+                                    bg="#00000044"
+                                >
+                                    <Text fontSize={12} color="primary.main">
+                                        Salvar
+                                    </Text>
+                                </Center>
+                            )}
+                        </TouchableOpacity>
+                    </Box>
                 )}
             </Box>
-
-            {/* <HStack justifyContent={'space-between'} width={'100%'} px={5}>
-                <Button title="Cancelar" onPress={console.log} variant="outline" width={100} />
-                <Button title="Salvar" onPress={console.log} width={100} />
-            </HStack> */}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'black',
-        justifyContent: 'center',
+    button: {
         alignItems: 'center',
+        backgroundColor: 'rgba(140, 140, 140, 0.3)',
+        borderRadius: BUTTON_SIZE / 2,
+        height: BUTTON_SIZE,
+        justifyContent: 'center',
+        marginBottom: CONTENT_SPACING,
+        width: BUTTON_SIZE,
+    },
+    captureButton: {
+        alignSelf: 'center',
+        bottom: SAFE_AREA_PADDING.paddingBottom,
+        position: 'absolute',
+    },
+    container: {
+        alignItems: 'center',
+        backgroundColor: 'black',
+        flex: 1,
+        justifyContent: 'center',
         // width: '300px',
         // height: '200px',
     },
-    captureButton: {
+    deleteButton: {
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderRadius: 15,
+        padding: 5,
         position: 'absolute',
-        alignSelf: 'center',
-        bottom: SAFE_AREA_PADDING.paddingBottom,
+        right: 8,
+        top: 8,
     },
-    button: {
-        marginBottom: CONTENT_SPACING,
-        width: BUTTON_SIZE,
-        height: BUTTON_SIZE,
-        borderRadius: BUTTON_SIZE / 2,
-        backgroundColor: 'rgba(140, 140, 140, 0.3)',
-        justifyContent: 'center',
-        alignItems: 'center',
+    galleryContainer: {
+        height: 350,
+        left: 10,
+        position: 'absolute',
+        top: 50,
+    },
+    image: {
+        flex: 1,
+        height: (GALLERY_IMAGE_Width * 16) / 9,
+        resizeMode: 'stretch',
+        width: GALLERY_IMAGE_Width,
+    },
+    imageBoxH: {
+        flex: 1,
+        height: (GALLERY_IMAGE_Width * 9) / 16,
+        position: 'relative',
+        width: GALLERY_IMAGE_Width,
+    },
+    imageLL: {
+        flex: 1,
+        height: GALLERY_IMAGE_Width,
+        left: 17.5,
+        position: 'absolute',
+        resizeMode: 'stretch',
+        top: -17.5,
+        transform: [{ rotate: '90deg' }],
+        width: (GALLERY_IMAGE_Width * 9) / 16,
+    },
+    imageLR: {
+        flex: 1,
+        height: GALLERY_IMAGE_Width,
+        left: 17.5,
+        position: 'absolute',
+        resizeMode: 'stretch',
+        top: -17.5,
+        transform: [{ rotate: '-90deg' }],
+        width: (GALLERY_IMAGE_Width * 9) / 16,
     },
     rightButtonRow: {
         position: 'absolute',
         right: SAFE_AREA_PADDING.paddingRight,
         top: isAndroid() ? SAFE_AREA_PADDING.paddingTop + 30 : SAFE_AREA_PADDING.paddingTop,
     },
-    rightButtonRowRight: {
-        position: 'absolute',
-        transform: [{ rotate: '90deg' }],
-        right: SAFE_AREA_PADDING.paddingTop + 30,
-        top: isAndroid() ? SAFE_AREA_PADDING.paddingRight + 20 : SAFE_AREA_PADDING.paddingRight,
-    },
     rightButtonRowLeft: {
         position: 'absolute',
-        transform: [{ rotate: '-90deg' }],
         right: SAFE_AREA_PADDING.paddingTop + 30,
         top: isAndroid() ? SAFE_AREA_PADDING.paddingRight + 20 : SAFE_AREA_PADDING.paddingRight,
-    },
-    text: {
-        color: 'white',
-        fontSize: 11,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    galleryContainer: {
-        position: 'absolute',
-        height: 350,
-        top: 50,
-        left: 10,
-    },
-    image: {
-        flex: 1,
-        height: (GALLERY_IMAGE_Width * 16) / 9,
-        width: GALLERY_IMAGE_Width,
-        resizeMode: 'stretch',
-    },
-    imageLR: {
-        flex: 1,
-        width: (GALLERY_IMAGE_Width * 9) / 16,
-        height: GALLERY_IMAGE_Width,
         transform: [{ rotate: '-90deg' }],
-        resizeMode: 'stretch',
-        position: 'absolute',
-        top: -17.5,
-        left: 17.5,
     },
-    imageLL: {
-        flex: 1,
-        width: (GALLERY_IMAGE_Width * 9) / 16,
-        height: GALLERY_IMAGE_Width,
+    rightButtonRowRight: {
+        position: 'absolute',
+        right: SAFE_AREA_PADDING.paddingTop + 30,
+        top: isAndroid() ? SAFE_AREA_PADDING.paddingRight + 20 : SAFE_AREA_PADDING.paddingRight,
         transform: [{ rotate: '90deg' }],
-        resizeMode: 'stretch',
-        position: 'absolute',
-        top: -17.5,
-        left: 17.5,
-    },
-    imageBoxH: {
-        flex: 1,
-        height: (GALLERY_IMAGE_Width * 9) / 16,
-        width: GALLERY_IMAGE_Width,
-        position: 'relative',
-    },
-    deleteButton: {
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        borderRadius: 15,
-        padding: 5,
-    },
-    deleteIcon: {
-        fontSize: 20,
     },
 });

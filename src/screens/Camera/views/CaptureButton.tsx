@@ -23,7 +23,6 @@ import Reanimated, {
 import type { Camera, PhotoFile, TakePhotoOptions, TakeSnapshotOptions, VideoFile } from 'react-native-vision-camera';
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../../constants/constants';
 import { Box } from 'native-base';
-import { Button } from '@components/Button';
 import { Orientation } from 'expo-screen-orientation';
 
 const PAN_GESTURE_HANDLER_FAIL_X = [-SCREEN_WIDTH, SCREEN_WIDTH];
@@ -95,15 +94,12 @@ const _CaptureButton: React.FC<Props> = ({
     const onStoppedRecording = useCallback(() => {
         isRecording.current = false;
         cancelAnimation(recordingProgress);
-        console.log('stopped recording video!');
     }, [recordingProgress]);
     const stopRecording = useCallback(async () => {
         try {
             if (camera.current == null) throw new Error('Camera ref is null!');
 
-            console.log('calling stopRecording()...');
             await camera.current.stopRecording();
-            console.log('called stopRecording()!');
         } catch (e) {
             console.error('failed to stop recording!', e);
         }
@@ -113,7 +109,6 @@ const _CaptureButton: React.FC<Props> = ({
         try {
             if (camera.current == null) throw new Error('Camera ref is null!');
 
-            console.log('calling startRecording()...');
             camera.current.startRecording({
                 flash: flash,
                 onRecordingError: (error) => {
@@ -121,13 +116,11 @@ const _CaptureButton: React.FC<Props> = ({
                     onStoppedRecording();
                 },
                 onRecordingFinished: (video) => {
-                    console.log(`Recording successfully finished! ${video.path}`);
                     onMediaCaptured(video, { type: 'video', orientation });
                     onStoppedRecording();
                 },
             });
             // TODO: wait until startRecording returns to actually find out if the recording has successfully started
-            console.log('called startRecording()!');
             isRecording.current = true;
         } catch (e) {
             console.error('failed to start recording!', e, 'camera');
@@ -320,21 +313,21 @@ export const CaptureButton = gestureHandlerRootHOC((props: any) => (
 ));
 
 const styles = StyleSheet.create({
+    button: {
+        borderColor: 'white',
+        borderRadius: CAPTURE_BUTTON_SIZE / 2,
+        borderWidth: BORDER_WIDTH,
+        height: CAPTURE_BUTTON_SIZE,
+        width: CAPTURE_BUTTON_SIZE,
+    },
     flex: {
         flex: 1,
     },
     shadow: {
+        backgroundColor: '#e34077',
+        borderRadius: CAPTURE_BUTTON_SIZE / 2,
+        height: CAPTURE_BUTTON_SIZE,
         position: 'absolute',
         width: CAPTURE_BUTTON_SIZE,
-        height: CAPTURE_BUTTON_SIZE,
-        borderRadius: CAPTURE_BUTTON_SIZE / 2,
-        backgroundColor: '#e34077',
-    },
-    button: {
-        width: CAPTURE_BUTTON_SIZE,
-        height: CAPTURE_BUTTON_SIZE,
-        borderRadius: CAPTURE_BUTTON_SIZE / 2,
-        borderWidth: BORDER_WIDTH,
-        borderColor: 'white',
     },
 });

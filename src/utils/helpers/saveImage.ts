@@ -1,17 +1,17 @@
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
+import { ALBUM_NAME } from '@constants/constants';
+import { isAndroid } from './getPlataform';
 
 export const saveImageToGallery = async (uri: string) => {
     try {
         const { status } = await MediaLibrary.requestPermissionsAsync();
         if (status === 'granted') {
-            const albumName = 'SimpleSST';
-
             const asset = await MediaLibrary.createAssetAsync(uri);
 
-            let album = await MediaLibrary.getAlbumAsync(albumName);
+            let album = await MediaLibrary.getAlbumAsync(ALBUM_NAME);
             if (!album) {
-                album = await MediaLibrary.createAlbumAsync(albumName, asset);
+                album = await MediaLibrary.createAlbumAsync(ALBUM_NAME, asset);
             } else {
                 await MediaLibrary.addAssetsToAlbumAsync([asset], album.id);
             }
@@ -19,7 +19,29 @@ export const saveImageToGallery = async (uri: string) => {
             return asset;
         }
     } catch (error) {
-        console.log(error);
+        console.error(error);
+    }
+};
+
+export const deleteImageToGallery = async (uri: string) => {
+    try {
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status === 'granted') {
+            if (!isAndroid()) {
+                //TODO: to delete from editable pic album
+                await MediaLibrary.removeAssetsFromAlbumAsync([uri], ALBUM_NAME);
+            } else {
+                // const fileInfo = await FileSystem.getInfoAsync(uri);
+                // if (fileInfo.exists && !fileInfo.isDirectory) {
+                //     await FileSystem.deleteAsync(uri, { idempotent: true });
+                // }
+            }
+
+            return true;
+        }
+    } catch (error) {
+        console.error(error);
+        return false;
     }
 };
 
@@ -33,6 +55,6 @@ export const saveImageToStorage = async (imageUri: string) => {
         });
         return documentDirectoryPath;
     } catch (error) {
-        console.log('Error saving image:', error);
+        console.error('Error saving image:', error);
     }
 };

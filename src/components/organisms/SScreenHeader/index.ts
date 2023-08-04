@@ -1,0 +1,1 @@
+export { SScreenHeader } from './SScreenHeader';

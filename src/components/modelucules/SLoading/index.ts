@@ -1,0 +1,1 @@
+export { SLoading } from './SLoading';

@@ -1,13 +1,8 @@
-import { Button } from '@components/Button';
-import { HomeHeader } from '@components/HomeHeader';
-import { Loading } from '@components/Loading';
-import { ScreenHeader } from '@components/ScreenHeader';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { SButton, SScreenHeader } from '@components/index';
+import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { api } from '@services/api';
-import { AppError } from '@utils/errors';
-import { FlatList, Heading, HStack, Text, useToast, VStack } from 'native-base';
-import { useCallback, useEffect, useState } from 'react';
+import { VStack, useToast } from 'native-base';
+import { useState } from 'react';
 
 export const Task = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -66,8 +61,8 @@ export const Task = () => {
 
     return (
         <VStack flex={1}>
-            <ScreenHeader title="Atividade" />
-            <Button mt={10} title="Criar conta" variant="outline" onPress={handleCreateCharacterization} />
+            <SScreenHeader title="Atividade" />
+            <SButton mt={10} title="Criar conta" variant="outline" onPress={handleCreateCharacterization} />
             {/* <FlatList
         data={groups}
         keyExtractor={(item) => item}

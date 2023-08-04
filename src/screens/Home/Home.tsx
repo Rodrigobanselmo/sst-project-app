@@ -1,13 +1,8 @@
-import { HomeHeader } from '@components/HomeHeader';
-import { Loading } from '@components/Loading';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { SHomeHeader } from '@components/index';
+import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { api } from '@services/api';
-import { AppError } from '@utils/errors';
-import { FlatList, Heading, HStack, Text, useToast, VStack } from 'native-base';
-import { useCallback, useEffect, useState } from 'react';
-import { Dimensions } from 'react-native';
-import * as ScreenOrientation from 'expo-screen-orientation';
+import { VStack, useToast } from 'native-base';
+import { useState } from 'react';
 
 export const Home = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -66,7 +61,7 @@ export const Home = () => {
 
     return (
         <VStack flex={1}>
-            <HomeHeader />
+            <SHomeHeader />
             {/* <FlatList
         data={groups}
         keyExtractor={(item) => item}

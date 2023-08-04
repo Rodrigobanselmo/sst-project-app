@@ -1,13 +1,34 @@
 {
-  "plugins": [
-    "simple-import-sort"
-  ],
-  "rules": {
-    "camelcase": "off",
-    "no-useless-catch": "off",
-    "simple-import-sort/imports": "error"
-  },
-  "globals": {
-    "__DEV__": true
-  }
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended",
+        "plugin:react-native/all",
+        "plugin:prettier/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "root": true,
+    "plugins": ["@typescript-eslint", "react", "react-hooks", "react-native", "prettier"],
+    "rules": {
+        "camelcase": "off",
+        "no-useless-catch": "off",
+        "react-native/no-inline-styles": "off",
+        "react-native/no-raw-text": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "react/display-name": "off",
+        "react/react-in-jsx-scope": "off",
+        "react-native/no-color-literals": "off",
+        "@typescript-eslint/no-unused-vars": "off"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2021,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "globals": {
+        "__DEV__": true
+    }
 }
