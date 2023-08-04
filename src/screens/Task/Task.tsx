@@ -1,7 +1,7 @@
 import { SButton, SScreenHeader } from '@components/index';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { VStack, useToast } from 'native-base';
+import { VStack, useToast } from '@components/core';
 import { useState } from 'react';
 
 export const Task = () => {

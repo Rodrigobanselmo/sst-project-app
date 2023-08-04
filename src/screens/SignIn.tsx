@@ -12,8 +12,8 @@ import LogoTextSvg from '@assets/brand/logoTextFull.svg';
 import LogoSvg from '@assets/brand/logoSimple.svg';
 import { AuthNavigatorRoutesProps } from '@routes/auth/AuthRoutesProps';
 import { SButton, SInput } from '@components/index';
-import { HStack, Heading, Toast, VStack, useToast } from '@components/core';
-import { Center, ScrollView } from 'native-base';
+import { HStack, Heading, Toast, VStack, Center, useToast, Box } from '@components/core';
+import { ScrollView } from 'react-native';
 
 type FormDataProps = {
     email: string;
@@ -79,13 +79,7 @@ export function SignIn() {
     }
 
     return (
-        <ScrollView
-            contentContainerStyle={{
-                flexGrow: 1,
-            }}
-            bg="backgroundefault"
-            showsVerticalScrollIndicator={false}
-        >
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
             <VStack flex={1} px={10} pb={16}>
                 {/* <Image
 					source={BackgroundImg}
@@ -105,7 +99,7 @@ export function SignIn() {
                 </HStack>
 
                 <Center>
-                    <Heading color="$textMain" fontSize={21} mb={6} fontFamily="heading">
+                    <Heading color="$textMain" fontSize={21} mb={6} fontFamily="$heading">
                         Acesse sua conta
                     </Heading>
 
@@ -165,3 +159,6 @@ export function SignIn() {
         </ScrollView>
     );
 }
+
+// <Box bg="$backgoundDefault">
+// </Box>

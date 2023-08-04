@@ -7,7 +7,7 @@ import { isAndroid } from '@utils/helpers/getPlataform';
 import * as NavigationBar from 'expo-navigation-bar';
 import { LogBox, StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { config } from './gluestack-ui.config';
+import { config } from './src/theme/gluestack-ui.config';
 
 LogBox.ignoreLogs([
     'In React 18, SSRProvider is not necessary and is a noop. You can remove it from your app.',

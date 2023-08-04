@@ -11,7 +11,7 @@ import { isAndroid } from '@utils/helpers/getPlataform';
 import { saveImageToGallery } from '@utils/helpers/saveImage';
 import { ImageResult, manipulateAsync } from 'expo-image-manipulator';
 import { Orientation } from 'expo-screen-orientation';
-import { Box, Center, FlatList, Icon, Image, Spinner, Text, useToast } from 'native-base';
+import { Box, Center, FlatList, Icon, Image, Spinner, Text, useToast } from '@components/core';
 import { useCameraEffects } from './hooks/useCameraEffects';
 import { IImageGallery } from './types';
 import { CaptureButton } from './views/CaptureButton';
@@ -120,18 +120,19 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                 }),
             );
         } catch (error) {
-            toast.show({
-                placement: 'top',
-                title: 'Erro ao salvar imagem',
-                bgColor: 'status.error',
-                description: 'Ocorreu um erro ao salvar a imagem, tente novamente.',
-            });
+            // TODO
+            // toast.show({
+            //     placement: 'top',
+            //     title: 'Erro ao salvar imagem',
+            //     bgColor: 'status.error',
+            //     description: 'Ocorreu um erro ao salvar a imagem, tente novamente.',
+            // });
         }
 
         onSave({ photos: saveImages });
 
         setIsLoading(false);
-    }, [onSave, galleryImages, toast]);
+    }, [onSave, galleryImages]);
 
     const handleCancel = () => {
         onCancel();
@@ -286,7 +287,7 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                     <Box bottom={SAFE_AREA_PADDING.paddingBottom + 28} position={'absolute'} right={10}>
                         <TouchableOpacity disabled={isLoading || !galleryImages.length} onPress={handleSave}>
                             {isLoading ? (
-                                <Spinner color="primary.main" size={32} />
+                                <Spinner color="$primary400" size={32} />
                             ) : (
                                 <Center
                                     px={4}
@@ -295,10 +296,10 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                                     borderStyle={'solid'}
                                     borderWidth={1}
                                     width={85}
-                                    borderColor={'primary.main'}
+                                    borderColor={'$primaryMain'}
                                     bg="#00000044"
                                 >
-                                    <Text fontSize={12} color="primary.main">
+                                    <Text fontSize={12} color="$primaryMain">
                                         Salvar
                                     </Text>
                                 </Center>

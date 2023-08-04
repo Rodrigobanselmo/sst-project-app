@@ -1,6 +1,7 @@
 import { Button, Spinner, Text } from '@components/core';
 
-type IButtonProps = React.ComponentProps<typeof Button>;
+// type IButtonProps = React.ComponentProps<typeof Button>;
+type IButtonProps = any;
 interface ButtonProps extends IButtonProps {
     title: string;
     variant?: 'solid' | 'outline';
@@ -25,7 +26,7 @@ export function SButton({
 
     return (
         <Button
-            w="full"
+            w="$full"
             bg={variant === 'outline' ? 'transparent' : bg}
             borderWidth={variant === 'outline' ? 1 : 0}
             borderColor={bg}

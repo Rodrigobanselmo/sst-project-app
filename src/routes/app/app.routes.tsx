@@ -8,7 +8,7 @@ import { Home } from '@screens/Home';
 import { Profile } from '@screens/Profile';
 import { Task } from '@screens/Task';
 import { AppRoutesProps } from './AppRoutesProps';
-import { config } from 'gluestack-ui.config';
+import { config } from '../../theme/gluestack-ui.config';
 
 const Stack = createNativeStackNavigator<AppRoutesProps>();
 const Bottom = createBottomTabNavigator<AppRoutesProps>();

@@ -1,4 +1,4 @@
-import { Box, Center, FlatList, HStack, ScrollView, Text, VStack } from 'native-base';
+import { Box, Center, FlatList, HStack, ScrollView, Text, VStack } from '@components/core';
 import React from 'react';
 import { Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import { CharacterizationFormProps } from '../types';
@@ -149,7 +149,7 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
         <VStack flex={1}>
             <SScreenHeader isAlert={isEdited} title="Atividade" backButton navidateArgs={['task', {}]} />
 
-            <ScrollView paddingTop={3}>
+            <ScrollView style={{ paddingTop: 12 }}>
                 <VStack mx={pagePadding}>
                     <SLabel>Dados</SLabel>
                     <Controller
@@ -270,11 +270,13 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                         name="description"
                         render={({ field: { onChange, value }, formState: { errors } }) => (
                             <SInputArea
+                                inputProps={{
+                                    placeholder: 'Descrição',
+                                    keyboardType: 'default',
+                                    value,
+                                    onChangeText: onChange,
+                                }}
                                 h={20}
-                                placeholder="Descrição"
-                                keyboardType="default"
-                                value={value}
-                                onChangeText={onChange}
                                 errorMessage={errors.name?.message}
                             />
                         )}

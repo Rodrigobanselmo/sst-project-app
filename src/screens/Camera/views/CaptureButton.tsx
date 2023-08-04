@@ -22,7 +22,7 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import type { Camera, PhotoFile, TakePhotoOptions, TakeSnapshotOptions, VideoFile } from 'react-native-vision-camera';
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../../constants/constants';
-import { Box } from 'native-base';
+import { Box } from '@components/core';
 import { Orientation } from 'expo-screen-orientation';
 
 const PAN_GESTURE_HANDLER_FAIL_X = [-SCREEN_WIDTH, SCREEN_WIDTH];

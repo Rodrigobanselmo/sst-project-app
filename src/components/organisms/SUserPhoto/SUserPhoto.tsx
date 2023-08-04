@@ -1,6 +1,8 @@
 import { Image } from '@components/core';
+import { ImageProps } from 'react-native';
 
-type IImageProps = React.ComponentProps<typeof Image>;
+// type IImageProps = React.ComponentProps<typeof Image>;
+type IImageProps = ImageProps;
 
 interface UserPhotoProps extends IImageProps {
     sizeBox: number;

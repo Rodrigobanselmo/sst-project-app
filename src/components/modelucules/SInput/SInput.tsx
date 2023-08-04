@@ -1,7 +1,10 @@
 import { Input, Text, FormControl } from '@components/core';
+import { config } from '../../../theme/gluestack-ui.config';
 
-type IInputContainerProps = React.ComponentProps<typeof Input>;
-type IInputProps = React.ComponentProps<typeof Input.Input>;
+// type IInputContainerProps = React.ComponentProps<typeof Input>;
+// type IInputProps = React.ComponentProps<typeof Input.Input>;
+type IInputContainerProps = any;
+type IInputProps = any;
 
 interface SInputProps extends IInputContainerProps {
     errorMessage?: string | null;
@@ -41,8 +44,8 @@ export function SInput({
                 <Input.Input
                     fontSize="$md"
                     color="$textMain"
-                    fontFamily="body"
-                    placeholderTextColor="textPlaceholder"
+                    // placeholderTextColor={config.theme.tokens.colors.textPlaceholder}
+                    fontFamily="$body"
                     {...(inputProps as any)}
                     sx={{
                         ':invalid': {

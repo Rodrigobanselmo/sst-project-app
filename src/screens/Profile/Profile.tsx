@@ -217,9 +217,9 @@ export const Profile = () => {
                     />
 
                     <Heading
-                        color="text.label"
-                        fontSize="md"
-                        fontFamily="heading"
+                        color="$textLabel"
+                        fontSize="$md"
+                        fontFamily="$heading"
                         mb={2}
                         alignSelf="flex-start"
                         mt={12}

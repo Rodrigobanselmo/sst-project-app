@@ -1,25 +1,36 @@
-import { FormControl, Radio, Box, CircleIcon } from '@components/core';
+import { FormControl, Radio, Box, CircleIcon, HStack } from '@components/core';
+import { IRadioGroupProps, IRadioProps } from '@gluestack-ui/radio/lib/typescript/types';
 import React from 'react';
 
-type IBoxProps = React.ComponentProps<typeof Box>;
-type IRadioGroupProps = React.ComponentProps<typeof Radio.Group>;
-type IRadioProps = React.ComponentProps<typeof Radio>;
+type IStackProps = React.ComponentProps<typeof HStack>;
+// type ISRadioGroupProps = React.ComponentProps<typeof Radio.Group>;
+// type ISRadioProps = React.ComponentProps<typeof Radio>;
+// type ISBoxProps = React.ComponentProps<typeof Box>;
 
-interface SRadioProps extends IRadioGroupProps {
+type ISBoxProps = IStackProps;
+type ISRadioGroupProps = IRadioGroupProps & ISBoxProps;
+type ISRadioProps = IRadioProps & ISBoxProps;
+
+interface SRadioProps extends ISRadioGroupProps {
     errorMessage?: string | null;
-    boxProps?: IBoxProps;
+    name?: string;
     isInvalid?: boolean;
-    options: { radioProps?: Partial<IRadioProps>; label: string; value: string }[];
-    sizeRadio?: IRadioProps['size'];
+    options: { radioProps?: Partial<ISRadioProps>; label: string; value: string }[];
+    boxProps?: Partial<ISBoxProps>;
+    // sizeRadio?: ISRadioProps['size'];
+    sizeRadio?: any;
 }
+
+// type x =SRadioProps['']
+
 export const SRadio = React.forwardRef<any, SRadioProps>(
     ({ errorMessage = null, isInvalid, options, boxProps, sizeRadio, ...props }, ref) => {
         const invalid = !!errorMessage || isInvalid;
 
         return (
             <FormControl isInvalid={invalid} mb={4}>
-                <Radio.Group {...props}>
-                    <Box {...boxProps}>
+                <Radio.Group {...(props as any)}>
+                    <Box {...(boxProps as any)}>
                         {options.map((option) => (
                             <Radio
                                 size={sizeRadio}
@@ -28,7 +39,7 @@ export const SRadio = React.forwardRef<any, SRadioProps>(
                                 my={2}
                                 isInvalid={false}
                                 isDisabled={false}
-                                {...option.radioProps}
+                                {...(option as any)?.radioProps}
                             >
                                 <Radio.Indicator mr="$2">
                                     <Radio.Icon as={CircleIcon} strokeWidth={1} />

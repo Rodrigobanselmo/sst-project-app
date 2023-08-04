@@ -1,4 +1,4 @@
-import { VStack, Image, Text, Center, Heading, ScrollView, useToast, HStack } from 'native-base';
+import { VStack, Image, Text, Center, Heading, ScrollView, useToast, HStack } from '@components/core';
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigatorRoutesProps } from '@routes/auth/AuthRoutesProps';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -39,12 +39,13 @@ export const SignIn = () => {
             const isAppError = error instanceof AppError;
             const message = isAppError ? error.message : 'Erro ao fazer login. Tente novamente mais tarde.';
             setIsLoading(false);
-            toast.show({
-                title: 'Erro ao fazer login',
-                description: message,
-                placement: 'top',
-                bgColor: 'status.error',
-            });
+            //TODO
+            // toast.show({
+            //     title: 'Erro ao fazer login',
+            //     description: message,
+            //     placement: 'top',
+            //     bgColor: 'status.error',
+            // });
         }
     };
 
@@ -69,7 +70,7 @@ export const SignIn = () => {
                 </HStack>
 
                 <Center>
-                    <Heading color="gray.100" fontSize={21} mb={6} fontFamily="heading">
+                    <Heading color="$gray100" fontSize={21} mb={6} fontFamily="$heading">
                         Acesse sua conta
                     </Heading>
 
@@ -112,7 +113,7 @@ export const SignIn = () => {
                 </Center>
 
                 {/* <Center mt={24}>
-          <Text color="gray.100" fontStyle="sm" mb={3} fontFamily="body">
+          <Text color="gray.100" fontStyle="sm" mb={3} fontFamily="$body">
             Ainda não tem acesso?
           </Text>
 

@@ -1,4 +1,4 @@
-import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from 'native-base';
+import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from '@components/core';
 import LogoSvg from '@assets/logo.svg';
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigatorRoutesProps } from '@routes/auth/AuthRoutesProps';
@@ -43,12 +43,14 @@ export const SignUp = () => {
             const isAppError = error instanceof AppError;
             const message = isAppError ? error.message : 'Erro ao cadastrar usuário. Tente novamente mais tarde.';
             setIsLoading(false);
-            toast.show({
-                title: 'Erro ao cadastrar usuário',
-                description: message,
-                placement: 'top',
-                bgColor: 'status.error',
-            });
+
+            //TODO
+            // toast.show({
+            //     title: 'Erro ao cadastrar usuário',
+            //     description: message,
+            //     placement: 'top',
+            //     bgColor: 'status.error',
+            // });
         }
     };
 
@@ -57,13 +59,13 @@ export const SignUp = () => {
             <VStack flex={1} px={10}>
                 <Center my={24}>
                     <LogoSvg />
-                    <Text color="gray.100" fontSize="sm">
+                    <Text color="$gray100" fontSize="$sm">
                         Treine sua mente e o seu corpo
                     </Text>
                 </Center>
 
                 <Center>
-                    <Heading color="gray.100" fontSize={21} mb={6} fontFamily="heading">
+                    <Heading color="$gray100" fontSize={21} mb={6} fontFamily="$heading">
                         Crie sua conta
                     </Heading>
 

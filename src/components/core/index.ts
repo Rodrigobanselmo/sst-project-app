@@ -33,4 +33,6 @@ export * from './Textarea';
 export * from './Toast';
 export * from './Tooltip';
 export * from './Vstack';
+export * from './FlatList';
+export * from './ScrollView';
 export * from './styled';

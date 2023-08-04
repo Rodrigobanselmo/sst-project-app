@@ -1,7 +1,12 @@
-import { FormControl, Textarea } from '@components/core';
+import { FormControl, HStack, Textarea } from '@components/core';
+import { config } from '../../../theme/gluestack-ui.config';
 
-type IInputContainerProps = React.ComponentProps<typeof Textarea>;
-type IInputProps = React.ComponentProps<typeof Textarea.Input>;
+// type IInputContainerProps = React.ComponentProps<typeof Textarea>;
+// type IInputProps = React.ComponentProps<typeof Textarea.Input>;
+type IStackProps = React.ComponentProps<typeof HStack>;
+
+type IInputContainerProps = any;
+type IInputProps = any;
 
 interface InputAreaProps extends IInputContainerProps {
     errorMessage?: string | null;
@@ -26,8 +31,8 @@ export function SInputArea({
                     fontSize="$md"
                     color="$textMain"
                     autoCompleteType="off"
-                    fontFamily="body"
-                    placeholderTextColor="$textPlaceholder"
+                    fontFamily="$body"
+                    // placeholderTextColor={config.theme.tokens.colors.textPlaceholder}
                     {...(inputProps as any)}
                     sx={{
                         ':invalid': {
