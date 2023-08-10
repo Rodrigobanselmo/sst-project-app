@@ -1,7 +1,3 @@
-import { createHStack } from '@gluestack-ui/hstack';
-import { Root, Spacer } from './styled-components';
+import { HStack } from 'native-base';
 
-export const HStack = createHStack({
-  Root,
-  Spacer,
-});
+export const SHStack = HStack;

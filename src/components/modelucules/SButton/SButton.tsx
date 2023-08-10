@@ -1,48 +1,42 @@
-import { Button, Spinner, Text } from '@components/core';
+import { Button as SB, ISButtonProps, SText } from '@components/core';
+import { ColorType } from 'native-base/lib/typescript/components/types';
 
-// type IButtonProps = React.ComponentProps<typeof Button>;
-type IButtonProps = any;
-interface ButtonProps extends IButtonProps {
+interface ButtonProps extends ISButtonProps {
     title: string;
     variant?: 'solid' | 'outline';
-    bgPressed?: IButtonProps['bg'];
+    bg?: ColorType;
+    bgPressed?: ColorType;
     addColor?: boolean;
-    isLoading?: boolean;
 }
 
 export function SButton({
     title,
     variant = 'solid',
-    bg = '$primaryMain',
-    bgPressed = '$primaryLight',
+    bg = 'primary.main',
+    bgPressed = 'primary.light',
     addColor,
-    isLoading,
     ...props
 }: ButtonProps) {
     if (addColor) {
-        bg = 'green700';
-        bgPressed = 'green500';
+        bg = 'green.700';
+        bgPressed = 'green.500';
     }
-
     return (
-        <Button
-            w="$full"
+        <SB
+            w="full"
+            h={12}
             bg={variant === 'outline' ? 'transparent' : bg}
             borderWidth={variant === 'outline' ? 1 : 0}
             borderColor={bg}
-            rounded="$sm"
-            sx={{
-                ':pressed': {
-                    bg: variant === 'outline' ? '$gray50' : bgPressed,
-                },
+            rounded="sm"
+            _pressed={{
+                bg: variant === 'outline' ? 'gray.50' : bgPressed,
             }}
-            isDisabled={isLoading}
             {...props}
         >
-            {isLoading && <Spinner color={'$white' as any} mr="$1" />}
-            <Text color={variant === 'outline' ? bg : '$white'} fontFamily="$heading" fontSize={'$md'}>
+            <SText color={variant === 'outline' ? bg : 'white'} fontFamily="heading" fontSize="sm">
                 {title}
-            </Text>
-        </Button>
+            </SText>
+        </SB>
     );
 }

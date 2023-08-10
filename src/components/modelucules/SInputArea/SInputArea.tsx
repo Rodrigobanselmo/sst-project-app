@@ -1,17 +1,11 @@
-import { FormControl, HStack, Textarea } from '@components/core';
-import { config } from '../../../theme/gluestack-ui.config';
+import { ISTextareaProps, SFormControl, SText, STextarea } from '@components/core';
 
-// type IInputContainerProps = React.ComponentProps<typeof Textarea>;
-// type IInputProps = React.ComponentProps<typeof Textarea.Input>;
-type IStackProps = React.ComponentProps<typeof HStack>;
-
-type IInputContainerProps = any;
-type IInputProps = any;
-
-interface InputAreaProps extends IInputContainerProps {
+interface ISInputAreaProps extends ISTextareaProps {
     errorMessage?: string | null;
     endAdornmentText?: React.ReactNode;
-    inputProps?: Partial<IInputProps>;
+    inputProps?: ISTextareaProps & {
+        variant?: 'normal' | 'filled';
+    };
 }
 
 export function SInputArea({
@@ -21,37 +15,58 @@ export function SInputArea({
     endAdornmentText,
     inputProps,
     ...props
-}: InputAreaProps) {
+}: ISInputAreaProps) {
     const invalid = !!errorMessage || isInvalid;
 
     return (
-        <FormControl isInvalid={invalid} mb={4}>
-            <Textarea bg="$backgroundDefault" h={12} px={4} borderWidth={1} isInvalid={invalid} {...props}>
-                <Textarea.Input
-                    fontSize="$md"
-                    color="$textMain"
-                    autoCompleteType="off"
-                    fontFamily="$body"
-                    // placeholderTextColor={config.theme.tokens.colors.textPlaceholder}
-                    {...(inputProps as any)}
-                    sx={{
-                        ':invalid': {
-                            borderWidth: 1,
-                            borderColor: '$statusError',
-                        },
-                        ':focus': {
-                            bg: '$backgroundDefault',
-                            borderWidth: 1,
-                            borderColor: '$primaryMain',
-                        },
-                        ...(inputProps?.sx as any),
-                    }}
-                />
-            </Textarea>
+        <SFormControl isInvalid={invalid} mb={4}>
+            <STextarea
+                bg="background.default"
+                h={12}
+                px={4}
+                autoCompleteType={'off'}
+                borderWidth={1}
+                isInvalid={invalid}
+                {...(endAdornmentText && {
+                    InputRightElement: (
+                        <SText color={'text.light'} mr={3}>
+                            {endAdornmentText}
+                        </SText>
+                    ),
+                })}
+                fontSize="md"
+                color="text.main"
+                placeholderTextColor="text.placeholder"
+                fontFamily="body"
+                _invalid={{
+                    borderWidth: 1,
+                    borderColor: 'status.error',
+                }}
+                _focus={{
+                    bg: 'background.default',
+                    borderWidth: 1,
+                    borderColor: 'primary.main',
+                    ...(variant == 'filled' && {
+                        bg: 'background.paper',
+                        borderWidth: 1,
+                        borderColor: 'primary.main',
+                    }),
+                }}
+                {...(variant == 'filled' && {
+                    bg: 'background.paper',
+                    borderWidth: 0,
+                })}
+                {...props}
+                {...inputProps}
+            />
 
-            <FormControl.Error>
-                <FormControl.Error.Text>{errorMessage}</FormControl.Error.Text>
-            </FormControl.Error>
-        </FormControl>
+            <SFormControl.ErrorMessage
+                _text={{
+                    color: 'status.error',
+                }}
+            >
+                {errorMessage}
+            </SFormControl.ErrorMessage>
+        </SFormControl>
     );
 }

@@ -1,14 +1,14 @@
 import { SButton, SScreenHeader } from '@components/index';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { VStack, useToast } from '@components/core';
+import { SVStack, useSToast } from '@components/core';
 import { useState } from 'react';
 
 export const Task = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const { navigate } = useNavigation<AppNavigatorRoutesProps>();
-    const toast = useToast();
+    const toast = useSToast();
 
     const handleCreateCharacterization = () => {
         navigate('characterization', {});
@@ -60,7 +60,7 @@ export const Task = () => {
     // );
 
     return (
-        <VStack flex={1}>
+        <SVStack flex={1}>
             <SScreenHeader title="Atividade" />
             <SButton mt={10} title="Criar conta" variant="outline" onPress={handleCreateCharacterization} />
             {/* <FlatList
@@ -82,6 +82,6 @@ export const Task = () => {
         maxH={10}
         minH={10}
       /> */}
-        </VStack>
+        </SVStack>
     );
 };

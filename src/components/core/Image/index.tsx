@@ -1,3 +1,5 @@
-import { Root } from './styled-components';
+import { Image } from 'native-base';
+import { IImageProps } from 'native-base';
 
-export const Image = Root;
+export type ISImageProps = IImageProps;
+export const SImage = Image;

@@ -1,12 +1,5 @@
-import { createButton } from '@gluestack-ui/button';
-import { Root, Text, Group, GroupHSpacer, GroupVSpacer, Spinner, Icon } from './styled-components';
+import { Button } from 'native-base';
+import { IButtonProps } from 'native-base';
 
-export const Button = createButton({
-    Root,
-    Text,
-    Group,
-    GroupHSpacer,
-    GroupVSpacer,
-    Spinner,
-    Icon,
-});
+export type ISButtonProps = IButtonProps;
+export const SButton = Button;

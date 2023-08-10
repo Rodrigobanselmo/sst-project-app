@@ -1,4 +1,3 @@
-import { createSpinner } from '@gluestack-ui/spinner';
-import { Root } from './styled-components';
+import { Spinner } from 'native-base';
 
-export const Spinner = createSpinner({ Root });
+export const SSpinner = Spinner;

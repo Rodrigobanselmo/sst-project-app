@@ -1,3 +1,5 @@
-import { Root } from './styled-components';
+import { Box as BX } from 'native-base';
+import { IBoxProps } from 'native-base';
 
-export const Box = Root;
+export type ISBoxProps = IBoxProps;
+export const SBox = BX;

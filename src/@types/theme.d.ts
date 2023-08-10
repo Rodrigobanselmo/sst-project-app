@@ -1,8 +1,8 @@
-// import { Theme as NativeTheme } from 'native-base';
-// import { THEME } from '../theme/theme';
+import { Theme as NativeTheme } from 'native-base';
+import { THEME } from '../theme/theme';
 
-// type CustomThemeType = typeof THEME;
+type CustomThemeType = typeof THEME;
 
-// declare module 'native-base' {
-//     interface ICustomTheme extends CustomThemeType {}
-// }
+declare module 'native-base' {
+    interface ICustomTheme extends CustomThemeType {}
+}

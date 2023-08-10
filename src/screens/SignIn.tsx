@@ -12,7 +12,7 @@ import LogoTextSvg from '@assets/brand/logoTextFull.svg';
 import LogoSvg from '@assets/brand/logoSimple.svg';
 import { AuthNavigatorRoutesProps } from '@routes/auth/AuthRoutesProps';
 import { SButton, SInput } from '@components/index';
-import { HStack, Heading, Toast, VStack, Center, useToast, Box } from '@components/core';
+import { SHStack, SHeading, SToast, SVStack, SCenter, useSToast, SBox } from '@components/core';
 import { ScrollView } from 'react-native';
 
 type FormDataProps = {
@@ -32,7 +32,7 @@ export function SignIn() {
 
     const navigation = useNavigation<AuthNavigatorRoutesProps>();
 
-    const toast = useToast();
+    const toast = useSToast();
 
     const {
         control,
@@ -57,19 +57,11 @@ export function SignIn() {
             const title = isAppError ? error.message : 'Não foi possível entrar. Tente novamente mais tarde.';
 
             setIsLoading(false);
-
             toast.show({
+                title: 'Erro ao fazer login',
+                description: title,
                 placement: 'top',
-                render: ({ id }) => {
-                    return (
-                        <Toast nativeID={id}>
-                            <VStack space="xs">
-                                <Toast.Title>New Message</Toast.Title>
-                                <Toast.Description>{title}</Toast.Description>
-                            </VStack>
-                        </Toast>
-                    );
-                },
+                bgColor: 'status.error',
             });
         }
     }
@@ -80,7 +72,7 @@ export function SignIn() {
 
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-            <VStack flex={1} px={10} pb={16}>
+            <SVStack flex={1} px={10} pb={16}>
                 {/* <Image
 					source={BackgroundImg}
 					defaultSource={BackgroundImg}
@@ -89,19 +81,19 @@ export function SignIn() {
 					position="absolute"
 				/> */}
 
-                <HStack my={24} alignItems={'center'}>
-                    <Center flex={4}>
+                <SHStack my={24} alignItems={'center'}>
+                    <SCenter flex={4}>
                         <LogoTextSvg width={'100%'} />
-                    </Center>
-                    <Center flex={1}>
+                    </SCenter>
+                    <SCenter flex={1}>
                         <LogoSvg width={'100%'} />
-                    </Center>
-                </HStack>
+                    </SCenter>
+                </SHStack>
 
-                <Center>
-                    <Heading color="$textMain" fontSize={21} mb={6} fontFamily="$heading">
+                <SCenter>
+                    <SHeading color="text.main" fontSize={21} mb={6} fontFamily="heading">
                         Acesse sua conta
-                    </Heading>
+                    </SHeading>
 
                     <Controller
                         control={control}
@@ -143,7 +135,7 @@ export function SignIn() {
                     />
 
                     <SButton title="Acessar" onPress={handleSubmit(handleSignIn)} isLoading={isLoading} />
-                </Center>
+                </SCenter>
 
                 {/* <Center mt={24}>
 					<Text color="gray.100" fontSize="sm" mb={3} fontFamily="body">
@@ -155,10 +147,7 @@ export function SignIn() {
 						onPress={handleNewAccount}
 					/>
 				</Center> */}
-            </VStack>
+            </SVStack>
         </ScrollView>
     );
 }
-
-// <Box bg="$backgoundDefault">
-// </Box>

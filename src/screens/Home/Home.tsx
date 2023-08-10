@@ -1,14 +1,14 @@
 import { SHomeHeader } from '@components/index';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { VStack, useToast } from '@components/core';
+import { SVStack, useSToast } from '@components/core';
 import { useState } from 'react';
 
 export const Home = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const { navigate } = useNavigation<AppNavigatorRoutesProps>();
-    const toast = useToast();
+    const toast = useSToast();
 
     // const handleOpenExerciseDetail = (id: number) => {
     //   navigate('exercise', { id });
@@ -60,7 +60,7 @@ export const Home = () => {
     // );
 
     return (
-        <VStack flex={1}>
+        <SVStack flex={1}>
             <SHomeHeader />
             {/* <FlatList
         data={groups}
@@ -81,6 +81,6 @@ export const Home = () => {
         maxH={10}
         minH={10}
       /> */}
-        </VStack>
+        </SVStack>
     );
 };

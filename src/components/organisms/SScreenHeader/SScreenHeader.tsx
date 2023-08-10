@@ -1,4 +1,4 @@
-import { Box, Center, Heading, Icon } from '@components/core';
+import { SBox, SCenter, SHeading, SIcon } from '@components/core';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Alert, TouchableOpacity } from 'react-native';
@@ -44,17 +44,17 @@ export function SScreenHeader({ title, navidateArgs, backButton, isAlert }: Scre
     };
 
     return (
-        <Center position={'relative'} bg="$backgroundDefault" pb={3} pt={paddingTop + 'px'} shadow={1}>
+        <SCenter position={'relative'} bg="background.default" pb={3} pt={paddingTop + 'px'} shadow={1}>
             {backButton && (
-                <Box position={'absolute'} left={4} top={paddingTop + 'px'}>
+                <SBox position={'absolute'} left={4} top={paddingTop + 'px'}>
                     <TouchableOpacity onPress={handleGoBack}>
-                        <Icon as={Feather} name="arrow-left" color="$textMain" size={6} />
+                        <SIcon as={Feather} name="arrow-left" color="text.main" size={6} />
                     </TouchableOpacity>
-                </Box>
+                </SBox>
             )}
-            <Heading color="$textMain" fontSize={21} fontFamily="$heading">
+            <SHeading color="text.main" fontSize={21} fontFamily="heading">
                 {title}
-            </Heading>
-        </Center>
+            </SHeading>
+        </SCenter>
     );
 }

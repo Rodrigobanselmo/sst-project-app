@@ -1,17 +1,11 @@
-import { Input, Text, FormControl } from '@components/core';
-import { config } from '../../../theme/gluestack-ui.config';
+import { ISInputProps, SFormControl, Input as SI, SText } from '@components/core';
 
-// type IInputContainerProps = React.ComponentProps<typeof Input>;
-// type IInputProps = React.ComponentProps<typeof Input.Input>;
-type IInputContainerProps = any;
-type IInputProps = any;
-
-interface SInputProps extends IInputContainerProps {
+interface SInputProps extends ISInputProps {
     errorMessage?: string | null;
-    inputProps?: Partial<IInputProps> & {
+    endAdornmentText?: React.ReactNode;
+    inputProps?: ISInputProps & {
         variant?: 'normal' | 'filled';
     };
-    endAdornmentText?: React.ReactNode;
 }
 
 export function SInput({
@@ -25,60 +19,53 @@ export function SInput({
     const invalid = !!errorMessage || isInvalid;
 
     return (
-        <FormControl isInvalid={invalid} mb={4}>
-            <Input
-                bg="$backgroundDefault"
+        <SFormControl isInvalid={invalid} mb={4}>
+            <SI
+                bg="background.default"
                 h={12}
                 px={4}
                 borderWidth={1}
                 isInvalid={invalid}
-                // {...(endAdornmentText && {
-                //     InputRightElement: (
-                //         <Text color={'text.light'} mr={3}>
-                //             {endAdornmentText}
-                //         </Text>
-                //     ),
-                // })}
+                {...(endAdornmentText && {
+                    InputRightElement: (
+                        <SText color={'text.light'} mr={3}>
+                            {endAdornmentText}
+                        </SText>
+                    ),
+                })}
+                fontSize="md"
+                color="text.main"
+                placeholderTextColor="text.placeholder"
+                fontFamily="body"
+                _invalid={{
+                    borderWidth: 1,
+                    borderColor: 'status.error',
+                }}
+                _focus={{
+                    bg: 'background.default',
+                    borderWidth: 1,
+                    borderColor: 'primary.main',
+                    ...(variant == 'filled' && {
+                        bg: 'background.paper',
+                        borderWidth: 1,
+                        borderColor: 'primary.main',
+                    }),
+                }}
+                {...(variant == 'filled' && {
+                    bg: 'background.paper',
+                    borderWidth: 0,
+                })}
                 {...props}
-            >
-                <Input.Input
-                    fontSize="$md"
-                    color="$textMain"
-                    // placeholderTextColor={config.theme.tokens.colors.textPlaceholder}
-                    fontFamily="$body"
-                    {...(inputProps as any)}
-                    sx={{
-                        ':invalid': {
-                            borderWidth: 1,
-                            borderColor: 'status.error',
-                        },
-                        ':focus': {
-                            bg: 'backgroundDefault',
-                            borderWidth: 1,
-                            borderColor: 'primaryMain',
-                        },
-                        ...(inputProps?.sx as any),
-                        // _focus={{
-                        //     bg: 'background.default',
-                        //     borderWidth: 1,
-                        //     borderColor: 'primary.main',
-                        // ...(variant == 'filled' && {
-                        //     bg: 'background.paper',
-                        //     borderWidth: 0,
-                        // }),
-                        // }}
-                        // // {...(variant == 'filled' && {
-                        // //     bg: 'background.paper',
-                        // //     borderWidth: 0,
-                        // // })}
-                    }}
-                />
-                {/* <Input.Icon */}
-            </Input>
+                {...inputProps}
+            />
 
-            <FormControl.Error>
-                <FormControl.Error.Text>{errorMessage}</FormControl.Error.Text>
-            </FormControl.Error>
-        </FormControl>
+            <SFormControl.ErrorMessage
+                _text={{
+                    color: 'status.error',
+                }}
+            >
+                {errorMessage}
+            </SFormControl.ErrorMessage>
+        </SFormControl>
     );
 }

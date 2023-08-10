@@ -1,4 +1,4 @@
-import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from '@components/core';
+import { SVStack, SImage, SText, SCenter, SHeading, SScrollView, useSToast } from '@components/core';
 import LogoSvg from '@assets/logo.svg';
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigatorRoutesProps } from '@routes/auth/AuthRoutesProps';
@@ -15,7 +15,7 @@ import { SInput, SButton } from '@components/index';
 export const SignUp = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { signIn } = useAuth();
-    const toast = useToast();
+    const toast = useSToast();
     const { navigate } = useNavigation<AuthNavigatorRoutesProps>();
     const {
         control,
@@ -44,30 +44,29 @@ export const SignUp = () => {
             const message = isAppError ? error.message : 'Erro ao cadastrar usuário. Tente novamente mais tarde.';
             setIsLoading(false);
 
-            //TODO
-            // toast.show({
-            //     title: 'Erro ao cadastrar usuário',
-            //     description: message,
-            //     placement: 'top',
-            //     bgColor: 'status.error',
-            // });
+            toast.show({
+                title: 'Erro ao cadastrar usuário',
+                description: message,
+                placement: 'top',
+                bgColor: 'status.error',
+            });
         }
     };
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-            <VStack flex={1} px={10}>
-                <Center my={24}>
+        <SScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+            <SVStack flex={1} px={10}>
+                <SCenter my={24}>
                     <LogoSvg />
-                    <Text color="$gray100" fontSize="$sm">
+                    <SText color="gray.100" fontSize="sm">
                         Treine sua mente e o seu corpo
-                    </Text>
-                </Center>
+                    </SText>
+                </SCenter>
 
-                <Center>
-                    <Heading color="$gray100" fontSize={21} mb={6} fontFamily="$heading">
+                <SCenter>
+                    <SHeading color="gray.100" fontSize={21} mb={6} fontFamily="heading">
                         Crie sua conta
-                    </Heading>
+                    </SHeading>
 
                     {/* <Controller
                         control={control}
@@ -132,7 +131,7 @@ export const SignUp = () => {
                     /> */}
 
                     <SButton title="Criar e acessar" onPress={handleSubmit(handleSignUp)} />
-                </Center>
+                </SCenter>
 
                 <SButton
                     title="Voltar para o login"
@@ -142,7 +141,7 @@ export const SignUp = () => {
                     onPress={handleNavigateToSignIn}
                     isLoading={isLoading}
                 />
-            </VStack>
-        </ScrollView>
+            </SVStack>
+        </SScrollView>
     );
 };

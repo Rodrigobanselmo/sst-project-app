@@ -1,3 +1,3 @@
 import { ScrollView as SV } from 'react-native';
 
-export const ScrollView = SV;
+export const SScrollView = SV;

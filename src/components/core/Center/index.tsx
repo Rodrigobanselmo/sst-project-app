@@ -1,3 +1,5 @@
-import { Root } from './styled-components';
+import { Center } from 'native-base';
+import { ICenterProps } from 'native-base';
 
-export const Center = Root;
+export type ISCenterProps = ICenterProps;
+export const SCenter = Center;

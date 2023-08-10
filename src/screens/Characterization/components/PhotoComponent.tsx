@@ -1,4 +1,4 @@
-import { Box, Icon, Image } from '@components/core';
+import { SBox, SIcon, SImage } from '@components/core';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 // import * as ImagePicker from 'expo-image-picker';
 import PlaceholderImage from '@assets/placeholder-image.png';
@@ -27,14 +27,14 @@ export function PhotoComponent({
     const GALLERY_IMAGE_HEIGHT = (GALLERY_IMAGE_Width * 9) / 16;
     const maxHeightValue = maxHeight === undefined ? GALLERY_IMAGE_HEIGHT : maxHeight;
     return (
-        <Box
+        <SBox
             borderWidth={1}
             borderColor={'gray.200'}
             borderRadius={10}
             flex={1}
             maxHeight={maxHeightValue || undefined}
         >
-            <Image
+            <SImage
                 alt="gallery image"
                 source={!uri ? PlaceholderImage : { uri }}
                 fallbackSource={PlaceholderImage}
@@ -44,19 +44,19 @@ export function PhotoComponent({
                     width: orientation === Orientation.PORTRAIT_UP ? GALLERY_IMAGE_PORTRAIT_WIDTH : GALLERY_IMAGE_Width,
                     resizeMode: 'contain',
                 }}
-                rounded="$lg"
+                rounded="lg"
             />
             {handleEditImage && (
                 <TouchableOpacity style={styles.editButton} onPress={() => handleEditImage()}>
-                    <Icon as={MaterialIcons} name="edit" size={'md'} color="white" />
+                    <SIcon as={MaterialIcons} name="edit" size={'md'} color="white" />
                 </TouchableOpacity>
             )}
             {handleDeleteImage && (
                 <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteImage()}>
-                    <Icon as={MaterialIcons} name="close" size={'md'} color="white" />
+                    <SIcon as={MaterialIcons} name="close" size={'md'} color="white" />
                 </TouchableOpacity>
             )}
-        </Box>
+        </SBox>
     );
 }
 

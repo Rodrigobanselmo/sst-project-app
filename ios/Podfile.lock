@@ -466,7 +466,7 @@ PODS:
     - SDWebImage/Core (~> 5.10)
   - simdjson (3.1.0-wmelon1)
   - TOCropViewController (2.6.1)
-  - VisionCamera (2.15.4):
+  - VisionCamera (2.15.5):
     - React
     - React-callinvoker
     - React-Core
@@ -740,7 +740,7 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   simdjson: e6bfae9ce4bcdc80452d388d593816f1ca2106f3
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
-  VisionCamera: c6356b309f7b8e185b7be2e703ec67bb35acf345
+  VisionCamera: a510a31cf8eaa037cda618c3f4b741a4cfac45f0
   WatermelonDB: cd71a1085182aca9e5d2164b7af9ef2a3aaca571
   Yoga: 065f0b74dba4832d6e328238de46eb72c5de9556
 

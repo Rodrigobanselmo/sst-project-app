@@ -1,8 +1,5 @@
-import { createInput } from '@gluestack-ui/input';
-import { Root, Icon, StyledInput } from './styled-components';
+import { Input as INP } from 'native-base';
+import { IInputProps } from 'native-base';
 
-export const Input = createInput({
-  Root,
-  Icon,
-  Input: StyledInput,
-});
+export type ISInputProps = IInputProps;
+export const Input = INP;

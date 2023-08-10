@@ -1,10 +1,5 @@
-import { Root, Title, Description } from './styled-components';
-import { createToast, createToastHook } from '@gluestack-ui/toast';
+import { Toast, useToast } from 'native-base';
 
-export const useToast = createToastHook();
+export const useSToast = useToast;
 
-export const Toast = createToast({
-  Root,
-  Title,
-  Description,
-});
+export const SToast = Toast;

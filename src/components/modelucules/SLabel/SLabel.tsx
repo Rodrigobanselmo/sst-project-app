@@ -1,15 +1,9 @@
-import { Text } from '@components/core';
+import { ISTextProps, SText } from '@components/core';
 
-type ITextProps = React.ComponentProps<typeof Text>;
-// type ITextProps = IThemeNew<ConfigType, any>;
-// type ITextPropws = ITextProps['s']
-
-interface LabelProps extends ITextProps {}
-
-export function SLabel({ children, ...props }: LabelProps) {
+export function SLabel({ children, ...props }: ISTextProps) {
     return (
-        <Text mb={3} color={'$textLabel'} fontSize="$lg" {...props}>
+        <SText mb={3} color={'text.label'} fontSize="lg" {...props}>
             {children}
-        </Text>
+        </SText>
     );
 }

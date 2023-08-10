@@ -1,11 +1,12 @@
-import { config } from '../theme/gluestack-ui.config';
 import { Dimensions, Platform } from 'react-native';
 import StaticSafeAreaInsets from 'react-native-static-safe-area-insets';
+import { THEME } from '../theme/theme';
 
 export const CONTENT_SPACING = 15;
 export const ALBUM_NAME = 'SimpleSST';
-export const pagePadding = config.theme.tokens.space.pagePadding;
-export const pagePaddingPx = config.theme.tokens.space.pagePaddingPx;
+
+export const pagePadding = THEME.space.pagePadding;
+export const pagePaddingPx = THEME.space.pagePaddingPx;
 
 const SAFE_BOTTOM =
     Platform.select({

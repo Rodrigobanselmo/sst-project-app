@@ -1,5 +1,5 @@
 import { TouchableOpacity } from 'react-native';
-import { Heading, HStack, Text, VStack, Icon } from '@components/core';
+import { SHeading, SHStack, SText, SVStack, SIcon } from '@components/core';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 
 import { useAuth } from '@hooks/useAuth';
@@ -25,22 +25,22 @@ export function SHomeHeader() {
     const paddingTop = insets.top + 20;
 
     return (
-        <HStack bg="$backgroundDefault" pt={paddingTop + 'px'} pb={'16px'} px={6} alignItems="center" shadow={'$1'}>
-            <UserPhoto source={defaultUserPhotoImage} mr={4} size={10} />
+        <SHStack bg="background.default" pt={paddingTop + 'px'} pb={'16px'} px={6} alignItems="center" shadow={'1'}>
+            <UserPhoto source={defaultUserPhotoImage} mr={4} sizeBox={10} />
 
-            <VStack flex={1}>
-                <Text color="$textMain" fontSize="$md">
+            <SVStack flex={1}>
+                <SText color="text.main" fontSize="md">
                     Olá,
-                </Text>
+                </SText>
 
-                <Heading color="$textMain" fontSize="$md" fontFamily="$heading">
+                <SHeading color="text.main" fontSize="md" fontFamily="heading">
                     {user.name}
-                </Heading>
-            </VStack>
+                </SHeading>
+            </SVStack>
 
             <TouchableOpacity onPress={onNavigate}>
-                <Icon as={Feather} name="settings" color="$textMain" size={5} />
+                <SIcon as={Feather} name="settings" color="text.main" size={5} />
             </TouchableOpacity>
-        </HStack>
+        </SHStack>
     );
 }

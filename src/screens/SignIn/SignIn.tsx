@@ -1,4 +1,4 @@
-import { VStack, Image, Text, Center, Heading, ScrollView, useToast, HStack } from '@components/core';
+import { SVStack, SImage, SText, SCenter, SHeading, SScrollView, useSToast, SHStack } from '@components/core';
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigatorRoutesProps } from '@routes/auth/AuthRoutesProps';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -17,7 +17,7 @@ export const SignIn = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { signIn } = useAuth();
     const { navigate } = useNavigation<AuthNavigatorRoutesProps>();
-    const toast = useToast();
+    const toast = useSToast();
     const {
         control,
         handleSubmit,
@@ -39,19 +39,18 @@ export const SignIn = () => {
             const isAppError = error instanceof AppError;
             const message = isAppError ? error.message : 'Erro ao fazer login. Tente novamente mais tarde.';
             setIsLoading(false);
-            //TODO
-            // toast.show({
-            //     title: 'Erro ao fazer login',
-            //     description: message,
-            //     placement: 'top',
-            //     bgColor: 'status.error',
-            // });
+            toast.show({
+                title: 'Erro ao fazer login',
+                description: message,
+                placement: 'top',
+                bgColor: 'status.error',
+            });
         }
     };
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-            <VStack flex={1} px={10}>
+        <SScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+            <SVStack flex={1} px={10}>
                 {/* <Image
           source={BackgroundImg}
           defaultSource={BackgroundImg}
@@ -60,19 +59,19 @@ export const SignIn = () => {
           position="absolute"
         /> */}
 
-                <HStack my={24} alignItems={'center'}>
-                    <Center flex={4}>
+                <SHStack my={24} alignItems={'center'}>
+                    <SCenter flex={4}>
                         <LogoTextSvg width={'100%'} />
-                    </Center>
-                    <Center flex={1}>
+                    </SCenter>
+                    <SCenter flex={1}>
                         <LogoSvg width={'100%'} />
-                    </Center>
-                </HStack>
+                    </SCenter>
+                </SHStack>
 
-                <Center>
-                    <Heading color="$gray100" fontSize={21} mb={6} fontFamily="$heading">
+                <SCenter>
+                    <SHeading color="gray.100" fontSize={21} mb={6} fontFamily="heading">
                         Acesse sua conta
-                    </Heading>
+                    </SHeading>
 
                     <Controller
                         control={control}
@@ -110,16 +109,16 @@ export const SignIn = () => {
                     />
 
                     <SButton title="Acessar" onPress={handleSubmit(handleSignIn)} isLoading={isLoading} />
-                </Center>
+                </SCenter>
 
                 {/* <Center mt={24}>
-          <Text color="gray.100" fontStyle="sm" mb={3} fontFamily="$body">
+          <Text color="gray.100" fontStyle="sm" mb={3} fontFamily="body">
             Ainda não tem acesso?
           </Text>
 
           <Button title="Criar conta" variant="outline" onPress={handleNavigateToSignUp} />
         </Center> */}
-            </VStack>
-        </ScrollView>
+            </SVStack>
+        </SScrollView>
     );
 };

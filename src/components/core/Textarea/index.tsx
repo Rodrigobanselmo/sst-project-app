@@ -1,7 +1,5 @@
-import { createTextarea } from '@gluestack-ui/textarea';
-import { Root, Input } from './styled-components';
+import { TextArea } from 'native-base';
+import { ITextAreaProps } from 'native-base';
 
-export const Textarea = createTextarea({
-  Root,
-  Input,
-});
+export type ISTextareaProps = ITextAreaProps;
+export const STextarea = TextArea;

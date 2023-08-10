@@ -11,7 +11,7 @@ import { isAndroid } from '@utils/helpers/getPlataform';
 import { saveImageToGallery } from '@utils/helpers/saveImage';
 import { ImageResult, manipulateAsync } from 'expo-image-manipulator';
 import { Orientation } from 'expo-screen-orientation';
-import { Box, Center, FlatList, Icon, Image, Spinner, Text, useToast } from '@components/core';
+import { SBox, SCenter, SFlatList, SIcon, SImage, SSpinner, SText, useSToast } from '@components/core';
 import { useCameraEffects } from './hooks/useCameraEffects';
 import { IImageGallery } from './types';
 import { CaptureButton } from './views/CaptureButton';
@@ -32,7 +32,7 @@ type CameraPageProps = {
 export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactElement {
     const camera = useRef<Camera>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const toast = useToast();
+    const toast = useSToast();
 
     const {
         isActive,
@@ -153,7 +153,7 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-            <Box width={width} height={height}>
+            <SBox width={width} height={height}>
                 {device != null && (
                     <PinchGestureHandler onGestureEvent={onPinchGesture} enabled={isActive}>
                         <Reanimated.View style={StyleSheet.absoluteFill}>
@@ -205,17 +205,17 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                 >
                     {supportsCameraFlipping && (
                         <TouchableOpacity style={styles.button} onPress={onFlipCameraPressed}>
-                            <Icon as={Ionicons} name="camera-reverse" color="white" size={5} />
+                            <SIcon as={Ionicons} name="camera-reverse" color="white" size={5} />
                         </TouchableOpacity>
                     )}
                     {supportsFlash && (
                         <TouchableOpacity style={styles.button} onPress={onFlashPressed}>
-                            <Icon as={Ionicons} name={flash === 'on' ? 'flash' : 'flash-off'} color="white" size={5} />
+                            <SIcon as={Ionicons} name={flash === 'on' ? 'flash' : 'flash-off'} color="white" size={5} />
                         </TouchableOpacity>
                     )}
                     {canToggleNightMode && (
                         <TouchableOpacity style={styles.button} onPress={() => setEnableNightMode(!enableNightMode)}>
-                            <Icon
+                            <SIcon
                                 as={Ionicons}
                                 name={enableNightMode ? 'moon' : 'moon-outline'}
                                 color="white"
@@ -226,12 +226,12 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                 </View>
 
                 <View style={styles.galleryContainer}>
-                    <FlatList
+                    <SFlatList
                         data={galleryImages}
-                        ItemSeparatorComponent={() => <Box style={{ height: 10 }} />}
+                        ItemSeparatorComponent={() => <SBox style={{ height: 10 }} />}
                         renderItem={({ item, index }) => (
-                            <Box style={item.orientation === Orientation.PORTRAIT_UP ? { flex: 1 } : styles.imageBoxH}>
-                                <Image
+                            <SBox style={item.orientation === Orientation.PORTRAIT_UP ? { flex: 1 } : styles.imageBoxH}>
+                                <SImage
                                     alt="gallery image"
                                     source={{ uri: item.uri }}
                                     style={
@@ -247,26 +247,26 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                                     style={styles.deleteButton}
                                     onPress={() => handleDeleteImage(index)}
                                 >
-                                    <Icon as={MaterialIcons} name="close" fontSize={5} color="white" />
+                                    <SIcon as={MaterialIcons} name="close" fontSize={5} color="white" />
                                 </TouchableOpacity>
-                            </Box>
+                            </SBox>
                         )}
                         keyExtractor={(item, index) => index.toString()}
                         showsVerticalScrollIndicator={false}
                         showsHorizontalScrollIndicator={false}
                     />
                     {galleryImages.length > 2 && (
-                        <Center px={2} borderRadius={10} position={'absolute'} bottom={-30} mt={2} bg="#00000044">
-                            <Text fontSize={12} color="white">
+                        <SCenter px={2} borderRadius={10} position={'absolute'} bottom={-30} mt={2} bg="#00000044">
+                            <SText fontSize={12} color="white">
                                 Total: {galleryImages.length}
-                            </Text>
-                        </Center>
+                            </SText>
+                        </SCenter>
                     )}
                 </View>
 
-                <Box bottom={SAFE_AREA_PADDING.paddingBottom + 28} position={'absolute'} left={10}>
+                <SBox bottom={SAFE_AREA_PADDING.paddingBottom + 28} position={'absolute'} left={10}>
                     <TouchableOpacity onPress={() => handleCancel()}>
-                        <Center
+                        <SCenter
                             py={1}
                             px={4}
                             borderRadius={10}
@@ -276,38 +276,38 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                             width={85}
                             borderColor={'gray.300'}
                         >
-                            <Text fontSize={12} color="gray.200">
+                            <SText fontSize={12} color="gray.200">
                                 Cancelar
-                            </Text>
-                        </Center>
+                            </SText>
+                        </SCenter>
                     </TouchableOpacity>
-                </Box>
+                </SBox>
 
                 {!!galleryImages.length && (
-                    <Box bottom={SAFE_AREA_PADDING.paddingBottom + 28} position={'absolute'} right={10}>
+                    <SBox bottom={SAFE_AREA_PADDING.paddingBottom + 28} position={'absolute'} right={10}>
                         <TouchableOpacity disabled={isLoading || !galleryImages.length} onPress={handleSave}>
                             {isLoading ? (
-                                <Spinner color="$primary400" size={32} />
+                                <SSpinner color="primary.main" size={32} />
                             ) : (
-                                <Center
+                                <SCenter
                                     px={4}
                                     py={1}
                                     borderRadius={10}
                                     borderStyle={'solid'}
                                     borderWidth={1}
                                     width={85}
-                                    borderColor={'$primaryMain'}
+                                    borderColor={'primary.main'}
                                     bg="#00000044"
                                 >
-                                    <Text fontSize={12} color="$primaryMain">
+                                    <SText fontSize={12} color="primary.main">
                                         Salvar
-                                    </Text>
-                                </Center>
+                                    </SText>
+                                </SCenter>
                             )}
                         </TouchableOpacity>
-                    </Box>
+                    </SBox>
                 )}
-            </Box>
+            </SBox>
         </View>
     );
 }

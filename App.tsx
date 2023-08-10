@@ -1,13 +1,13 @@
-import { GluestackUIProvider } from '@components/core';
 import { SLoading } from '@components/index';
 import { AuthProvider } from '@contexts/AuthContext';
 import { Roboto_400Regular, Roboto_700Bold, useFonts } from '@expo-google-fonts/roboto';
 import { Routes } from '@routes/index';
 import { isAndroid } from '@utils/helpers/getPlataform';
 import * as NavigationBar from 'expo-navigation-bar';
+import { NativeBaseProvider } from 'native-base';
 import { LogBox, StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { config } from './src/theme/gluestack-ui.config';
+import { THEME } from './src/theme/theme';
 
 LogBox.ignoreLogs([
     'In React 18, SSRProvider is not necessary and is a noop. You can remove it from your app.',
@@ -27,11 +27,11 @@ export default function App() {
     }
 
     return (
-        <GluestackUIProvider config={config.theme}>
+        <NativeBaseProvider theme={THEME}>
             <SafeAreaProvider>
                 <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
                 <AuthProvider>{fontsLoaded ? <Routes /> : <SLoading />}</AuthProvider>
             </SafeAreaProvider>
-        </GluestackUIProvider>
+        </NativeBaseProvider>
     );
 }

@@ -1,10 +1,7 @@
-import { Root, Group, Icon, Indicator, Label } from './styled-components';
-import { createRadio } from '@gluestack-ui/radio';
+import { IRadioGroupProps, Radio as RD } from 'native-base';
+import { IRadioProps } from 'native-base';
 
-export const Radio = createRadio({
-  Root,
-  Group,
-  Icon,
-  Indicator,
-  Label,
-});
+export const Radio = RD;
+
+export type ISRadioProps = IRadioProps;
+export type ISRadioGroupProps = IRadioGroupProps;

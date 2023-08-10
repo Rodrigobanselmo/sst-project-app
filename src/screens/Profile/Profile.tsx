@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Center, VStack, Heading, useToast, Box } from '@components/core';
+import { SCenter, SVStack, SHeading, useSToast, SBox } from '@components/core';
 import { Controller, useForm } from 'react-hook-form';
 import { PHOTO_SIZE } from './constants';
 import { ScrollView, TouchableOpacity } from 'react-native';
@@ -20,7 +20,7 @@ export const Profile = () => {
     const { user, updateUserProfile, signOut } = useAuth();
     const [isUpdating, setIsUpdating] = useState(false);
     const [photoIsLoading, setPhotoIsLoading] = useState(false);
-    const toast = useToast();
+    const toast = useSToast();
 
     const {
         control,
@@ -53,13 +53,12 @@ export const Profile = () => {
 
             await updateUserProfile(userUpdated);
 
-            //TODO: Toast
-            // toast.show({
-            //     title: 'Perfil atualizado com sucesso!',
-            //     description: 'Seus dados foram atualizados com sucesso.',
-            //     placement: 'top',
-            //     bgColor: 'green.500',
-            // });
+            toast.show({
+                title: 'Perfil atualizado com sucesso!',
+                description: 'Seus dados foram atualizados com sucesso.',
+                placement: 'top',
+                bgColor: 'green.500',
+            });
 
             if (data.password && data.confirm_password && data.old_password) {
                 await signOut();
@@ -70,13 +69,12 @@ export const Profile = () => {
                 ? error.message
                 : 'Erro ao atualizar dados do usuário. Tente novamente mais tarde.';
 
-            //TODO: Toast
-            // toast.show({
-            //     title: 'Erro ao atualizar dados do usuário',
-            //     description: message,
-            //     placement: 'top',
-            //     bgColor: 'status.error',
-            // });
+            toast.show({
+                title: 'Erro ao atualizar dados do usuário',
+                description: message,
+                placement: 'top',
+                bgColor: 'status.error',
+            });
         } finally {
             setIsUpdating(false);
         }
@@ -102,13 +100,12 @@ export const Profile = () => {
                 const photoInfo = await FileSystem.getInfoAsync(image.uri, { size: true });
 
                 if ('size' in photoInfo && photoInfo.size / 1024 / 1024 > 5) {
-                    //TODO: Toast
-                    // toast.show({
-                    //     title: 'Erro ao selecionar foto de perfil',
-                    //     description: 'A foto selecionada deve ter no máximo 5MB',
-                    //     placement: 'top',
-                    //     bgColor: 'status.error',
-                    // });
+                    toast.show({
+                        title: 'Erro ao selecionar foto de perfil',
+                        description: 'A foto selecionada deve ter no máximo 5MB',
+                        placement: 'top',
+                        bgColor: 'status.error',
+                    });
                     return;
                 }
 
@@ -131,13 +128,12 @@ export const Profile = () => {
                 const userUpdated = { ...user, avatar: data.avatar };
                 await updateUserProfile(userUpdated);
 
-                //TODO: Toast
-                // toast.show({
-                //     title: 'Foto de perfil atualizada com sucesso!',
-                //     description: 'Sua foto de perfil foi atualizada com sucesso.',
-                //     placement: 'top',
-                //     bgColor: 'green.500',
-                // });
+                toast.show({
+                    title: 'Foto de perfil atualizada com sucesso!',
+                    description: 'Sua foto de perfil foi atualizada com sucesso.',
+                    placement: 'top',
+                    bgColor: 'green.500',
+                });
             }
         } catch (error) {
             const isAppError = error instanceof AppError;
@@ -145,37 +141,36 @@ export const Profile = () => {
                 ? error.message
                 : 'Erro ao atualizar foto do perfil. Tente novamente mais tarde.';
 
-            //TODO: Toast
-            // toast.show({
-            //     title: 'Erro ao atualizar foto do perfil',
-            //     description: message,
-            //     placement: 'top',
-            //     bgColor: 'status.error',
-            // });
+            toast.show({
+                title: 'Erro ao atualizar foto do perfil',
+                description: message,
+                placement: 'top',
+                bgColor: 'status.error',
+            });
         } finally {
             setPhotoIsLoading(false);
         }
     };
 
     return (
-        <VStack flex={1}>
+        <SVStack flex={1}>
             <SScreenHeader title="Perfil" />
             <ScrollView contentContainerStyle={{ paddingBottom: 36 }}>
-                <Center mt={6} px={10}>
-                    <Box mb={6}>
+                <SCenter mt={6} px={10}>
+                    <SBox mb={6}>
                         {/* {photoIsLoading ? (
                             <Skeleton
                                 w={PHOTO_SIZE}
                                 h={PHOTO_SIZE}
-                                rounded="$full"
-                                startColor="$gray500"
-                                endColor="$gray400"
+                                rounded="full"
+                                startColor="gray.500"
+                                endColor="gray.400"
                             />
                         ) : (
                             <SUserPhoto source={user.photoUrl || UserPhotoDefaultImg} alt="avatar" sizeBox={PHOTO_SIZE} />
                         )} */}
                         <SUserPhoto source={user.photoUrl || UserPhotoDefaultImg} alt="avatar" sizeBox={PHOTO_SIZE} />
-                    </Box>
+                    </SBox>
 
                     {/* <TouchableOpacity onPress={handleUserPhotoSelect}>
             <Text color="green.500" fontWeight="bold" fontSize="md" mt={2} mb={8}>
@@ -216,16 +211,16 @@ export const Profile = () => {
                         )}
                     />
 
-                    <Heading
-                        color="$textLabel"
-                        fontSize="$md"
-                        fontFamily="$heading"
+                    <SHeading
+                        color="text.label"
+                        fontSize="md"
+                        fontFamily="heading"
                         mb={2}
                         alignSelf="flex-start"
                         mt={12}
                     >
                         Alterar senha
-                    </Heading>
+                    </SHeading>
 
                     <Controller
                         control={control}
@@ -284,8 +279,8 @@ export const Profile = () => {
                         isLoading={isUpdating}
                     />
                     <SButton variant="outline" title="Sair" mt={12} onPress={signOut} isLoading={isUpdating} />
-                </Center>
+                </SCenter>
             </ScrollView>
-        </VStack>
+        </SVStack>
     );
 };

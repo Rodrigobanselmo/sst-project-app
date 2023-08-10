@@ -1,2 +1,3 @@
-import { Root as Heading } from './styled-components';
-export { Heading };
+import { Heading } from 'native-base';
+
+export const SHeading = Heading;

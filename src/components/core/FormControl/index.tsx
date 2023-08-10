@@ -1,24 +1,3 @@
-import { createFormControl } from '@gluestack-ui/form-control';
-import {
-  Root,
-  Error,
-  ErrorText,
-  ErrorIcon,
-  Label,
-  LabelText,
-  LabelAstrick,
-  Helper,
-  HelperText,
-} from './styled-components';
+import { FormControl } from 'native-base';
 
-export const FormControl = createFormControl({
-  Root,
-  Error,
-  ErrorText,
-  ErrorIcon,
-  Label,
-  LabelText,
-  LabelAstrick,
-  Helper,
-  HelperText,
-});
+export const SFormControl = FormControl;

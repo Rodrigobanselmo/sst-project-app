@@ -1,7 +1,3 @@
-import { createVStack } from '@gluestack-ui/vstack';
-import { Root, Spacer } from './styled-components';
+import { VStack } from 'native-base';
 
-export const VStack = createVStack({
-  Root,
-  Spacer,
-});
+export const SVStack = VStack;

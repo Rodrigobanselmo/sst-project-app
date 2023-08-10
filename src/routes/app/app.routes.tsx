@@ -8,14 +8,14 @@ import { Home } from '@screens/Home';
 import { Profile } from '@screens/Profile';
 import { Task } from '@screens/Task';
 import { AppRoutesProps } from './AppRoutesProps';
-import { config } from '../../theme/gluestack-ui.config';
+import { THEME } from '../../theme/theme';
 
 const Stack = createNativeStackNavigator<AppRoutesProps>();
 const Bottom = createBottomTabNavigator<AppRoutesProps>();
 
 export const BottomRoutes = () => {
     const iconSize = 24;
-    const primaryMain = config.theme.tokens.colors.primaryMain;
+    const primaryMain = THEME.colors.primary.main;
 
     return (
         <Bottom.Navigator

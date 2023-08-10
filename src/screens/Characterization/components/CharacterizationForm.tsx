@@ -1,4 +1,4 @@
-import { Box, Center, FlatList, HStack, ScrollView, Text, VStack } from '@components/core';
+import { SBox, SCenter, SFlatList, SHStack, SScrollView, SText, SVStack } from '@components/core';
 import React from 'react';
 import { Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import { CharacterizationFormProps } from '../types';
@@ -146,11 +146,11 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
     ];
 
     return (
-        <VStack flex={1}>
+        <SVStack flex={1}>
             <SScreenHeader isAlert={isEdited} title="Atividade" backButton navidateArgs={['task', {}]} />
 
-            <ScrollView style={{ paddingTop: 12 }}>
-                <VStack mx={pagePadding}>
+            <SScrollView style={{ paddingTop: 12 }}>
+                <SVStack mx={pagePadding}>
                     <SLabel>Dados</SLabel>
                     <Controller
                         control={control}
@@ -168,9 +168,9 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                             />
                         )}
                     />
-                    <ScrollView horizontal>
-                        <HStack>
-                            <Box mr={5}>
+                    <SScrollView horizontal>
+                        <SHStack>
+                            <SBox mr={5}>
                                 <Controller
                                     defaultValue={'' as any}
                                     control={control}
@@ -187,7 +187,7 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                         />
                                     )}
                                 />
-                            </Box>
+                            </SBox>
                             <Controller
                                 defaultValue={'' as any}
                                 control={control}
@@ -204,25 +204,25 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                     />
                                 )}
                             />
-                        </HStack>
-                    </ScrollView>
-                </VStack>
+                        </SHStack>
+                    </SScrollView>
+                </SVStack>
 
-                <HStack mb={3} mt={0}>
+                <SHStack mb={3} mt={0}>
                     <SLabel mb={0} mr={2} ml={pagePadding}>
                         Fotos
                     </SLabel>
 
                     {photos && photos.length > 1 && (
-                        <Center px={2} borderRadius={10} bg="#00000044">
-                            <Text fontSize={12} color="white">
+                        <SCenter px={2} borderRadius={10} bg="#00000044">
+                            <SText fontSize={12} color="white">
                                 {photos.length}
-                            </Text>
-                        </Center>
+                            </SText>
+                        </SCenter>
                     )}
-                </HStack>
+                </SHStack>
 
-                <Center style={styles.galleryContainer}>
+                <SCenter style={styles.galleryContainer}>
                     {!photos?.length && (
                         <TouchableOpacity onPress={openCamera}>
                             <PhotoComponent
@@ -234,9 +234,9 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                     )}
 
                     {!!photos?.length && (
-                        <FlatList
+                        <SFlatList
                             data={photos || []}
-                            ItemSeparatorComponent={() => <Box style={{ height: 10 }} />}
+                            ItemSeparatorComponent={() => <SBox style={{ height: 10 }} />}
                             contentContainerStyle={{
                                 paddingHorizontal: 10,
                                 gap: 10,
@@ -257,14 +257,14 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                             showsHorizontalScrollIndicator={false}
                         />
                     )}
-                </Center>
+                </SCenter>
 
-                <HStack justifyContent="center" mt={3}>
+                <SHStack justifyContent="center" mt={3}>
                     <SButton mr={2} variant="outline" w="30%" title="Galeria" onPress={handlePickImage} addColor />
                     <SButton w="30%" title="Tirar Foto" onPress={openCamera} addColor />
-                </HStack>
+                </SHStack>
 
-                <VStack mx={pagePadding}>
+                <SVStack mx={pagePadding}>
                     <Controller
                         control={control}
                         name="description"
@@ -281,12 +281,12 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                             />
                         )}
                     />
-                </VStack>
+                </SVStack>
 
-                <VStack mx={pagePadding}>
+                <SVStack mx={pagePadding}>
                     <SLabel>Parâmetros ambientais</SLabel>
-                    <HStack>
-                        <Box flex={1} mr={4}>
+                    <SHStack>
+                        <SBox flex={1} mr={4}>
                             <Controller
                                 control={control}
                                 name="temperature"
@@ -303,8 +303,8 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                     />
                                 )}
                             />
-                        </Box>
-                        <Box flex={1}>
+                        </SBox>
+                        <SBox flex={1}>
                             <Controller
                                 control={control}
                                 name="noiseValue"
@@ -321,10 +321,10 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                     />
                                 )}
                             />
-                        </Box>
-                    </HStack>
-                    <HStack>
-                        <Box flex={1} mr={4}>
+                        </SBox>
+                    </SHStack>
+                    <SHStack>
+                        <SBox flex={1} mr={4}>
                             <Controller
                                 control={control}
                                 name="moisturePercentage"
@@ -341,8 +341,8 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                     />
                                 )}
                             />
-                        </Box>
-                        <Box flex={1}>
+                        </SBox>
+                        <SBox flex={1}>
                             <Controller
                                 control={control}
                                 name="luminosity"
@@ -359,15 +359,15 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                     />
                                 )}
                             />
-                        </Box>
-                    </HStack>
-                </VStack>
+                        </SBox>
+                    </SHStack>
+                </SVStack>
 
-                <VStack mb={SAFE_AREA_PADDING.paddingBottom} mt={24} mx={pagePadding}>
+                <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={24} mx={pagePadding}>
                     <SButton size={'sm'} title="Salvar" onPress={handlePickImage} />
-                </VStack>
-            </ScrollView>
-        </VStack>
+                </SVStack>
+            </SScrollView>
+        </SVStack>
     );
 }
 

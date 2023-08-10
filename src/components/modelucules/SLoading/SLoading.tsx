@@ -1,9 +1,9 @@
-import { Center, Spinner } from '@components/core';
+import { SCenter, SSpinner } from '@components/core';
 
 export function SLoading() {
     return (
-        <Center flex={1} bg="$backgroundDefault">
-            <Spinner color={'$primaryMain' as any} size={32} />
-        </Center>
+        <SCenter flex={1} bg="background.default">
+            <SSpinner color={'primary.main'} size={32} />
+        </SCenter>
     );
 }
