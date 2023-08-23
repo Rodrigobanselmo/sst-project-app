@@ -17,6 +17,7 @@ import { Feather } from '@expo/vector-icons';
 
 type MyComponentProps<T> = {
     title: string;
+    searchLabel?: string;
     showModal: boolean;
     isError?: boolean;
     isLoading?: boolean;
@@ -39,6 +40,7 @@ export const SSearchModal = <T,>({
     title,
     renderTopItem,
     handleGoBack,
+    searchLabel,
 }: MyComponentProps<T>) => {
     const handleSearchChange = useDebouncedCallback((value: string) => {
         onSearch(value);
@@ -61,8 +63,8 @@ export const SSearchModal = <T,>({
                 <SBox px={3} flex={1} py={3}>
                     {renderTopItem?.()}
                     <SFormControl>
-                        <SFormControl.Label>Empresa</SFormControl.Label>
-                        <SInput autoFocus placeholder="Pesquisar" onChangeText={handleSearchChange} />
+                        {searchLabel && <SFormControl.Label>{searchLabel}</SFormControl.Label>}
+                        <SInput placeholder="Pesquisar" onChangeText={handleSearchChange} />
                     </SFormControl>
                     {isLoading && <SSpinner color={'primary.main'} size={32} />}
                     <SErrorBox showError={isError}>

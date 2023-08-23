@@ -10,9 +10,9 @@ import { CompanyModel } from './CompanyModel';
 class WorkspaceModel extends Model {
     static table = DBTablesEnum.WORKSPACE;
     static associations = {
-        [DBTablesEnum.COMPANY_CHARACTERIZATION]: { type: 'has_many', foreignKey: 'companyId' },
+        [DBTablesEnum.COMPANY_CHARACTERIZATION]: { type: 'has_many', foreignKey: 'workspaceId' },
         [DBTablesEnum.USER_AUTH]: { type: 'belongs_to', key: 'user_id' },
-        [DBTablesEnum.COMPANY]: { type: 'belongs_to', key: 'workspaceId' },
+        [DBTablesEnum.COMPANY]: { type: 'belongs_to', key: 'companyId' },
     } as const;
 
     @field('apiId') apiId?: string;
@@ -20,7 +20,8 @@ class WorkspaceModel extends Model {
     @field('abbreviation') abbreviation?: string;
     @field('description') description?: string;
     @field('status') status!: StatusEnum;
-    @field('withCharacterization') withCharacterization?: boolean;
+
+    @date('startChar_at') startChar_at?: Date;
 
     @field('cep') cep?: string;
     @field('street') street?: string;
@@ -33,11 +34,12 @@ class WorkspaceModel extends Model {
     @field('companyId') companyId?: string;
 
     @field('user_id') userId!: string;
-    @field('created_at') created_at?: Date;
-    @field('updated_at') updated_at?: Date;
-    @field('deleted_at') deleted_at?: Date;
+    @date('created_at') created_at?: Date;
+    @date('updated_at') updated_at?: Date;
+    @date('deleted_at') deleted_at?: Date;
 
     @children(DBTablesEnum.COMPANY_CHARACTERIZATION) characterization?: CharacterizationModel[];
+
     @relation(DBTablesEnum.COMPANY, 'companyId') Company?: CompanyModel;
 }
 export { WorkspaceModel };

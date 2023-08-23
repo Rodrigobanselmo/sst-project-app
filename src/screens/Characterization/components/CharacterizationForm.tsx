@@ -23,8 +23,10 @@ type PageProps = {
     form: CharacterizationFormProps;
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
     onSaveForm: () => Promise<void>;
+    onGoBack: () => void;
     onDeleteForm?: () => Promise<void>;
     control: Control<ICharacterizationValues, any>;
+    isEdit?: boolean;
 };
 
 export const GALLERY_IMAGE_Width = 300;
@@ -35,9 +37,9 @@ export function CharacterizationForm({
     openCamera,
     onEditForm,
     onSaveForm,
-    onDeleteForm,
     form,
     control,
+    isEdit,
 }: PageProps): React.ReactElement {
     const { photos, isEdited } = form;
 
@@ -160,29 +162,25 @@ export function CharacterizationForm({
 
     return (
         <SVStack flex={1}>
-            <SScreenHeader
-                isAlert={isEdited}
-                title="Atividade"
-                onDelete={onDeleteForm}
-                backButton
-                navidateArgs={['workspacesEnviroment', {}]}
-            />
-
-            <SScrollView style={{ paddingTop: 12 }}>
+            <SScrollView style={{ paddingTop: 15 }}>
                 <SVStack mx={pagePadding}>
-                    <SLabel>Dados</SLabel>
+                    {/* <SLabel>Dados</SLabel> */}
                     <Controller
                         control={control}
                         name="name"
                         render={({ field: { onChange, value }, formState: { errors } }) => (
                             <SInput
                                 inputProps={{
-                                    placeholder: 'Nome',
+                                    placeholder: '',
                                     keyboardType: 'default',
                                     autoCapitalize: 'none',
                                     value,
                                     onChangeText: onChange,
+                                    ...(!isEdit && {
+                                        autoFocus: true,
+                                    }),
                                 }}
+                                startAdornmentText="Nome"
                                 errorMessage={errors.name?.message}
                             />
                         )}
@@ -284,25 +282,6 @@ export function CharacterizationForm({
                 </SHStack>
 
                 <SVStack mt={5} mx={pagePadding}>
-                    <Controller
-                        control={control}
-                        name="description"
-                        render={({ field: { onChange, value }, formState: { errors } }) => (
-                            <SInputArea
-                                inputProps={{
-                                    placeholder: 'Descrição',
-                                    keyboardType: 'default',
-                                    value,
-                                    onChangeText: onChange,
-                                }}
-                                h={20}
-                                errorMessage={errors.description?.message}
-                            />
-                        )}
-                    />
-                </SVStack>
-
-                <SVStack mx={pagePadding}>
                     <SLabel>Parâmetros ambientais</SLabel>
                     <SHStack>
                         <SBox flex={1} mr={4}>
@@ -380,6 +359,27 @@ export function CharacterizationForm({
                             />
                         </SBox>
                     </SHStack>
+                </SVStack>
+
+                <SVStack mt={3} mx={pagePadding}>
+                    {/* <SLabel mr={2}>Descrição</SLabel> */}
+                    <Controller
+                        control={control}
+                        name="description"
+                        render={({ field: { onChange, value }, formState: { errors } }) => (
+                            <SInputArea
+                                inputProps={{
+                                    placeholder: '',
+                                    keyboardType: 'default',
+                                    value,
+                                    onChangeText: onChange,
+                                }}
+                                h={300}
+                                startAdornmentText="Descrição"
+                                errorMessage={errors.description?.message}
+                            />
+                        )}
+                    />
                 </SVStack>
 
                 <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={24} mx={pagePadding}>

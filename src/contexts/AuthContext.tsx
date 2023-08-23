@@ -88,10 +88,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                     ...data.user,
                 };
                 const userRepository = new UserAuthRepository();
-                const companyRepository = new CompanyRepository();
 
                 await userRepository.create({ id: user.id });
 
+                await storageUserAndTokenSave(user, data.token, data.refresh_token);
+                userAndTokenUpdate(user, data.token);
+                const companyRepository = new CompanyRepository();
                 const company = await getCompany(data.companyId);
                 await companyRepository.upsertByApiId({
                     ...company,
@@ -100,14 +102,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                     workspace: company.workspace?.map((workspace) => ({
                         ...workspace,
                         ...workspace.address,
+                        userId: user.id,
                         apiId: workspace.id,
                     })),
                 });
-
-                await storageUserAndTokenSave(user, data.token, data.refresh_token);
-                userAndTokenUpdate(user, data.token);
             }
         } catch (error) {
+            console.error(error);
             throw error;
         }
     };

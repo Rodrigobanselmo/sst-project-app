@@ -3,6 +3,7 @@ import { ColorType } from 'native-base/lib/typescript/components/types';
 
 interface ButtonProps extends ISButtonProps {
     title: string;
+    fontSize?: string | number;
     variant?: 'solid' | 'outline' | 'ghost';
     bg?: ColorType;
     bgPressed?: ColorType;
@@ -15,6 +16,7 @@ export function SButton({
     bg = 'primary.main',
     bgPressed = 'primary.light',
     addColor,
+    fontSize = 'sm',
     ...props
 }: ButtonProps) {
     if (addColor) {
@@ -60,7 +62,7 @@ export function SButton({
                 })}
                 p={0}
                 fontFamily="heading"
-                fontSize="sm"
+                fontSize={fontSize}
             >
                 {title}
             </SText>

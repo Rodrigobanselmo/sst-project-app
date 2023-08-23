@@ -5,11 +5,13 @@ import { Model } from '@nozbe/watermelondb';
 import { field, date, children, readonly, relation, lazy } from '@nozbe/watermelondb/decorators';
 import { WorkspaceModel } from './WorkspaceModel';
 import { CharacterizationModel } from './CharacterizationModel';
+import { RiskModel } from './RiskModel';
 
 class CompanyModel extends Model {
     static table = DBTablesEnum.COMPANY;
     static associations = {
         [DBTablesEnum.COMPANY_CHARACTERIZATION]: { type: 'has_many', foreignKey: 'companyId' },
+        [DBTablesEnum.RISK]: { type: 'has_many', foreignKey: 'companyId' },
         [DBTablesEnum.USER_AUTH]: { type: 'belongs_to', key: 'user_id' },
     } as const;
 
@@ -23,11 +25,12 @@ class CompanyModel extends Model {
     @field('status') status!: StatusEnum;
 
     @field('user_id') userId!: string;
-    @field('created_at') created_at?: Date;
-    @field('updated_at') updated_at?: Date;
-    @field('deleted_at') deleted_at?: Date;
+    @date('created_at') created_at?: Date;
+    @date('updated_at') updated_at?: Date;
+    @date('deleted_at') deleted_at?: Date;
 
     @children(DBTablesEnum.COMPANY_CHARACTERIZATION) characterization?: CharacterizationModel[];
     @children(DBTablesEnum.WORKSPACE) workspace?: WorkspaceModel[];
+    @children(DBTablesEnum.RISK) risk?: RiskModel[];
 }
 export { CompanyModel };

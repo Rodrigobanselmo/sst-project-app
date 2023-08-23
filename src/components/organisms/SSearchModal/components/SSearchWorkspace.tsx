@@ -20,8 +20,10 @@ export const SSearchWorkspace = ({
     onSelect,
     companyId,
     handleGoBack,
+    isLoading: isLoadingProp,
 }: {
     showModal: boolean;
+    isLoading?: boolean;
     companyId?: string;
     setShowModal: (open: boolean) => void;
     handleGoBack?: () => void;
@@ -29,12 +31,18 @@ export const SSearchWorkspace = ({
     renderTopItem?: () => React.ReactElement;
 }) => {
     const [search, setSearch] = useState('');
-    const { data, isLoading, isError } = useQueryWorkspaces(1, { search, companyId }, 20);
+    const {
+        data,
+        isLoading: loading,
+        isError,
+    } = useQueryWorkspaces(1, { search, companyId, disabled: !showModal }, 20);
 
     const handleSelect = async (workspace: IWorkspace) => {
         await onSelect(workspace);
         setShowModal(false);
     };
+
+    const isLoading = isLoadingProp || loading;
 
     return (
         <SSearchModal
@@ -48,7 +56,7 @@ export const SSearchWorkspace = ({
             isLoading={isLoading}
             onSearch={setSearch}
             renderItem={({ item }) => (
-                <SRowCard onPress={() => handleSelect(item)}>
+                <SRowCard disabled={isLoading} onPress={() => handleSelect(item)}>
                     <SVStack space={1}>
                         <SText>{addDotsText({ text: item.name, maxLength: 30 })}</SText>
                         <SText fontSize={11}>{addDotsText({ text: item.description, maxLength: 50 })}</SText>

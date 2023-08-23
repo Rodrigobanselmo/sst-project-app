@@ -1,14 +1,24 @@
-import { ISInputProps, SFormControl, Input as SI, SText } from '@components/core';
+import { ISInputProps, SBox, SCenter, SFormControl, Input as SI, SText } from '@components/core';
+import { useRef } from 'react';
 
-interface SInputProps extends ISInputProps {
+export interface SInputProps extends ISInputProps {
     errorMessage?: string | null;
     endAdornmentText?: React.ReactNode;
+    startAdornmentText?: React.ReactNode;
     inputProps?: ISInputProps & {
         variant?: 'normal' | 'filled';
     };
 }
 
-export function SInput({ errorMessage = null, isInvalid, endAdornmentText, inputProps, ...props }: SInputProps) {
+export function SInput({
+    startAdornmentText,
+    errorMessage = null,
+    isInvalid,
+    endAdornmentText,
+    inputProps,
+    ...props
+}: SInputProps) {
+    const ref = useRef(null);
     const invalid = !!errorMessage || isInvalid;
 
     return (
@@ -19,11 +29,21 @@ export function SInput({ errorMessage = null, isInvalid, endAdornmentText, input
                 px={4}
                 borderWidth={1}
                 isInvalid={invalid}
+                ref={ref}
                 {...(endAdornmentText && {
                     InputRightElement: (
                         <SText color={'text.light'} mr={3}>
                             {endAdornmentText}
                         </SText>
+                    ),
+                })}
+                {...(startAdornmentText && {
+                    InputLeftElement: (
+                        <SCenter onTouchEnd={() => (ref as any).current?.focus()} h="100%" mr={-1}>
+                            <SText color={'text.light'} ml={3} mr={-1}>
+                                {startAdornmentText}
+                            </SText>
+                        </SCenter>
                     ),
                 })}
                 fontSize="md"

@@ -10,6 +10,12 @@ import { WorkspacesEnviroment } from '@screens/WorkspacesEnviroment';
 import { AppRoutesProps } from './AppRoutesProps';
 import { THEME } from '../../theme/theme';
 import { Characterizations } from '@screens/Characterizations';
+import { synchronize } from '@nozbe/watermelondb/sync';
+import { database } from '@libs/watermelon';
+import { api } from '@services/api';
+import { getSyncChanges } from '@services/api/sync/getSyncChanges';
+import { useNetInfo } from '@react-native-community/netinfo';
+import { useEffect, useRef } from 'react';
 
 const Stack = createNativeStackNavigator<AppRoutesProps>();
 const Bottom = createBottomTabNavigator<AppRoutesProps>();
@@ -34,17 +40,6 @@ export const BottomRoutes = () => {
                     tabBarIcon: ({ color }) => <HomeSvg fill={color} width={iconSize} height={iconSize} />,
                 }}
             />
-            {/* <Bottom.Screen
-                name="characterizations"
-                component={Characterizations}
-                options={({ route }) => {
-                    return {
-                        tabBarVisible: route.path == 'task' ? true : false,
-                        tabBarLabel: 'Atividade',
-                        tabBarIcon: ({ color }) => <HistorySvg fill={color} width={iconSize} height={iconSize} />,
-                    };
-                }}
-            /> */}
             <Bottom.Screen
                 name="workspacesEnviroment"
                 component={WorkspacesEnviroment}
@@ -68,9 +63,52 @@ export const BottomRoutes = () => {
 };
 
 export const AppRoutes = () => {
+    const netInfo = useNetInfo();
+    const synchronizing = useRef(false);
+
+    async function offlineSynchronize() {
+        try {
+            await synchronize({
+                database,
+                pullChanges: async ({ lastPulledAt }) => {
+                    const { changes, latestVersion } = await getSyncChanges({
+                        lastPulledVersion: lastPulledAt ? new Date(lastPulledAt) : undefined,
+                    });
+
+                    return {
+                        changes: changes,
+                        timestamp: latestVersion,
+                    };
+                },
+                pushChanges: async ({ changes }) => {},
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    useEffect(() => {
+        const syncChanges = async () => {
+            if (netInfo.isConnected && !synchronizing.current) {
+                synchronizing.current = true;
+
+                try {
+                    await offlineSynchronize();
+                } catch (err) {
+                    console.log(err);
+                } finally {
+                    synchronizing.current = false;
+                }
+            }
+        };
+
+        syncChanges();
+    }, [netInfo.isConnected]);
+
     return (
         <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
             <Stack.Screen name="main" component={BottomRoutes} />
+            <Stack.Screen name="characterizations" component={Characterizations} />
             <Stack.Screen name="characterization" component={Characterization} />
         </Stack.Navigator>
     );

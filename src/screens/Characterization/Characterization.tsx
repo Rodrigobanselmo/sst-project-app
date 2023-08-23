@@ -23,6 +23,7 @@ import { CharacterizationPhotoModel } from '@libs/watermelon/model/Characterizat
 import { Collection } from '@nozbe/watermelondb';
 import { SLoading } from '@components/modelucules';
 import { CharacterizationRepository } from '@repositories/characterizationRepository';
+import { CharacterizationTabView } from './components/CharacterizationTabView';
 
 const Stack = createNativeStackNavigator<FormCharacterizationRoutesProps>();
 
@@ -69,13 +70,17 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         setForm((prev) => ({ ...prev, ...formValues }));
     }, []);
 
+    const onGoBack = useCallback(() => {
+        navigation.navigate('characterizations', { workspaceId: route.params.workspaceId });
+    }, [navigation, route.params.workspaceId]);
+
     const onDeleteForm = useCallback(async () => {
         if (route.params?.id) {
             const repo = new CharacterizationRepository();
             await repo.delete(route.params.id);
-            navigation.navigate('workspacesEnviroment');
+            navigation.navigate('characterizations', { workspaceId: route.params.workspaceId });
         }
-    }, [navigation, route.params.id]);
+    }, [navigation, route.params.id, route.params.workspaceId]);
 
     const onSaveForm = useCallback(async () => {
         const isValid = await trigger(['name', 'type']);
@@ -103,6 +108,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                     temperature,
                     luminosity,
                     description,
+                    workspaceId: route.params.workspaceId,
                     moisturePercentage,
                     userId: user.id,
                     photos: form.photos?.map((photo) => ({ photoUrl: photo.uri, id: photo.id })),
@@ -133,8 +139,12 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                 photos: photos.map((photo: CharacterizationPhotoModel) => ({ uri: photo.photoUrl, id: photo.id })),
                 workspaceId: characterization.workspaceId,
             });
+        } else {
+            const type = route.params?.type;
+
+            if (type) setValue('type', type);
         }
-    }, [route.params?.id, setValue]);
+    }, [route.params?.id, route.params?.type, setValue]);
 
     useEffect(() => {
         getCharacterization();
@@ -148,12 +158,14 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         <Stack.Navigator initialRouteName="formCharacterization">
             <Stack.Screen name="formCharacterization" options={{ headerShown: false }}>
                 {({ navigation }: FormCharacterizationScreenProps) => (
-                    <CharacterizationForm
+                    <CharacterizationTabView
                         control={control}
                         onEditForm={onEditForm}
                         onSaveForm={onSaveForm}
                         openCamera={openCamera}
+                        onGoBack={onGoBack}
                         form={form}
+                        isEdit={!!route.params?.id}
                         {...(route.params?.id && {
                             onDeleteForm: onDeleteForm,
                         })}

@@ -15,9 +15,9 @@ export interface CharacterizationFormProps {
     photos?: ICharImageGallery[];
     beforePhotos?: ICharImageGallery[];
     isEdited?: boolean;
+    type?: CharacterizationTypeEnum;
     // name?: string;
     // description?: string;
-    // type?: CharacterizationTypeEnum;
     // noiseValue?: string;
     // temperature?: string;
     // luminosity?: string;

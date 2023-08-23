@@ -8,6 +8,7 @@ import withObservables from '@nozbe/with-observables';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
 import { EnhancedCharacterizationPhoto } from './CharacterizationPhoto';
+import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 
 type Props = {
     characterization: CharacterizationModel;
@@ -18,7 +19,10 @@ export function CharacterizationCard({ characterization, photos }: Props): React
     const { navigate } = useNavigation<AppNavigatorRoutesProps>();
 
     const handleEditCharacterization = () => {
-        navigate('characterization', { id: characterization.id });
+        navigate('characterization', {
+            id: characterization.id,
+            workspaceId: characterization.workspaceId,
+        });
     };
 
     return (

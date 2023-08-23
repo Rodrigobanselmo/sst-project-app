@@ -1,0 +1,1 @@
+export { STabView } from './STabView';

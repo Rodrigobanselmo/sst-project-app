@@ -2,17 +2,22 @@ import { SFlatList } from '@components/core';
 import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
 import withObservables from '@nozbe/with-observables';
 import EnhancedWorkspaceEnviromentCard from './WorkspaceEnviromentCard';
+import { SNoContent } from '@components/modelucules';
 
 type Props = {
     workspaces: WorkspaceModel[];
 };
 
 export function WorkspaceEnviromentList({ workspaces }: Props): React.ReactElement {
+    if (!workspaces.length) {
+        return <SNoContent mx="pagePaddingPx" />;
+    }
+
     return (
         <SFlatList
             data={workspaces}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <EnhancedWorkspaceEnviromentCard characterization={item} />}
+            renderItem={({ item }) => <EnhancedWorkspaceEnviromentCard workspace={item} />}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 8 }}
         />

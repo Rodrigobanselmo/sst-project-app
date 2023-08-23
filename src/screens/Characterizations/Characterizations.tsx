@@ -1,4 +1,4 @@
-import { SVStack, useSToast } from '@components/core';
+import { SBox, SFloatingButton, SIcon, SSpinner, SText, SVStack, useSToast } from '@components/core';
 import { SButton, SScreenHeader } from '@components/index';
 import { DBTablesEnum } from '@constants/enums/db-tables';
 import { useAuth } from '@hooks/useAuth';
@@ -9,35 +9,40 @@ import { useNavigation } from '@react-navigation/native';
 import { CharacterizationRepository } from '@repositories/characterizationRepository';
 import { CompanyRepository } from '@repositories/companyRepository';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { useEffect, useState } from 'react';
-import EnhancedCharacterizationList from './components/CharacterizationList';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import RenderEnhancedCharacterizationList from './components/CharacterizationList';
 import { CharacterizationsPageProps } from './types';
+import { MaterialIcons } from '@expo/vector-icons';
+import { SAFE_AREA_PADDING } from '@constants/constants';
+import { CompanyModel } from '@libs/watermelon/model/CompanyModel';
+import { addDotsText } from '@utils/helpers/addDotsText';
 
 export function Characterizations({ route }: CharacterizationsPageProps): React.ReactElement {
     const [workspaceDB, setWorkspaceDB] = useState<WorkspaceModel>();
-    const [characterizations, setCharacterizations] = useState<CharacterizationModel[]>([]);
-    const { user } = useAuth();
+    const [companyDB, setCompanyDB] = useState<CompanyModel>();
     const [loading, setLoading] = useState(true);
 
-    const { navigate } = useNavigation<AppNavigatorRoutesProps>();
-    const toast = useSToast();
-
-    const handleCreateCharacterization = () => {
-        navigate('characterization', { workspaceId: route.params.workspaceId });
-    };
-
-    async function fetchCharacterizations() {
+    const fetchCharacterizations = useCallback(async () => {
         try {
             const companyRepository = new CompanyRepository();
             const { workspace } = await companyRepository.findOneWorkspace(route.params.workspaceId);
 
+            const company = await (workspace.Company as any).fetch();
+
+            try {
+                await (workspace.characterization as any).fetch();
+            } catch (e) {
+                console.error(e);
+            }
+
+            setCompanyDB(company);
             setWorkspaceDB(workspace);
         } catch (error) {
-            console.error(error);
+            console.error('fetchCharacterizations', error);
         } finally {
             setLoading(false);
         }
-    }
+    }, [route.params.workspaceId]);
 
     useEffect(() => {
         let isMounted = true;
@@ -49,7 +54,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [fetchCharacterizations]);
 
     // useFocusEffect(
     //     useCallback(() => {
@@ -65,24 +70,38 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
     //     }, []),
     // );
 
-    const handleTest = async () => {
-        const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
-        const characterizations = await characterizationCollection.query().fetch();
+    const companyName = companyDB?.fantasy || companyDB?.name || '';
+    const workspaceName = workspaceDB?.name || '';
 
-        const id = characterizations[0].id;
-        const x = new CharacterizationRepository();
-        x.update(id, {
-            name: `teste ${Math.random().toFixed(2)}`,
-            photos: [{ photoUrl: 'teste', id: 'teste' }],
-        });
-    };
+    // const subtitleText = `${addDotsText({ text: companyName, maxLength: 25 })} (${addDotsText({
+    //     text: workspaceName,
+    //     maxLength: 25,
+    // })})`;
 
     return (
         <SVStack flex={1}>
-            <SScreenHeader title="Atividade" />
-            <SButton mt={10} title="Criar conta" variant="outline" onPress={handleCreateCharacterization} />
-            <SButton mt={10} title="Criar handleTest" variant="outline" onPress={handleTest} />
-            {workspaceDB && <EnhancedCharacterizationList workspace={workspaceDB} />}
+            <SScreenHeader
+                mb={4}
+                backButton
+                title="Ambientes / Atividades"
+                subtitleComponent={
+                    <SBox px={12}>
+                        {!loading && (
+                            <SText fontSize={14} color="text.label">
+                                {companyName} <SText fontSize={13}>({workspaceName})</SText>
+                            </SText>
+                        )}
+                    </SBox>
+                }
+            />
+            {loading && <SSpinner color={'primary.main'} size={32} />}
+            {!loading && (
+                <>
+                    {/* <SButton mt={10} title="Criar conta" variant="outline" onPress={handleCreateCharacterization} /> */}
+
+                    <RenderEnhancedCharacterizationList workspace={workspaceDB} />
+                </>
+            )}
         </SVStack>
     );
 }

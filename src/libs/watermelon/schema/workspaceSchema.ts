@@ -6,10 +6,20 @@ const workspaceSchema = tableSchema({
     columns: [
         { name: 'apiId', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
-        { name: 'withCharacterization', type: 'boolean', isIndexed: true },
         { name: 'description', type: 'string', isOptional: true },
         { name: 'abbreviation', type: 'string', isOptional: true },
         { name: 'status', type: 'string' },
+        { name: 'startChar_at', type: 'number', isIndexed: true, isOptional: true },
+
+        { name: 'cep', type: 'string', isOptional: true },
+        { name: 'street', type: 'string', isOptional: true },
+        { name: 'neighborhood', type: 'string', isOptional: true },
+        { name: 'city', type: 'string', isOptional: true },
+        { name: 'state', type: 'string', isOptional: true },
+        { name: 'number', type: 'string', isOptional: true },
+        { name: 'complement', type: 'string', isOptional: true },
+
+        { name: 'companyId', type: 'string', isOptional: true },
 
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },

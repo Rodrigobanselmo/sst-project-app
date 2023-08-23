@@ -13,9 +13,9 @@ class CharacterizationPhotoModel extends Model {
     @field('name') name!: string;
     @field('photoUrl') photoUrl!: string;
     @field('companyCharacterizationId') companyCharacterizationId!: string;
-    @field('created_at') created_at?: Date;
-    @field('updated_at') updated_at?: Date;
-    @field('deleted_at') deleted_at?: Date;
+    @date('created_at') created_at?: Date;
+    @date('updated_at') updated_at?: Date;
+    @date('deleted_at') deleted_at?: Date;
 
     @relation(DBTablesEnum.COMPANY_CHARACTERIZATION, 'companyCharacterizationId')
     CompanyCharacterization!: CharacterizationModel;

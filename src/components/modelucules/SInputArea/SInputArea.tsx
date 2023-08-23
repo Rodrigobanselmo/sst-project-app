@@ -1,8 +1,10 @@
-import { ISTextareaProps, SFormControl, SText, STextarea } from '@components/core';
+import { ISTextareaProps, SBox, SFormControl, SText, STextarea } from '@components/core';
+import { useRef } from 'react';
 
 interface ISInputAreaProps extends ISTextareaProps {
     errorMessage?: string | null;
     endAdornmentText?: React.ReactNode;
+    startAdornmentText?: React.ReactNode;
     inputProps?: ISTextareaProps & {
         variant?: 'normal' | 'filled';
     };
@@ -13,25 +15,36 @@ export function SInputArea({
     isInvalid,
     variant,
     endAdornmentText,
+    startAdornmentText,
     inputProps,
     ...props
 }: ISInputAreaProps) {
     const invalid = !!errorMessage || isInvalid;
+    const ref = useRef(null);
 
     return (
         <SFormControl isInvalid={invalid} mb={4}>
             <STextarea
                 bg="background.default"
-                h={12}
                 px={4}
                 autoCompleteType={'off'}
                 borderWidth={1}
+                ref={ref}
                 isInvalid={invalid}
                 {...(endAdornmentText && {
                     InputRightElement: (
                         <SText color={'text.light'} mr={3}>
                             {endAdornmentText}
                         </SText>
+                    ),
+                })}
+                {...(startAdornmentText && {
+                    InputLeftElement: (
+                        <SBox onTouchEnd={() => (ref as any).current?.focus()} h="100%" mr={-2} mt={3}>
+                            <SText color={'text.light'} ml={3}>
+                                {startAdornmentText}
+                            </SText>
+                        </SBox>
                     ),
                 })}
                 fontSize="md"

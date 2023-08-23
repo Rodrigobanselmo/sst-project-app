@@ -5,6 +5,8 @@ import { CompanyModel } from '@libs/watermelon/model/CompanyModel';
 import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
 import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
 import { Q } from '@nozbe/watermelondb';
+import { asyncBatch } from '@utils/helpers/asyncBatch';
+import { asyncEach } from '@utils/helpers/asyncEach';
 
 export interface IWorkspaceCreate {
     id?: string;
@@ -20,7 +22,8 @@ export interface IWorkspaceCreate {
     state?: string;
     number?: string;
     complement?: string;
-    withCharacterization?: boolean;
+    startChar_at?: Date;
+    userId: number;
 }
 
 export interface ICompanyCreate {
@@ -60,8 +63,9 @@ export class CompanyRepository {
 
     async findCompanyByApiId({ apiId, userId }: { apiId: string; userId: number }) {
         const companyCollection = database.get<CompanyModel>(DBTablesEnum.COMPANY);
-        const [company] = await companyCollection.query(Q.where('apiId', apiId), Q.where('user_id', userId)).fetch();
-        // const workspaces: WorkspaceModel[] = await (company?.workspace as any)?.fetch();
+        const [company] = await companyCollection
+            .query(Q.where('apiId', apiId), Q.where('user_id', String(userId)))
+            .fetch();
 
         return { company };
     }
@@ -95,7 +99,7 @@ export class CompanyRepository {
 
                 return newCompany;
             } catch (error) {
-                console.error(error);
+                console.error(2, error);
             }
         });
     }
@@ -139,25 +143,31 @@ export class CompanyRepository {
         });
     }
 
-    async upsertByApiId({ workspace, ...data }: ICompanyCreate) {
+    async upsertByApiId(data: ICompanyCreate) {
         if (data.apiId) {
             const foundCompany = await this.findCompanyByApiId({ apiId: data.apiId, userId: data.userId });
             if (foundCompany?.company?.id) {
-                if (workspace) {
-                    workspace.forEach(async (works) => {
-                        if (works.id) {
+                if (data.workspace) {
+                    await asyncBatch(data.workspace, 10, async (works) => {
+                        if (works.apiId) {
                             const workspaceFound = await this.findWorkspaceByApiId({
-                                apiId: works.id,
+                                apiId: works.apiId,
                                 userId: data.userId,
                             });
 
-                            if (workspaceFound.workspace?.id) await this.updateWorkspace(works.id, works);
-                            else await this.createWorkspace(foundCompany?.company?.id, works);
+                            await database.write(async () => {
+                                if (workspaceFound.workspace?.id)
+                                    await this.updateWorkspace(workspaceFound.workspace.id as string, works);
+                                else await this.createWorkspace(foundCompany?.company?.id, works);
+                            });
                         }
                     });
                 }
 
+                delete data.workspace;
                 await this.update(foundCompany?.company?.id, data);
+            } else {
+                await this.create(data);
             }
         } else await this.create(data);
     }
@@ -171,67 +181,68 @@ export class CompanyRepository {
 
     async findWorkspaceByApiId({ apiId, userId }: { apiId: string; userId: number }) {
         const workspaceTable = database.get<WorkspaceModel>(DBTablesEnum.WORKSPACE);
-        const [workspace] = await workspaceTable.query(Q.where('apiId', apiId), Q.where('user_id', userId)).fetch();
+        const workspaces = await workspaceTable
+            .query(Q.where('apiId', apiId), Q.where('user_id', String(userId)))
+            .fetch();
 
-        return { workspace };
+        return { workspace: workspaces[0] };
     }
 
-    async createWorkspace(companyId: string, workspace: IWorkspaceCreate) {
-        return await database.write(async () => {
-            const workspaceTable = database.get<WorkspaceModel>(DBTablesEnum.WORKSPACE);
+    private async createWorkspace(companyId: string, workspace: IWorkspaceCreate) {
+        const workspaceTable = database.get<WorkspaceModel>(DBTablesEnum.WORKSPACE);
 
-            const newWorkspace = await workspaceTable.create((newWorkspace) => {
-                newWorkspace.apiId = newWorkspace.id;
-                newWorkspace.companyId = companyId;
-                newWorkspace.name = workspace.name;
-                newWorkspace.abbreviation = workspace.abbreviation;
-                newWorkspace.description = workspace.description;
-                newWorkspace.cep = workspace.cep;
-                newWorkspace.street = workspace.street;
-                newWorkspace.neighborhood = workspace.neighborhood;
-                newWorkspace.city = workspace.city;
-                newWorkspace.state = workspace.state;
-                newWorkspace.number = workspace.number;
-                newWorkspace.complement = workspace.complement;
-                newWorkspace.status = StatusEnum.ACTIVE;
-                newWorkspace.withCharacterization = workspace.withCharacterization;
+        const newWorkspace = await workspaceTable.create((newWorkspace) => {
+            newWorkspace.apiId = workspace.apiId;
+            newWorkspace.companyId = companyId;
+            newWorkspace.name = workspace.name;
+            newWorkspace.abbreviation = workspace.abbreviation;
+            newWorkspace.description = workspace.description;
+            newWorkspace.cep = workspace.cep;
+            newWorkspace.street = workspace.street;
+            newWorkspace.neighborhood = workspace.neighborhood;
+            newWorkspace.city = workspace.city;
+            newWorkspace.state = workspace.state;
+            newWorkspace.number = workspace.number;
+            newWorkspace.complement = workspace.complement;
+            newWorkspace.userId = String(workspace.userId);
+            newWorkspace.status = StatusEnum.ACTIVE;
+            if (workspace.startChar_at) newWorkspace.startChar_at = new Date(workspace.startChar_at);
 
-                newWorkspace.created_at = new Date();
+            newWorkspace.created_at = new Date();
+            newWorkspace.updated_at = new Date();
+        });
+
+        return newWorkspace;
+    }
+
+    private async updateWorkspace(id: string, data: Partial<IWorkspaceCreate>) {
+        const workspaceTable = database.get<WorkspaceModel>(DBTablesEnum.WORKSPACE);
+
+        try {
+            const workspace = await workspaceTable.find(id);
+            const newWorkspace = await workspace.update((newWorkspace) => {
+                if (data.apiId) newWorkspace.apiId = data.apiId;
+                if (data.name) newWorkspace.name = data.name;
+                if (data.abbreviation) newWorkspace.abbreviation = data.abbreviation;
+                if (data.description) newWorkspace.description = data.description;
+                if (data.cep) newWorkspace.cep = data.cep;
+                if (data.street) newWorkspace.street = data.street;
+                if (data.neighborhood) newWorkspace.neighborhood = data.neighborhood;
+                if (data.city) newWorkspace.city = data.city;
+                if (data.state) newWorkspace.state = data.state;
+                if (data.number) newWorkspace.number = data.number;
+                if (data.complement) newWorkspace.complement = data.complement;
+                if (data.startChar_at && !workspace.startChar_at)
+                    newWorkspace.startChar_at = new Date(data.startChar_at);
+                if (data.userId) newWorkspace.userId = String(workspace.userId);
+
+                if (data.status) newWorkspace.status = data.status;
                 newWorkspace.updated_at = new Date();
             });
 
             return newWorkspace;
-        });
-    }
-
-    async updateWorkspace(id: string, data: Partial<IWorkspaceCreate>) {
-        await database.write(async () => {
-            const workspaceTable = database.get<WorkspaceModel>(DBTablesEnum.WORKSPACE);
-
-            try {
-                const workspace = await workspaceTable.find(id);
-                const newWorkspace = await workspace.update((newWorkspace) => {
-                    if (data.apiId) newWorkspace.apiId = data.apiId;
-                    if (data.name) newWorkspace.name = data.name;
-                    if (data.abbreviation) newWorkspace.abbreviation = data.abbreviation;
-                    if (data.description) newWorkspace.description = data.description;
-                    if (data.cep) newWorkspace.cep = data.cep;
-                    if (data.street) newWorkspace.street = data.street;
-                    if (data.neighborhood) newWorkspace.neighborhood = data.neighborhood;
-                    if (data.city) newWorkspace.city = data.city;
-                    if (data.state) newWorkspace.state = data.state;
-                    if (data.number) newWorkspace.number = data.number;
-                    if (data.complement) newWorkspace.complement = data.complement;
-                    if (data.withCharacterization) newWorkspace.withCharacterization = data.withCharacterization;
-
-                    if (data.status) newWorkspace.status = data.status;
-                    newWorkspace.updated_at = new Date();
-                });
-
-                return newWorkspace;
-            } catch (error) {
-                console.error(error);
-            }
-        });
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

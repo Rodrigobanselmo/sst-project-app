@@ -14,6 +14,7 @@ export interface ICharacterizationCreate {
     noiseValue?: string;
     temperature?: string;
     luminosity?: string;
+    workspaceId: string;
     moisturePercentage?: string;
     userId: number;
     photos?: {
@@ -61,6 +62,7 @@ export class CharacterizationRepository {
                 characterization.temperature = data.temperature;
                 characterization.luminosity = data.luminosity;
                 characterization.moisturePercentage = data.moisturePercentage;
+                characterization.workspaceId = data.workspaceId;
                 characterization.status = StatusEnum.ACTIVE;
                 characterization.created_at = new Date();
                 characterization.updated_at = new Date();

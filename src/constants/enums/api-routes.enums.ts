@@ -13,6 +13,7 @@ export enum ApiRoutesEnum {
     CHECKLIST = '/checklist',
     CNAES = '/company/cnae',
     CNPJ = '/company/cnpj',
+    SYNC = '/sync',
     COMPANIES = '/company',
     COMPANY = '/company/:companyId',
     COMPANY_GROUP = '/company/:companyId/group',

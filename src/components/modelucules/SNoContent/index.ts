@@ -1,0 +1,1 @@
+export { SNoContent } from './SNoContent';

@@ -1,13 +1,20 @@
 import { Database } from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 
-import { schemas } from './schema';
-import { CharacterizationPhotoModel } from './model/CharacterizationPhotoModel';
 import { CharacterizationModel } from './model/CharacterizationModel';
-import { migrations } from './migrations';
+import { CharacterizationPhotoModel } from './model/CharacterizationPhotoModel';
 import { CompanyModel } from './model/CompanyModel';
-import { WorkspaceModel } from './model/WorkspaceModel';
+import { GenerateSourceModel } from './model/GenerateSourceModel';
+import { HierarchyModel } from './model/HierarchyModel';
+import { RecMedModel } from './model/RecMedModel';
+import { RiskDataModel } from './model/RiskDataModel';
+import { RiskModel } from './model/RiskModel';
 import { UserAuthModel } from './model/UserAuthModel';
+import { WorkspaceModel } from './model/WorkspaceModel';
+import { AdmsRiskDataModel } from './model/_MMModel/AdmsRiskDataModel';
+import { EngsRiskDataModel } from './model/_MMModel/EngsRiskDataModel';
+import { EpisRiskDataModel } from './model/_MMModel/EpisRiskDataModel';
+import { schemas } from './schema';
 
 const adapter = new SQLiteAdapter({
     schema: schemas,
@@ -16,5 +23,19 @@ const adapter = new SQLiteAdapter({
 
 export const database = new Database({
     adapter,
-    modelClasses: [UserAuthModel, CompanyModel, WorkspaceModel, CharacterizationModel, CharacterizationPhotoModel],
+    modelClasses: [
+        UserAuthModel,
+        CompanyModel,
+        WorkspaceModel,
+        CharacterizationModel,
+        CharacterizationPhotoModel,
+        RiskModel,
+        HierarchyModel,
+        RiskDataModel,
+        RecMedModel,
+        AdmsRiskDataModel,
+        EngsRiskDataModel,
+        EpisRiskDataModel,
+        GenerateSourceModel,
+    ],
 });

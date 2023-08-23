@@ -8,6 +8,8 @@ const characterizationSchema = tableSchema({
         { name: 'apiId', type: 'string', isIndexed: true },
         { name: 'type', type: 'string' },
         { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'workspaceId', type: 'string', isIndexed: true },
+        { name: 'companyId', type: 'string', isIndexed: true, isOptional: true },
         { name: 'profileParentId', type: 'string', isOptional: true },
         { name: 'profileName', type: 'string', isOptional: true },
         { name: 'description', type: 'string', isOptional: true },

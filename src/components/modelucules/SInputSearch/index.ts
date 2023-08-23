@@ -1,0 +1,1 @@
+export { SInputSearch } from './SInputSearch';

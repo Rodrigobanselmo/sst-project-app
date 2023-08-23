@@ -1,4 +1,4 @@
-import { SFloatingButton, SIcon, SVStack, useSToast } from '@components/core';
+import { SFloatingButton, SIcon, SSpinner, SVStack, useSToast } from '@components/core';
 import { SScreenHeader } from '@components/index';
 import { SSearchCompany } from '@components/organisms/SSearchModal/components/SSearchCompany';
 import { SSearchWorkspace } from '@components/organisms/SSearchModal/components/SSearchWorkspace';
@@ -13,77 +13,72 @@ import { WorkspacesEviromentsPageProps } from './types';
 import { UserAuthRepository } from '@repositories/userAuthRepository';
 import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
 import EnhancedCharacterizationList from '@screens/Characterizations/components/CharacterizationList';
+import EnhancedWorkspaceEnviromentList from './components/WorkspaceEnviromentList';
+import { database } from '@libs/watermelon';
+import { DBTablesEnum } from '@constants/enums/db-tables';
+import { Q } from '@nozbe/watermelondb';
+import { useUserDatabase } from '@hooks/useUserDatabase';
 
 export function WorkspacesEnviroment({ route }: WorkspacesEviromentsPageProps): React.ReactElement {
-    const [userDB, setUserDB] = useState<UserAuthModel>();
-    const [isLoading, setIsLoading] = useState(true);
     const [isOpenAdd, setIsOpenAdd] = useState(false);
     const [company, setCompany] = useState<ICompany | null>(null);
 
     const { navigate } = useNavigation<AppNavigatorRoutesProps>();
-    const { user } = useAuth();
+    const { user, isLoading, setIsLoading, userDatabase } = useUserDatabase();
     const toast = useSToast();
 
     const handleCreateCharacterizationGroup = async (workspace: IWorkspace) => {
         if (company) {
             const companyRepository = new CompanyRepository();
-            await companyRepository.upsertByApiId({
-                ...company,
-                userId: user.id,
-                apiId: company.id,
-                workspace: [workspace].map((workspace) => ({
-                    ...workspace,
-                    ...workspace.address,
-                    apiId: workspace.id,
-                    withCharacterization: true,
-                })),
-            });
-
             try {
-                const model = await companyRepository.findWorkspaceByApiId({
+                setIsLoading(true);
+                await companyRepository.upsertByApiId({
+                    ...company,
                     userId: user.id,
-                    apiId: workspace.id,
+                    apiId: company.id,
+                    workspace: [workspace].map((workspace) => ({
+                        ...workspace,
+                        ...workspace.address,
+                        apiId: workspace.id,
+                        startChar_at: new Date(),
+                        userId: user.id,
+                    })),
                 });
 
-                navigate('characterizations', { workspaceId: model.workspace.id });
+                // toast.show({
+                //     title: 'Caracterização criada com sucesso!',
+                //     placement: 'bottom',
+                //     bgColor: 'green.500',
+                // });
+
+                const foundWorkspace = await companyRepository.findWorkspaceByApiId({
+                    apiId: workspace.id,
+                    userId: user.id,
+                });
+
+                setIsLoading(false);
+                navigate('characterizations', { workspaceId: foundWorkspace.workspace.id });
             } catch (error) {
-                console.error(error);
+                console.error('handleCreateCharacterizationGroup', error);
+                toast.show({
+                    title: 'Erro ao criar caracterização!',
+                    placement: 'top',
+                    bgColor: 'red.500',
+                });
+                setIsLoading(false);
             }
         }
     };
 
-    async function fetchWorkspaces() {
-        try {
-            const userRepository = new UserAuthRepository();
-            const { user: userDB } = await userRepository.findOne(user.id);
-
-            setUserDB(userDB);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        let isMounted = true;
-
-        if (isMounted) {
-            fetchWorkspaces();
-        }
-
-        return () => {
-            isMounted = false;
-        };
-    }, []);
-
     return (
         <SVStack flex={1}>
-            <SScreenHeader title="Caracterizações" />
-            {userDB && <EnhancedCharacterizationList user={userDB} />}
+            <SScreenHeader title="Caracterizações" mb={4} />
+            {isLoading && <SSpinner color={'primary.main'} size={32} />}
+            {userDatabase && <EnhancedWorkspaceEnviromentList user={userDatabase} />}
 
             <SFloatingButton
                 renderInPortal={false}
+                disabled={isLoading}
                 shadow={2}
                 placement="bottom-right"
                 size="md"
@@ -95,43 +90,49 @@ export function WorkspacesEnviroment({ route }: WorkspacesEviromentsPageProps): 
             />
 
             {/* <SButton mt={10} title="Criar conta" variant="outline" onPress={handleCreateCharacterization} /> */}
-            <SSearchCompany
-                setShowModal={setIsOpenAdd}
-                onSelect={(item) => {
-                    setCompany(item);
-                    setIsOpenAdd(false);
-                }}
-                showModal={isOpenAdd}
-                // renderTopItem={() => (
-                //     <SButton
-                //         mb={2}
-                //         height={9}
-                //         p={0}
-                //         title="Continuar sem empresa"
-                //         variant="outline"
-                //         onPress={handleCreateCharacterization}
-                //     />
-                // )}
-            />
-            <SSearchWorkspace
-                setShowModal={() => setCompany(null)}
-                showModal={!!company?.id}
-                handleGoBack={() => {
-                    setCompany(null);
-                    setIsOpenAdd(true);
-                }}
-                onSelect={handleCreateCharacterizationGroup}
-                // renderTopItem={() => (
-                //     <SButton
-                //         mb={2}
-                //         height={9}
-                //         p={0}
-                //         title="Continuar sem empresa"
-                //         variant="outline"
-                //         onPress={handleCreateCharacterization}
-                //     />
-                // )}
-            />
+            {isOpenAdd && (
+                <SSearchCompany
+                    setShowModal={setIsOpenAdd}
+                    onSelect={(item) => {
+                        setCompany(item);
+                        setIsOpenAdd(false);
+                    }}
+                    showModal={isOpenAdd}
+                    // renderTopItem={() => (
+                    //     <SButton
+                    //         mb={2}
+                    //         height={9}
+                    //         p={0}
+                    //         title="Continuar sem empresa"
+                    //         variant="outline"
+                    //         onPress={handleCreateCharacterization}
+                    //     />
+                    // )}
+                />
+            )}
+            {!!company?.id && (
+                <SSearchWorkspace
+                    isLoading={isLoading}
+                    setShowModal={() => setCompany(null)}
+                    showModal={!!company?.id}
+                    handleGoBack={() => {
+                        setCompany(null);
+                        setIsOpenAdd(true);
+                    }}
+                    companyId={company?.id}
+                    onSelect={(item) => handleCreateCharacterizationGroup(item)}
+                    // renderTopItem={() => (
+                    //     <SButton
+                    //         mb={2}
+                    //         height={9}
+                    //         p={0}
+                    //         title="Continuar sem empresa"
+                    //         variant="outline"
+                    //         onPress={handleCreateCharacterization}
+                    //     />
+                    // )}
+                />
+            )}
         </SVStack>
     );
 }

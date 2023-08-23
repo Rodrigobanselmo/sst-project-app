@@ -27,8 +27,8 @@ export const THEME = extendTheme({
             error: '#F44336',
         },
         background: {
-            paper: '#fbfbfb',
-            default: '#ffffff',
+            paper: '#ffffff',
+            default: '#fbfbfb',
         },
         input: {
             paper: '#ebf0f0',
@@ -39,6 +39,18 @@ export const THEME = extendTheme({
             label: '#63636f',
             light: '#7C7C8A',
             placeholder: '#7C7C8A',
+        },
+        border: {
+            main: '#dddee2',
+        },
+        risk: {
+            fis: '#1ca846',
+            bio: '#933d15',
+            qui: '#fa0215',
+            erg: '#9c9507',
+            aci: '#3d62ba',
+            outros: '#2D3748',
+            all: '#fff',
         },
         white: '#FFFFFF',
         red: {

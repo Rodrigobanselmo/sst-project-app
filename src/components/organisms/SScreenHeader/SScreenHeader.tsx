@@ -1,4 +1,4 @@
-import { SBox, SCenter, SHeading, SIcon } from '@components/core';
+import { SBox, SCenter, SHeading, SIcon, SText } from '@components/core';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Alert, TouchableOpacity } from 'react-native';
@@ -7,13 +7,27 @@ import { AppNavigatorRoutesProps, AppRoutesProps } from '@routes/app/AppRoutesPr
 
 interface ScreenHeaderProps {
     title: string;
+    subtitle?: string;
+    subtitleComponent?: any;
     navidateArgs?: [keyof AppRoutesProps, any];
     backButton?: boolean;
     isAlert?: boolean;
+    mb?: any;
     onDelete?: () => void;
+    navidateFn?: () => void;
 }
 
-export function SScreenHeader({ title, navidateArgs, backButton, isAlert, onDelete }: ScreenHeaderProps) {
+export function SScreenHeader({
+    title,
+    navidateFn,
+    navidateArgs,
+    backButton,
+    isAlert,
+    onDelete,
+    mb,
+    subtitle,
+    subtitleComponent,
+}: ScreenHeaderProps) {
     const insets = useSafeAreaInsets();
     const { goBack, navigate } = useNavigation<AppNavigatorRoutesProps>();
 
@@ -24,6 +38,8 @@ export function SScreenHeader({ title, navidateArgs, backButton, isAlert, onDele
         const action = () => {
             if (navidateArgs) {
                 navigate(...navidateArgs), {};
+            } else if (navidateFn) {
+                navidateFn();
             } else {
                 goBack();
             }
@@ -62,21 +78,23 @@ export function SScreenHeader({ title, navidateArgs, backButton, isAlert, onDele
     };
 
     return (
-        <SCenter position={'relative'} bg="background.default" pb={3} pt={paddingTop + 'px'} shadow={1}>
+        <SCenter position={'relative'} bg="background.default" pb={2} pt={paddingTop + 'px'} mb={mb}>
             {backButton && (
                 <SBox position={'absolute'} left={4} top={paddingTop + 'px'}>
                     <TouchableOpacity onPress={handleGoBack}>
-                        <SIcon as={Feather} name="arrow-left" color="text.main" size={6} />
+                        <SIcon as={Feather} name="arrow-left" color="text.main" size={5} />
                     </TouchableOpacity>
                 </SBox>
             )}
-            <SHeading color="text.main" fontSize={21} fontFamily="heading">
+            <SHeading color="text.main" fontSize={18} fontFamily="heading">
                 {title}
             </SHeading>
+            {subtitle && <SText fontSize={13}>{subtitle}</SText>}
+            {!!subtitleComponent && subtitleComponent}
             {onDelete && (
                 <SBox position={'absolute'} right={4} top={paddingRightTop + 'px'}>
                     <TouchableOpacity onPress={handleDelete}>
-                        <SIcon as={Feather} name="trash" color="red.500" size={5} />
+                        <SIcon as={Feather} name="trash" color="red.500" size={4} />
                     </TouchableOpacity>
                 </SBox>
             )}
