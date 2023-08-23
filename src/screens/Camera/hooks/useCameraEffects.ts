@@ -57,7 +57,7 @@ export const useCameraEffects = () => {
             try {
                 await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
             } catch (e) {
-                console.log(e);
+                console.error(e);
             }
         }
 

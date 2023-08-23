@@ -1,4 +1,4 @@
-import { ISBoxProps, SFormControl, SText, Radio as SR, SBox, ISRadioGroupProps } from '@components/core';
+import { ISBoxProps, SFormControl, SText, Radio, SBox, ISRadioGroupProps } from '@components/core';
 import { ISRadioProps } from '@components/core';
 
 interface SRadioProps extends ISRadioGroupProps {
@@ -14,23 +14,25 @@ export function SRadio({ errorMessage = null, isInvalid, options, boxProps, size
 
     return (
         <SFormControl isInvalid={invalid} mb={4}>
-            <SR.Group {...props}>
+            <Radio.Group {...props}>
                 <SBox {...boxProps}>
                     {options.map((option) => (
-                        <SRadio
+                        <Radio
                             size={sizeRadio}
                             key={option.value}
                             value={option.value}
                             my={2}
-                            isInvalid={false}
+                            isInvalid={invalid}
                             isDisabled={false}
                             {...(option as any)?.radioProps}
                         >
-                            <SText mx={2}>{option.label}</SText>
-                        </SRadio>
+                            <SText mx={2} {...(isInvalid && { color: 'red.500' })}>
+                                {option.label}
+                            </SText>
+                        </Radio>
                     ))}
                 </SBox>
-            </SR.Group>
+            </Radio.Group>
 
             <SFormControl.ErrorMessage
                 _text={{

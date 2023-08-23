@@ -25,6 +25,6 @@ export const characterizationSchema = yup
     .object({
         name: yup.string().trim().required('Informe o nome.'),
         type: yup.string().required('Informe o tipo.'),
-        description: yup.string(),
+        description: yup.string().optional(),
     })
     .required();

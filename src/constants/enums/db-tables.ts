@@ -1,4 +1,7 @@
 export enum DBTablesEnum {
-  COMPANY_CHARACTERIZATION = 'CompanyCharacterization',
-  COMPANY_CHARACTERIZATION_PHOTO = 'CompanyCharacterizationPhoto',
+    USER_AUTH = 'UserAuth',
+    COMPANY = 'Company',
+    COMPANY_CHARACTERIZATION = 'CompanyCharacterization',
+    COMPANY_CHARACTERIZATION_PHOTO = 'CompanyCharacterizationPhoto',
+    WORKSPACE = 'Workspace',
 }

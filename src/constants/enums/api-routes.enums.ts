@@ -95,6 +95,7 @@ export enum ApiRoutesEnum {
     SCHEDULE_BLOCKS = 'schedule-block/:companyId',
     // ESOCIAL18TABLES = 'esocial/table-18',
     NOTIFICATION = '/notification',
+    WORKSPACE = '/workspace',
 
     // Report
     REPORT_CLINIC = '/files/report/clinic/:companyId',

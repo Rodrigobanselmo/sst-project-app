@@ -16,6 +16,7 @@
             "@services/*": ["./src/services/*"],
             "@hooks/*": ["./src/hooks/*"],
             "@contexts/*": ["./src/contexts/*"],
+            "@repositories/*": ["./src/repositories/*"],
             "@routes/*": ["./src/routes/*"]
         }
     }

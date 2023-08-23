@@ -8,14 +8,7 @@ interface SInputProps extends ISInputProps {
     };
 }
 
-export function SInput({
-    errorMessage = null,
-    isInvalid,
-    variant,
-    endAdornmentText,
-    inputProps,
-    ...props
-}: SInputProps) {
+export function SInput({ errorMessage = null, isInvalid, endAdornmentText, inputProps, ...props }: SInputProps) {
     const invalid = !!errorMessage || isInvalid;
 
     return (
@@ -45,14 +38,14 @@ export function SInput({
                     bg: 'background.default',
                     borderWidth: 1,
                     borderColor: 'primary.main',
-                    ...(variant == 'filled' && {
-                        bg: 'background.paper',
+                    ...(inputProps?.variant == 'filled' && {
+                        bg: 'input.paper',
                         borderWidth: 1,
                         borderColor: 'primary.main',
                     }),
                 }}
-                {...(variant == 'filled' && {
-                    bg: 'background.paper',
+                {...(inputProps?.variant == 'filled' && {
+                    bg: 'input.paper',
                     borderWidth: 0,
                 })}
                 {...props}

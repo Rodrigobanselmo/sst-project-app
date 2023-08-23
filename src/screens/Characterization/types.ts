@@ -7,18 +7,21 @@ export interface ICharImageGallery {
     uri: string;
     orientation: Orientation;
     name?: string;
+    id?: string;
 }
 export interface CharacterizationFormProps {
-    id?: number;
+    workspaceId: string;
+    id?: string;
     photos?: ICharImageGallery[];
+    beforePhotos?: ICharImageGallery[];
     isEdited?: boolean;
-    name?: string;
-    description?: string;
-    type?: CharacterizationTypeEnum;
-    noiseValue?: string;
-    temperature?: string;
-    luminosity?: string;
-    moisturePercentage?: string;
+    // name?: string;
+    // description?: string;
+    // type?: CharacterizationTypeEnum;
+    // noiseValue?: string;
+    // temperature?: string;
+    // luminosity?: string;
+    // moisturePercentage?: string;
 }
 
 export type FormCharacterizationRoutesProps = {

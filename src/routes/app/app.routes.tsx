@@ -6,9 +6,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Characterization } from '@screens/Characterization';
 import { Home } from '@screens/Home';
 import { Profile } from '@screens/Profile';
-import { Task } from '@screens/Task';
+import { WorkspacesEnviroment } from '@screens/WorkspacesEnviroment';
 import { AppRoutesProps } from './AppRoutesProps';
 import { THEME } from '../../theme/theme';
+import { Characterizations } from '@screens/Characterizations';
 
 const Stack = createNativeStackNavigator<AppRoutesProps>();
 const Bottom = createBottomTabNavigator<AppRoutesProps>();
@@ -33,13 +34,23 @@ export const BottomRoutes = () => {
                     tabBarIcon: ({ color }) => <HomeSvg fill={color} width={iconSize} height={iconSize} />,
                 }}
             />
-            <Bottom.Screen
-                name="task"
-                component={Task}
+            {/* <Bottom.Screen
+                name="characterizations"
+                component={Characterizations}
                 options={({ route }) => {
                     return {
                         tabBarVisible: route.path == 'task' ? true : false,
                         tabBarLabel: 'Atividade',
+                        tabBarIcon: ({ color }) => <HistorySvg fill={color} width={iconSize} height={iconSize} />,
+                    };
+                }}
+            /> */}
+            <Bottom.Screen
+                name="workspacesEnviroment"
+                component={WorkspacesEnviroment}
+                options={({ route }) => {
+                    return {
+                        tabBarLabel: 'Caracterização Ambiente',
                         tabBarIcon: ({ color }) => <HistorySvg fill={color} width={iconSize} height={iconSize} />,
                     };
                 }}

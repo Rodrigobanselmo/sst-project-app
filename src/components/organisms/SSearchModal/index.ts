@@ -1,0 +1,1 @@
+export { SSearchModal } from './SSearchModal';

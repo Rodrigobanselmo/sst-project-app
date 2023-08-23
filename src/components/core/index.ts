@@ -15,3 +15,4 @@ export * from './Vstack';
 export * from './Radio';
 export * from './FlatList';
 export * from './ScrollView';
+export * from './FloatingButton';

@@ -5,6 +5,7 @@ const characterizationSchema = tableSchema({
     name: DBTablesEnum.COMPANY_CHARACTERIZATION,
     columns: [
         { name: 'name', type: 'string' },
+        { name: 'apiId', type: 'string', isIndexed: true },
         { name: 'type', type: 'string' },
         { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'profileParentId', type: 'string', isOptional: true },

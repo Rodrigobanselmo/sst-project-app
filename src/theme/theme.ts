@@ -27,9 +27,12 @@ export const THEME = extendTheme({
             error: '#F44336',
         },
         background: {
+            paper: '#fbfbfb',
+            default: '#ffffff',
+        },
+        input: {
             paper: '#ebf0f0',
             paper_focus: '#dddee2',
-            default: '#ffffff',
         },
         text: {
             main: '#121214',

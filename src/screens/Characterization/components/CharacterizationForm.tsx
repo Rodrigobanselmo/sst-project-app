@@ -22,6 +22,8 @@ type PageProps = {
     openCamera: () => void;
     form: CharacterizationFormProps;
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
+    onSaveForm: () => Promise<void>;
+    onDeleteForm?: () => Promise<void>;
     control: Control<ICharacterizationValues, any>;
 };
 
@@ -29,7 +31,14 @@ export const GALLERY_IMAGE_Width = 300;
 export const GALLERY_IMAGE_PORTRAIT_WIDTH = (((GALLERY_IMAGE_Width * 9) / 16) * 9) / 16;
 export const GALLERY_IMAGE_HEIGHT = (GALLERY_IMAGE_Width * 9) / 16;
 
-export function CharacterizationForm({ openCamera, onEditForm, form, control }: PageProps): React.ReactElement {
+export function CharacterizationForm({
+    openCamera,
+    onEditForm,
+    onSaveForm,
+    onDeleteForm,
+    form,
+    control,
+}: PageProps): React.ReactElement {
     const { photos, isEdited } = form;
 
     const handlePickImage = async () => {
@@ -77,7 +86,7 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
 
             onEditForm({ photos: results });
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 
@@ -107,6 +116,10 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
             { text: 'Voltar', style: 'cancel' },
             { text: 'Deletar', onPress: deleteImage, style: 'destructive' },
         ]);
+    };
+
+    const handleSave = () => {
+        onSaveForm();
     };
 
     const environments = [
@@ -147,7 +160,13 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
 
     return (
         <SVStack flex={1}>
-            <SScreenHeader isAlert={isEdited} title="Atividade" backButton navidateArgs={['task', {}]} />
+            <SScreenHeader
+                isAlert={isEdited}
+                title="Atividade"
+                onDelete={onDeleteForm}
+                backButton
+                navidateArgs={['workspacesEnviroment', {}]}
+            />
 
             <SScrollView style={{ paddingTop: 12 }}>
                 <SVStack mx={pagePadding}>
@@ -264,7 +283,7 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                     <SButton w="30%" title="Tirar Foto" onPress={openCamera} addColor />
                 </SHStack>
 
-                <SVStack mx={pagePadding}>
+                <SVStack mt={5} mx={pagePadding}>
                     <Controller
                         control={control}
                         name="description"
@@ -277,7 +296,7 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                     onChangeText: onChange,
                                 }}
                                 h={20}
-                                errorMessage={errors.name?.message}
+                                errorMessage={errors.description?.message}
                             />
                         )}
                     />
@@ -299,7 +318,7 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                             onChangeText: onChange,
                                         }}
                                         endAdornmentText={'ºC'}
-                                        errorMessage={errors.name?.message}
+                                        errorMessage={errors.temperature?.message}
                                     />
                                 )}
                             />
@@ -317,7 +336,7 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                             onChangeText: onChange,
                                         }}
                                         endAdornmentText={'db (A)'}
-                                        errorMessage={errors.name?.message}
+                                        errorMessage={errors.noiseValue?.message}
                                     />
                                 )}
                             />
@@ -337,7 +356,7 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                             onChangeText: onChange,
                                         }}
                                         endAdornmentText={'%'}
-                                        errorMessage={errors.name?.message}
+                                        errorMessage={errors.moisturePercentage?.message}
                                     />
                                 )}
                             />
@@ -355,7 +374,7 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                                             onChangeText: onChange,
                                         }}
                                         endAdornmentText={'LUX'}
-                                        errorMessage={errors.name?.message}
+                                        errorMessage={errors.luminosity?.message}
                                     />
                                 )}
                             />
@@ -364,7 +383,7 @@ export function CharacterizationForm({ openCamera, onEditForm, form, control }: 
                 </SVStack>
 
                 <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={24} mx={pagePadding}>
-                    <SButton size={'sm'} title="Salvar" onPress={handlePickImage} />
+                    <SButton size={'sm'} title="Salvar" onPress={handleSave} />
                 </SVStack>
             </SScrollView>
         </SVStack>
