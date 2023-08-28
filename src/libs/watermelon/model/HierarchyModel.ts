@@ -7,12 +7,14 @@ import { CharacterizationPhotoModel } from './CharacterizationPhotoModel';
 import { CharacterizationModel } from './CharacterizationModel';
 import { CompanyModel } from './CompanyModel';
 import { HierarchyEnum } from '@constants/enums/hierarchy.enum';
+import { WorkspaceHierarchyModel } from './_MMModel/WorkspaceHierarchyModel';
 
 class HierarchyModel extends Model {
     static table = DBTablesEnum.HIERARCHY;
     static associations = {
         [DBTablesEnum.USER_AUTH]: { type: 'belongs_to', key: 'user_id' },
         [DBTablesEnum.COMPANY]: { type: 'belongs_to', key: 'companyId' },
+        [DBTablesEnum.MM_WOKSPACE_HIERARCHY]: { type: 'has_many', foreignKey: 'hierarchyId' },
     } as const;
 
     @field('apiId') apiId?: string;
@@ -29,6 +31,8 @@ class HierarchyModel extends Model {
     @date('created_at') created_at?: Date;
     @date('updated_at') updated_at?: Date;
     @date('deleted_at') deleted_at?: Date;
+
+    @children(DBTablesEnum.MM_WOKSPACE_HIERARCHY) workspaceToHierarchy?: WorkspaceHierarchyModel[];
 
     @relation(DBTablesEnum.COMPANY, 'companyId') Company?: CompanyModel;
 }

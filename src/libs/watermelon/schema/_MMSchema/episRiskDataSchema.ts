@@ -4,6 +4,7 @@ import { tableSchema } from '@nozbe/watermelondb';
 const episRiskDataSchema = tableSchema({
     name: DBTablesEnum.MM_EPIS_TO_RISK_DATA,
     columns: [
+        { name: 'ca', type: 'string' },
         { name: 'riskDataId', type: 'string' },
         { name: 'efficientlyCheck', type: 'boolean', isOptional: true },
         { name: 'epcCheck', type: 'boolean', isOptional: true },

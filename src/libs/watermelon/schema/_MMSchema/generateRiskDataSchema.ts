@@ -2,7 +2,7 @@ import { DBTablesEnum } from '@constants/enums/db-tables';
 import { tableSchema } from '@nozbe/watermelondb';
 
 const generateRiskDataSchema = tableSchema({
-    name: DBTablesEnum.MM_ENGS_TO_RISK_DATA, // Replace with the appropriate table name
+    name: DBTablesEnum.MM_GENERATE_TO_RISK_DATA,
     columns: [
         { name: 'generateSourceId', type: 'string' },
         { name: 'riskDataId', type: 'string' },

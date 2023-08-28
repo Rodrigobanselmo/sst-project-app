@@ -8,7 +8,7 @@ const recMedSchema = tableSchema({
         { name: 'name', type: 'string' },
         { name: 'riskId', type: 'string' },
         { name: 'companyId', type: 'string', isOptional: true },
-        { name: 'recName', type: 'boolean', isOptional: true },
+        { name: 'recName', type: 'string', isOptional: true },
         { name: 'medName', type: 'string', isOptional: true },
         { name: 'status', type: 'string', isOptional: true },
         { name: 'medType', type: 'string', isOptional: true }, // Assuming MeasuresTypeEnum is string

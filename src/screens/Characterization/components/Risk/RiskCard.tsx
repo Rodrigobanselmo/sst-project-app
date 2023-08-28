@@ -6,24 +6,29 @@ import { RiskModel } from '@libs/watermelon/model/RiskModel';
 import withObservables from '@nozbe/with-observables';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
+import { useState } from 'react';
 
 type Props = {
-    risk: RiskModel;
+    risk: RiskModel & { selected?: boolean };
+    handleClickRisk?: (risk: RiskModel) => Promise<void>;
+    selected?: boolean;
+    renderRightElement?: (risk: RiskModel, selected: boolean) => React.ReactElement;
 };
 
-export function RiskCard({ risk }: Props): React.ReactElement {
-    const { navigate } = useNavigation<AppNavigatorRoutesProps>();
+export function RiskCard({ risk, selected, handleClickRisk, renderRightElement }: Props): React.ReactElement {
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleEditRisk = () => {
-        // navigate('risk', {
-        //     id: risk.id,
-        //     workspaceId: risk.workspaceId,
-        // });
+    const handleClick = () => {
+        if (handleClickRisk) {
+            setIsLoading(true);
+            handleClickRisk(risk).finally(() => setIsLoading(false));
+        }
     };
 
     return (
-        <SRowCard onPress={handleEditRisk}>
+        <SRowCard loading={isLoading} selected={selected} onPress={handleClick}>
             <STagRisk risk={risk} />
+            {renderRightElement?.(risk, !!selected)}
         </SRowCard>
     );
 }

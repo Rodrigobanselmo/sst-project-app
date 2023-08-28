@@ -48,11 +48,11 @@ export function SScreenHeader({
         if (isAlert) {
             Alert.alert('Atenção', 'Você perderá todos os dados preenchidos até aqui. Deseja continuar?', [
                 {
-                    text: 'Não',
+                    text: 'Voltar',
                     style: 'cancel',
                 },
                 {
-                    text: 'Sim',
+                    text: 'Sair',
                     onPress: action,
                 },
             ]);
@@ -80,13 +80,27 @@ export function SScreenHeader({
     return (
         <SCenter position={'relative'} bg="background.default" pb={2} pt={paddingTop + 'px'} mb={mb}>
             {backButton && (
-                <SBox position={'absolute'} left={4} top={paddingTop + 'px'}>
-                    <TouchableOpacity onPress={handleGoBack}>
+                <SBox position={'absolute'} left={0} top={0}>
+                    <TouchableOpacity
+                        style={{
+                            paddingHorizontal: 16,
+                            paddingTop: paddingTop,
+                            paddingBottom: 16,
+                        }}
+                        onPress={handleGoBack}
+                    >
                         <SIcon as={Feather} name="arrow-left" color="text.main" size={5} />
                     </TouchableOpacity>
                 </SBox>
             )}
-            <SHeading color="text.main" fontSize={18} fontFamily="heading">
+            <SHeading
+                color="text.main"
+                fontSize={18}
+                width={'70%'}
+                noOfLines={2}
+                textAlign={'center'}
+                fontFamily="heading"
+            >
                 {title}
             </SHeading>
             {subtitle && <SText fontSize={13}>{subtitle}</SText>}

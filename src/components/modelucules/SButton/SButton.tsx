@@ -8,6 +8,8 @@ interface ButtonProps extends ISButtonProps {
     bg?: ColorType;
     bgPressed?: ColorType;
     addColor?: boolean;
+    autoWidth?: boolean;
+    color?: ColorType;
 }
 
 export function SButton({
@@ -16,7 +18,9 @@ export function SButton({
     bg = 'primary.main',
     bgPressed = 'primary.light',
     addColor,
+    color = 'white',
     fontSize = 'sm',
+    autoWidth,
     ...props
 }: ButtonProps) {
     if (addColor) {
@@ -26,7 +30,7 @@ export function SButton({
 
     return (
         <SB
-            w="full"
+            w={autoWidth ? undefined : 'full'}
             h={12}
             bg={bg}
             borderWidth={0}
@@ -53,7 +57,7 @@ export function SButton({
             {...props}
         >
             <SText
-                color={'white'}
+                color={color}
                 {...(variant === 'outline' && {
                     color: bg,
                 })}

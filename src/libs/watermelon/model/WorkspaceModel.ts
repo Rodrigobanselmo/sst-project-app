@@ -1,16 +1,18 @@
 import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { DBTablesEnum } from '@constants/enums/db-tables';
 import { StatusEnum } from '@constants/enums/status.enum';
-import { Model } from '@nozbe/watermelondb';
+import { Model, Q } from '@nozbe/watermelondb';
 import { field, date, children, readonly, relation, lazy } from '@nozbe/watermelondb/decorators';
 import { CharacterizationPhotoModel } from './CharacterizationPhotoModel';
 import { CharacterizationModel } from './CharacterizationModel';
 import { CompanyModel } from './CompanyModel';
+import { WorkspaceHierarchyModel } from './_MMModel/WorkspaceHierarchyModel';
 
 class WorkspaceModel extends Model {
     static table = DBTablesEnum.WORKSPACE;
     static associations = {
         [DBTablesEnum.COMPANY_CHARACTERIZATION]: { type: 'has_many', foreignKey: 'workspaceId' },
+        [DBTablesEnum.MM_WOKSPACE_HIERARCHY]: { type: 'has_many', foreignKey: 'workspaceId' },
         [DBTablesEnum.USER_AUTH]: { type: 'belongs_to', key: 'user_id' },
         [DBTablesEnum.COMPANY]: { type: 'belongs_to', key: 'companyId' },
     } as const;
@@ -38,8 +40,14 @@ class WorkspaceModel extends Model {
     @date('updated_at') updated_at?: Date;
     @date('deleted_at') deleted_at?: Date;
 
-    @children(DBTablesEnum.COMPANY_CHARACTERIZATION) characterization?: CharacterizationModel[];
-
     @relation(DBTablesEnum.COMPANY, 'companyId') Company?: CompanyModel;
+
+    @children(DBTablesEnum.COMPANY_CHARACTERIZATION) characterization?: CharacterizationModel[];
+    @children(DBTablesEnum.MM_WOKSPACE_HIERARCHY) workspaceToHierarchy?: WorkspaceHierarchyModel[];
+
+    @lazy
+    hierarchies = this.collections
+        .get(DBTablesEnum.HIERARCHY)
+        .query(Q.on(DBTablesEnum.MM_WOKSPACE_HIERARCHY, 'workspaceId', this.id));
 }
 export { WorkspaceModel };

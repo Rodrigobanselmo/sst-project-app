@@ -13,9 +13,11 @@ import { recMedSchema } from './recMedSchema';
 import { generateSourceSchema } from './generateSourceSchema';
 import { riskDataSchema } from './riskDataSchema';
 import { riskSchema } from './riskSchema';
+import { recsRiskDataSchema } from './_MMSchema/recsRiskDataSchema';
+import { workspaceHierarchySchema } from './_MMSchema/workspaceHierarchySchema';
 
 const schemas = appSchema({
-    version: 1,
+    version: 2,
     tables: [
         companySchema,
         workspaceSchema,
@@ -25,12 +27,14 @@ const schemas = appSchema({
         admsRiskDataSchema,
         engsRiskDataSchema,
         episRiskDataSchema,
+        recsRiskDataSchema,
         generateRiskDataSchema,
         hierarchySchema,
         recMedSchema,
         generateSourceSchema,
         riskDataSchema,
         riskSchema,
+        workspaceHierarchySchema,
     ],
 });
 

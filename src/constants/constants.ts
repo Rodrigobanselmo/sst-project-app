@@ -27,3 +27,7 @@ export const SCREEN_HEIGHT = Platform.select<number>({
     android: Dimensions.get('screen').height - StaticSafeAreaInsets.safeAreaInsetsBottom,
     ios: Dimensions.get('window').height,
 }) as number;
+
+export const simpleCompanyId = 'b8635456-334e-4d6e-ac43-cfe5663aee17';
+export const simpleWorkspaceId = 'cad63aae-50e9-4e9d-914d-ef040d22ba1a';
+export const riskAllId = '776ca693-e69e-486f-9e52-c60d254acf6d';

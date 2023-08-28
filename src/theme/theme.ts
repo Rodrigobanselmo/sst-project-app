@@ -52,6 +52,13 @@ export const THEME = extendTheme({
             outros: '#2D3748',
             all: '#fff',
         },
+        scale: {
+            low: '#3cbe7d',
+            mediumLow: '#8fa728',
+            medium: '#d9d10b',
+            mediumHigh: '#d96c2f',
+            high: '#F44336',
+        },
         white: '#FFFFFF',
         red: {
             500: '#F75A68',

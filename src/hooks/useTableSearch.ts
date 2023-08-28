@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import Fuse from 'fuse.js';
 import sortArray from 'sort-array';
@@ -9,9 +9,12 @@ interface IUseTableSearch<T> {
     data: T[];
     keys: Fuse.FuseOptionKey<any>[];
     rowsPerPage?: number;
+    setSearchValue?: (value: string) => void;
+    searchValue?: string;
     minLengthSearch?: number;
     sortFunction?: (array: T[]) => T[];
     transformSearchTextBefore?: (search: string) => string;
+    onLoadingSearchFn?: (loading: boolean) => void;
 }
 
 export const useTableSearch = <T>({
@@ -21,17 +24,39 @@ export const useTableSearch = <T>({
     rowsPerPage,
     minLengthSearch,
     transformSearchTextBefore,
+    searchValue,
+    setSearchValue,
+    onLoadingSearchFn,
 }: IUseTableSearch<T>) => {
-    const [search, setSearch] = useState<string>('');
+    const [searchState, setSearchState] = useState<string>('');
+
+    const search = useMemo(() => {
+        return searchValue || searchState;
+    }, [searchState, searchValue]);
+
+    const setSearch = (value: string) => {
+        if (setSearchValue) setSearchValue(value);
+        else setSearchState(value);
+    };
+
     const [page, setPage] = useState(1);
 
-    const handleSearchChange = useDebouncedCallback((value: string) => {
+    const handleSearchChangeDebounce = useDebouncedCallback((value: string) => {
         setSearch(value);
         setPage(1);
+        onLoadingSearchFn?.(false);
     }, 300);
 
+    const handleSearchChange = useCallback(
+        (value: string) => {
+            onLoadingSearchFn?.(true);
+            handleSearchChangeDebounce(value);
+        },
+        [handleSearchChangeDebounce, onLoadingSearchFn],
+    );
+
     const fuse = useMemo(() => {
-        return new Fuse(data, { keys, ignoreLocation: true });
+        return new Fuse(data, { keys, ignoreLocation: true, threshold: 0.4 });
     }, [data, keys]);
 
     const results = useMemo(() => {

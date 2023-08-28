@@ -12,6 +12,9 @@ interface SHorizontalMenuProps<T> {
     getIsActive?: (value: T) => boolean;
     // selectedInFirst?: boolean;
     mb?: number;
+    activeColor?: string;
+    paddingHorizontal?: number | string;
+    fontSizeButton?: number;
 }
 
 export function SHorizontalMenu<T>({
@@ -20,6 +23,9 @@ export function SHorizontalMenu<T>({
     getLabel,
     getKeyExtractor,
     getIsActive,
+    paddingHorizontal,
+    activeColor = 'primary.main',
+    fontSizeButton = 12,
     mb, // selectedInFirst,
 }: SHorizontalMenuProps<T>) {
     // const result = useMemo(() => {
@@ -39,21 +45,25 @@ export function SHorizontalMenu<T>({
             <SFlatList
                 horizontal
                 data={options}
+                keyboardShouldPersistTaps={'handled'}
                 keyExtractor={getKeyExtractor}
                 renderItem={({ item }) => {
                     const isActive = getIsActive?.(item);
                     return (
                         <SButton
-                            fontSize={12}
+                            fontSize={fontSizeButton}
                             bg="gray.300"
-                            w={undefined}
+                            autoWidth
                             variant={'outline'}
                             title={getLabel(item)}
-                            onPress={() => onChange(item)}
+                            onPress={(e) => {
+                                e.stopPropagation();
+                                onChange(item);
+                            }}
                             height={7}
                             py={0}
                             {...(isActive && {
-                                bg: 'primary.main',
+                                bg: activeColor,
                                 variant: 'solid',
                             })}
                         />
@@ -62,7 +72,7 @@ export function SHorizontalMenu<T>({
                 showsVerticalScrollIndicator={false}
                 ItemSeparatorComponent={() => <SBox style={{ width: 10, height: 1 }} />}
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: pagePaddingPx }}
+                contentContainerStyle={{ paddingHorizontal: paddingHorizontal ?? pagePaddingPx }}
             />
         </SBox>
     );

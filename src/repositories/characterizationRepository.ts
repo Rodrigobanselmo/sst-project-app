@@ -1,10 +1,37 @@
 import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { DBTablesEnum } from '@constants/enums/db-tables';
+import { MeasuresTypeEnum, RecTypeEnum } from '@constants/enums/risk.enum';
 import { StatusEnum } from '@constants/enums/status.enum';
 import { database } from '@libs/watermelon';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
 import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
+import { GenerateSourceModel } from '@libs/watermelon/model/GenerateSourceModel';
+import { RecMedModel } from '@libs/watermelon/model/RecMedModel';
+import { RiskDataModel } from '@libs/watermelon/model/RiskDataModel';
 import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
+import { AdmsRiskDataModel } from '@libs/watermelon/model/_MMModel/AdmsRiskDataModel';
+import { EngsRiskDataModel } from '@libs/watermelon/model/_MMModel/EngsRiskDataModel';
+import { EpisRiskDataModel } from '@libs/watermelon/model/_MMModel/EpisRiskDataModel';
+import { GenerateRiskDataModel } from '@libs/watermelon/model/_MMModel/GenerateRiskDataModel';
+import { RecsRiskDataModel } from '@libs/watermelon/model/_MMModel/RecsRiskDataModel';
+import { RiskDataFormSelectedProps } from '@screens/Characterization/types';
+import uuidGenerator from 'react-native-uuid';
+import { IRiskDataCreate, RiskDataRepository } from './riskDataRepository';
+
+interface IRecMedCreate {
+    recName?: string;
+    medName?: string;
+    riskId: string;
+    id: string;
+    medType?: MeasuresTypeEnum;
+    recType?: RecTypeEnum;
+}
+
+interface IGenerateSourceCreate {
+    id: string;
+    name: string;
+    riskId: string;
+}
 
 export interface ICharacterizationCreate {
     apiId?: string;
@@ -22,6 +49,7 @@ export interface ICharacterizationCreate {
         apiId?: string;
         photoUrl: string;
     }[];
+    riskData?: IRiskDataCreate[];
 }
 
 export class CharacterizationRepository {
@@ -40,17 +68,26 @@ export class CharacterizationRepository {
         const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
 
         const characterization = await characterizationCollection.find(id);
-        const photos = await (characterization?.photos as any)?.fetch();
 
-        return { characterization, photos };
+        const [photos, riskData]: [CharacterizationPhotoModel[], RiskDataModel[]] = await Promise.all([
+            (characterization?.photos as any)?.fetch(),
+            (characterization?.riskData as any)?.fetch(),
+        ]);
+
+        return { characterization, photos, riskData };
     }
 
     async create(data: ICharacterizationCreate) {
+        const riskDataRepository = new RiskDataRepository();
+        const characterizationTable = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
+        const characterizationPhotoTable = database.get<CharacterizationPhotoModel>(
+            DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO,
+        );
+
         await database.write(async () => {
-            const characterizationTable = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
-            const characterizationPhotoTable = database.get<CharacterizationPhotoModel>(
-                DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO,
-            );
+            if (data.riskData) {
+                data.riskData = await riskDataRepository.createRecMedGS(data.riskData, data.userId);
+            }
 
             const newCharacterization = await characterizationTable.create((characterization) => {
                 characterization.apiId = data.apiId;
@@ -82,11 +119,15 @@ export class CharacterizationRepository {
                             });
                         }),
                     );
-
-                return newCharacterization;
             } catch (error) {
                 console.error(error);
             }
+
+            if (data.riskData) {
+                await riskDataRepository.createRiskData(data.riskData, newCharacterization.id, data.userId);
+            }
+
+            return newCharacterization;
         });
     }
 

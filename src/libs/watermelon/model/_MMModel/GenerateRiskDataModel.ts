@@ -12,7 +12,7 @@ import { RecMedModel } from '../RecMedModel';
 import { GenerateSourceModel } from '../GenerateSourceModel';
 
 class GenerateRiskDataModel extends Model {
-    static table = DBTablesEnum.MM_ENGS_TO_RISK_DATA;
+    static table = DBTablesEnum.MM_GENERATE_TO_RISK_DATA;
     static associations = {
         [DBTablesEnum.USER_AUTH]: { type: 'belongs_to', key: 'user_id' },
         [DBTablesEnum.GENERATE_SOURCE]: { type: 'belongs_to', key: 'generateSourceId' },

@@ -16,6 +16,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { SAFE_AREA_PADDING } from '@constants/constants';
 import { CompanyModel } from '@libs/watermelon/model/CompanyModel';
 import { addDotsText } from '@utils/helpers/addDotsText';
+import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 
 export function Characterizations({ route }: CharacterizationsPageProps): React.ReactElement {
     const [workspaceDB, setWorkspaceDB] = useState<WorkspaceModel>();
@@ -56,52 +57,29 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
         };
     }, [fetchCharacterizations]);
 
-    // useFocusEffect(
-    //     useCallback(() => {
-    //         let isMounted = true;
-
-    //         if (isMounted) {
-    //             fetchCharacterizations();
-    //         }
-
-    //         return () => {
-    //             isMounted = false;
-    //         };
-    //     }, []),
-    // );
-
     const companyName = companyDB?.fantasy || companyDB?.name || '';
     const workspaceName = workspaceDB?.name || '';
 
-    // const subtitleText = `${addDotsText({ text: companyName, maxLength: 25 })} (${addDotsText({
-    //     text: workspaceName,
-    //     maxLength: 25,
-    // })})`;
-
     return (
-        <SVStack flex={1}>
-            <SScreenHeader
-                mb={4}
-                backButton
-                title="Ambientes / Atividades"
-                subtitleComponent={
-                    <SBox px={12}>
-                        {!loading && (
-                            <SText fontSize={14} color="text.label">
-                                {companyName} <SText fontSize={13}>({workspaceName})</SText>
-                            </SText>
-                        )}
-                    </SBox>
-                }
-            />
-            {loading && <SSpinner color={'primary.main'} size={32} />}
-            {!loading && (
-                <>
-                    {/* <SButton mt={10} title="Criar conta" variant="outline" onPress={handleCreateCharacterization} /> */}
-
-                    <RenderEnhancedCharacterizationList workspace={workspaceDB} />
-                </>
-            )}
-        </SVStack>
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+            <SVStack flex={1}>
+                <SScreenHeader
+                    mb={4}
+                    backButton
+                    title="Ambientes / Atividades"
+                    subtitleComponent={
+                        <SBox px={12}>
+                            {!loading && (
+                                <SText fontSize={14} color="text.label">
+                                    {companyName} <SText fontSize={13}>({workspaceName})</SText>
+                                </SText>
+                            )}
+                        </SBox>
+                    }
+                />
+                {loading && <SSpinner color={'primary.main'} size={32} />}
+                {!loading && <RenderEnhancedCharacterizationList workspace={workspaceDB} />}
+            </SVStack>
+        </TouchableWithoutFeedback>
     );
 }

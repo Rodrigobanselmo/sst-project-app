@@ -15,6 +15,9 @@ import { AdmsRiskDataModel } from './model/_MMModel/AdmsRiskDataModel';
 import { EngsRiskDataModel } from './model/_MMModel/EngsRiskDataModel';
 import { EpisRiskDataModel } from './model/_MMModel/EpisRiskDataModel';
 import { schemas } from './schema';
+import { RecsRiskDataModel } from './model/_MMModel/RecsRiskDataModel';
+import { GenerateRiskDataModel } from './model/_MMModel/GenerateRiskDataModel';
+import { WorkspaceHierarchyModel } from './model/_MMModel/WorkspaceHierarchyModel';
 
 const adapter = new SQLiteAdapter({
     schema: schemas,
@@ -33,9 +36,13 @@ export const database = new Database({
         HierarchyModel,
         RiskDataModel,
         RecMedModel,
+        GenerateSourceModel,
+
         AdmsRiskDataModel,
         EngsRiskDataModel,
         EpisRiskDataModel,
-        GenerateSourceModel,
+        RecsRiskDataModel,
+        GenerateRiskDataModel,
+        WorkspaceHierarchyModel,
     ],
 });

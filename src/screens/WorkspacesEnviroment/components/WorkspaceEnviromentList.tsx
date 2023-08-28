@@ -16,6 +16,7 @@ export function WorkspaceEnviromentList({ workspaces }: Props): React.ReactEleme
     return (
         <SFlatList
             data={workspaces}
+            // keyboardShouldPersistTaps={'handled'}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => <EnhancedWorkspaceEnviromentCard workspace={item} />}
             showsVerticalScrollIndicator={false}

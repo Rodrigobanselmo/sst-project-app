@@ -19,8 +19,10 @@ class EpisRiskDataModel extends Model {
     } as const;
 
     // @field('epiId') epiId!: string;
+    @field('ca') ca!: string;
     @field('riskDataId') riskDataId!: string;
     @field('efficientlyCheck') efficientlyCheck?: boolean;
+
     @field('epcCheck') epcCheck?: boolean;
     @field('lifeTimeInDays') lifeTimeInDays?: number;
     @field('longPeriodsCheck') longPeriodsCheck?: boolean;

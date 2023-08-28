@@ -1,0 +1,22 @@
+import { HierarchyEnum } from '@constants/enums/hierarchy.enum';
+import { StatusEnum } from '@constants/enums/status.enum';
+
+export interface IHierarchy {
+    id: string;
+    created_at: Date;
+    status: StatusEnum;
+    type: HierarchyEnum;
+    name: string;
+    companyId: string;
+    description: string;
+    realDescription: string;
+    parentId: string | null;
+    workspaceIds: string[];
+}
+
+export type IHierarchyMap = Record<
+    string,
+    IHierarchy & {
+        children: (string | number)[];
+    }
+>;

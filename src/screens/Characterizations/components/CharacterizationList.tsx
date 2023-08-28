@@ -88,6 +88,7 @@ export function CharacterizationList({ characterizations, workspace }: Props): R
                 <SFlatList
                     data={results || []}
                     keyExtractor={(item) => item.id}
+                    // keyboardShouldPersistTaps={'handled'}
                     renderItem={({ item }) => <EnhancedCharacterizationCard characterization={item} />}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ flexGrow: 1, paddingHorizontal: pagePaddingPx }}

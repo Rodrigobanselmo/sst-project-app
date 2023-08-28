@@ -11,6 +11,7 @@ import { MeasuresTypeEnum, RecTypeEnum } from '@constants/enums/risk.enum';
 import { EngsRiskDataModel } from './_MMModel/EngsRiskDataModel';
 import { RiskModel } from './RiskModel';
 import { AdmsRiskDataModel } from './_MMModel/AdmsRiskDataModel';
+import { RecsRiskDataModel } from './_MMModel/RecsRiskDataModel';
 
 class RecMedModel extends Model {
     static table = DBTablesEnum.REC_MED;
@@ -22,10 +23,9 @@ class RecMedModel extends Model {
     } as const;
 
     @field('apiId') apiId?: string;
-    @field('name') name!: string;
     @field('riskId') riskId!: string;
     @field('companyId') companyId?: string;
-    @field('recName') recName?: boolean;
+    @field('recName') recName?: string;
     @field('medName') medName?: string;
     @field('status') status?: StatusEnum;
     @field('medType') medType?: MeasuresTypeEnum;
@@ -38,6 +38,7 @@ class RecMedModel extends Model {
 
     @children(DBTablesEnum.MM_ENGS_TO_RISK_DATA) engsRiskData?: EngsRiskDataModel[];
     @children(DBTablesEnum.MM_ADMS_TO_RISK_DATA) admsRiskData?: AdmsRiskDataModel[];
+    @children(DBTablesEnum.MM_RECS_TO_RISK_DATA) recsRiskData?: RecsRiskDataModel[];
 
     @relation(DBTablesEnum.USER_AUTH, 'user_id') UserAuth?: UserAuthModel;
     @relation(DBTablesEnum.RISK, 'riskId') Risk?: RiskModel;

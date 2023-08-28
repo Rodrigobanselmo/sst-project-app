@@ -1,0 +1,1 @@
+export { SLoadingPage } from './SLoadingPage';

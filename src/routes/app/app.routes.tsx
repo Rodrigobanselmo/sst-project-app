@@ -16,6 +16,7 @@ import { api } from '@services/api';
 import { getSyncChanges } from '@services/api/sync/getSyncChanges';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useEffect, useRef } from 'react';
+import { useSync } from '@hooks/useSync';
 
 const Stack = createNativeStackNavigator<AppRoutesProps>();
 const Bottom = createBottomTabNavigator<AppRoutesProps>();
@@ -63,47 +64,11 @@ export const BottomRoutes = () => {
 };
 
 export const AppRoutes = () => {
-    const netInfo = useNetInfo();
-    const synchronizing = useRef(false);
-
-    async function offlineSynchronize() {
-        try {
-            await synchronize({
-                database,
-                pullChanges: async ({ lastPulledAt }) => {
-                    const { changes, latestVersion } = await getSyncChanges({
-                        lastPulledVersion: lastPulledAt ? new Date(lastPulledAt) : undefined,
-                    });
-
-                    return {
-                        changes: changes,
-                        timestamp: latestVersion,
-                    };
-                },
-                pushChanges: async ({ changes }) => {},
-            });
-        } catch (err) {
-            console.error(err);
-        }
-    }
+    const { syncChanges } = useSync();
 
     useEffect(() => {
-        const syncChanges = async () => {
-            if (netInfo.isConnected && !synchronizing.current) {
-                synchronizing.current = true;
-
-                try {
-                    await offlineSynchronize();
-                } catch (err) {
-                    console.log(err);
-                } finally {
-                    synchronizing.current = false;
-                }
-            }
-        };
-
-        syncChanges();
-    }, [netInfo.isConnected]);
+        syncChanges(({ lastPulledVersion }) => getSyncChanges({ lastPulledVersion }));
+    }, [syncChanges]);
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>

@@ -11,8 +11,10 @@ export enum DBTablesEnum {
     HIERARCHY = 'Hierarchy',
     EMPLOYEE = 'Employee',
 
+    MM_WOKSPACE_HIERARCHY = 'MMWorkspaceHierarchy',
     MM_GENERATE_TO_RISK_DATA = 'MMGenerateToRiskData',
     MM_ENGS_TO_RISK_DATA = 'MMEngsToRiskData',
     MM_ADMS_TO_RISK_DATA = 'MMAdmsToRiskData',
+    MM_RECS_TO_RISK_DATA = 'MMRecsToRiskData',
     MM_EPIS_TO_RISK_DATA = 'MMEpisToRiskData',
 }
