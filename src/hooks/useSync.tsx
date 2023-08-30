@@ -3,19 +3,27 @@ import { synchronize } from '@nozbe/watermelondb/sync';
 import { getSyncChanges } from '@services/api/sync/getSyncChanges';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useCallback, useRef } from 'react';
+import { CompanyRepository } from '@repositories/companyRepository';
+import { useAuth } from './useAuth';
 
 export function useSync() {
     const netInfo = useNetInfo();
     const synchronizing = useRef<Record<string, boolean>>({});
+    const { user } = useAuth();
 
     const offlineSynchronize = useCallback(
-        async (getSyncChanges: (arg: { lastPulledVersion?: Date }) => Promise<any>) => {
+        async (options?: { companyStartIds?: string[] }) => {
             try {
                 await synchronize({
                     database,
                     pullChanges: async ({ lastPulledAt }) => {
+                        const companyRepository = new CompanyRepository();
+
+                        const { companies } = await companyRepository.findMany({ userId: user.id });
                         const { changes, latestVersion } = await getSyncChanges({
                             lastPulledVersion: lastPulledAt ? new Date(lastPulledAt) : undefined,
+                            companyIds: companies.map((c) => c.id),
+                            companyStartIds: options?.companyStartIds,
                         });
 
                         return {
@@ -29,16 +37,16 @@ export function useSync() {
                 console.error(err);
             }
         },
-        [],
+        [user.id],
     );
 
     const syncChanges = useCallback(
-        async (getSyncChanges: (arg: { lastPulledVersion?: Date }) => Promise<any>) => {
+        async (options?: { companyStartIds?: string[] }) => {
             if (netInfo.isConnected && !synchronizing.current[getSyncChanges.name]) {
                 synchronizing.current[getSyncChanges.name] = true;
 
                 try {
-                    await offlineSynchronize(getSyncChanges);
+                    await offlineSynchronize(options);
                 } catch (error: any) {
                     console.log('error', error);
                     return { error, errorMessage: 'message' in error ? error.message : 'Erro ao syncronizar dados' };

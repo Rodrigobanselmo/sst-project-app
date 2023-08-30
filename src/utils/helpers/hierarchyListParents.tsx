@@ -2,7 +2,7 @@ import { HierarchyEnum } from '@constants/enums/hierarchy.enum';
 import { IHierarchy } from '@interfaces/IHierarchy';
 import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
 
-export type HierarchyListParents = IHierarchy & { parentsName: string[] };
+export type HierarchyListParents = IHierarchy & { parents: IHierarchy[] };
 export type HierarchyListWithTypes = {
     hierarchies: HierarchyListParents[];
     types: HierarchyEnum[];
@@ -30,13 +30,25 @@ export const hierarchyListParents = (hierarchies: IHierarchy[]): HierarchyListWi
 
         const parent6 = parent5?.parentId ? hierarchyTree[parent5?.parentId] : { parentId: null };
 
-        const parentsName = [parent6, parent5, parent4, parent3, parent2, parent]
-            .map((parent) => (parent && 'name' in parent && parent?.parentId ? parent.name : ''))
-            .filter((i) => i);
+        const parents = [parent6, parent5, parent4, parent3, parent2, parent]
+            .map((parent) =>
+                parent && 'name' in parent
+                    ? {
+                          id: hierarchy.id,
+                          name: parent.name,
+                          type: parent.type,
+                      }
+                    : '',
+            )
+            .filter((i) => i) as HierarchyListParents[];
 
         return {
-            ...hierarchy,
-            parentsName: parentsName,
+            companyId: hierarchy.companyId,
+            id: hierarchy.id,
+            name: hierarchy.name,
+            parentId: hierarchy.parentId,
+            type: hierarchy.type,
+            parents,
         };
     });
 

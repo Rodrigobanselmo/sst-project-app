@@ -12,6 +12,7 @@ import { HierarchyRepository } from '@repositories/hierarchyRepository';
 import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
 import { useSync } from '@hooks/useSync';
 import { getHierarchySync } from '@services/api/sync/getHierarchySync';
+import { WorkspaceHierarchyModel } from '@libs/watermelon/model/_MMModel/WorkspaceHierarchyModel';
 
 interface IUseGetDatabase {
     workspaceId?: string;
@@ -36,17 +37,13 @@ export function useGetHierarchyDatabase({ workspaceId, hierarchyIds }: IUseGetDa
                 hierarchyData.push(...hierarchies);
             }
 
-            const hTable = database.get<HierarchyModel>(DBTablesEnum.HIERARCHY);
-            const hhh = await hTable.query().fetch();
-            console.log(hhh.length);
-
             setHierarchy(hierarchyData);
         } catch (error) {
             console.error(error);
         } finally {
             setIsLoading(false);
         }
-    }, [workspaceId]);
+    }, [hierarchyIds, workspaceId]);
 
     useEffect(() => {
         let isMounted = true;

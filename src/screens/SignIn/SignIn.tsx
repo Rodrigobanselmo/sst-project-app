@@ -41,8 +41,8 @@ export function SignIn() {
     } = useForm<FormDataProps>({
         resolver: yupResolver(signInSchema),
         defaultValues: {
-            email: '',
-            password: '',
+            email: 'apresentacao@simple.com',
+            password: 'qweqweqwe',
         },
     });
 

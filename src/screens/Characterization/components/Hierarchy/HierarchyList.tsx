@@ -23,16 +23,11 @@ type Props = {
     hierarchies?: HierarchyListParents[];
     selectedIds?: string[];
     user?: UserAuthModel;
-    onClickRisk?: (risk: HierarchyListParents) => Promise<void>;
+    onClick?: (risk: HierarchyListParents) => Promise<void>;
     renderRightElement?: (risk: HierarchyListParents, selected: boolean) => React.ReactElement;
 };
 
-export function HierarchyList({
-    hierarchies,
-    onClickRisk,
-    selectedIds,
-    renderRightElement,
-}: Props): React.ReactElement {
+export function HierarchyList({ hierarchies, onClick, selectedIds, renderRightElement }: Props): React.ReactElement {
     return (
         <>
             {!!hierarchies?.length && (
@@ -43,7 +38,7 @@ export function HierarchyList({
                     renderItem={({ item }) => (
                         <HierarchyCard
                             renderRightElement={renderRightElement}
-                            handleClickRisk={onClickRisk}
+                            onClick={onClick}
                             hierarchy={item}
                             selected={selectedIds?.includes(item.id)}
                         />
@@ -76,13 +71,13 @@ export function HierarchyList({
 
 // export function RenderEnhancedRiskList({
 //     user,
-//     onClickRisk,
+//     onClick,
 // }: {
 //     user?: UserAuthModel;
-//     onClickRisk?: (risk: HierarchyModel) => void;
+//     onClick?: (risk: HierarchyModel) => void;
 // }) {
 //     try {
-//         if (user) return <EnhancedRiskList onClickRisk={onClickRisk} user={user} />;
+//         if (user) return <EnhancedRiskList onClick={onClick} user={user} />;
 //         return null;
 //     } catch (e) {
 //         return null;

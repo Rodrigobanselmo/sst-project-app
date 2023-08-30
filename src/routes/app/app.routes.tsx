@@ -67,7 +67,7 @@ export const AppRoutes = () => {
     const { syncChanges } = useSync();
 
     useEffect(() => {
-        syncChanges(({ lastPulledVersion }) => getSyncChanges({ lastPulledVersion }));
+        syncChanges();
     }, [syncChanges]);
 
     return (

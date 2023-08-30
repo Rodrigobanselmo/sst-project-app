@@ -1,13 +1,14 @@
 import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { DBTablesEnum } from '@constants/enums/db-tables';
 import { StatusEnum } from '@constants/enums/status.enum';
-import { Model } from '@nozbe/watermelondb';
+import { Model, Q } from '@nozbe/watermelondb';
 import { field, date, children, readonly, relation, lazy } from '@nozbe/watermelondb/decorators';
 import { CharacterizationPhotoModel } from './CharacterizationPhotoModel';
 import { CompanyModel } from './CompanyModel';
 import { WorkspaceModel } from './WorkspaceModel';
 import { UserAuthModel } from './UserAuthModel';
 import { RiskDataModel } from './RiskDataModel';
+import { CharacterizationHierarchyModel } from './_MMModel/CharacterizationHierarchyModel';
 
 class CharacterizationModel extends Model {
     static table = DBTablesEnum.COMPANY_CHARACTERIZATION;
@@ -18,6 +19,8 @@ class CharacterizationModel extends Model {
 
         [DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO]: { type: 'has_many', foreignKey: 'companyCharacterizationId' },
         [DBTablesEnum.RISK_DATA]: { type: 'has_many', foreignKey: 'characterizationId' },
+        [DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY]: { type: 'has_many', foreignKey: 'characterizationId' },
+
         // profiles: { type: 'has_many', foreignKey: 'profileParentId' },
         // profileParent: { type: 'belongs_to', key: 'profileParentId' },
     } as const;
@@ -48,6 +51,14 @@ class CharacterizationModel extends Model {
 
     @children(DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO) photos?: CharacterizationPhotoModel[];
     @children(DBTablesEnum.RISK_DATA) riskData?: RiskDataModel[];
+
+    @children(DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY)
+    characterizationToHierarchy?: CharacterizationHierarchyModel[];
+
+    @lazy
+    hierarchies = this.collections
+        .get(DBTablesEnum.HIERARCHY)
+        .query(Q.on(DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY, 'characterizationId', this.id));
 
     // @children(DBTablesEnum.COMPANY_CHARACTERIZATION) profiles?: CharacterizationModel[];
     // @relation(DBTablesEnum.COMPANY_CHARACTERIZATION, 'profileParentId') profileParent?: CharacterizationModel;

@@ -15,6 +15,8 @@ import { DBTablesEnum } from '@constants/enums/db-tables';
 interface IQuerySync {
     lastPulledVersion?: Date;
     companyId?: string;
+    companyIds?: string[];
+    companyStartIds?: string[];
 }
 
 interface IResponse {

@@ -13,6 +13,7 @@ import { RiskModel } from '@libs/watermelon/model/RiskModel';
 import { SButton } from '@components/modelucules';
 import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
 import { HierarchyTable } from '../Hierarchy/HierarchyTable';
+import { IHierarchy } from '@interfaces/IHierarchy';
 
 type PageProps = {
     // onIndexChange: (index: number) => void;
@@ -26,6 +27,7 @@ type PageProps = {
     control: Control<ICharacterizationValues, any>;
     isEdit?: boolean;
     onClickRisk?: (risk: RiskModel, options?: { cb: () => void }) => Promise<void>;
+    onClickHierarchy?: (hierarchy: IHierarchy, options?: { cb: () => void }) => Promise<void>;
     onAddRisk: (formValues: RiskDataFormProps) => void;
 };
 
@@ -72,7 +74,7 @@ export function CharacterizationTabView(props: PageProps) {
                         </>
                     );
                 case 'third':
-                    return <HierarchyTable {...props} onSaveForm={onSave} />;
+                    return <HierarchyTable {...props} onClick={props?.onClickHierarchy} onSaveForm={onSave} />;
                 default:
                     return null as any;
             }

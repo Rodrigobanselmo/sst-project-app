@@ -16,6 +16,7 @@ import sortArray from 'sort-array';
 import { HierarchyList } from './HierarchyList';
 import { hierarchyList } from '@constants/maps/hierarchy.map';
 import { HierarchyListParents, hierarchyListParents } from '@utils/helpers/hierarchyListParents';
+import { usePersistedStateHierarchy } from '@services/api/sync/getHierarchySync';
 
 type PageProps = {
     form: CharacterizationFormProps;
@@ -36,20 +37,21 @@ export function HierarchyTable({ onClick, renderRightElement, form, onSaveForm }
     const { isLoading: isL1, hierarchies, setIsLoading } = useGetHierarchyDatabase({ workspaceId: form.workspaceId });
 
     const hierarchiesParents = React.useMemo(() => {
-        return hierarchyListParents(hierarchies);
+        const data = hierarchyListParents(hierarchies);
+
+        return data;
     }, [hierarchies]);
 
     const hierarchySelected = React.useMemo(
-        () => hierarchiesParents.filter((h) => hierarchyIds.includes(h.id)),
+        () => hierarchiesParents.hierarchies.filter((h) => hierarchyIds.includes(h.id)),
         [hierarchiesParents, hierarchyIds],
     );
-
     const isLoading = isL1;
 
     const [activeType, setActiveType] = React.useState<HierarchyEnum | null>(null);
 
     const filteredData = React.useMemo(() => {
-        const hierarchyData = search ? hierarchiesParents : hierarchySelected;
+        const hierarchyData = search ? hierarchiesParents.hierarchies : hierarchySelected;
 
         if (!hierarchyData) return [];
         if (!activeType) return hierarchyData;
@@ -63,6 +65,7 @@ export function HierarchyTable({ onClick, renderRightElement, form, onSaveForm }
         setSearchValue: setSearch,
         onLoadingSearchFn: setIsLoading,
         keys: ['name'],
+        threshold: 0.7,
         rowsPerPage: 30,
         sortFunction: (array) =>
             sortArray(array, {
@@ -94,7 +97,10 @@ export function HierarchyTable({ onClick, renderRightElement, form, onSaveForm }
                         <SHorizontalMenu
                             mb={4}
                             onChange={(value) => setActiveType(value.value)}
-                            options={[{ value: null as any, name: 'Todos' }, ...hierarchyList]}
+                            options={[
+                                { value: null as any, name: 'Todos' },
+                                ...hierarchyList.filter((h) => hierarchiesParents.types.includes(h.value)),
+                            ]}
                             getKeyExtractor={(item) => item.value}
                             getLabel={(item) => item.name}
                             getIsActive={(item) => item.value === activeType}
@@ -104,7 +110,7 @@ export function HierarchyTable({ onClick, renderRightElement, form, onSaveForm }
                         {!isLoading && results.length > 0 && (
                             <HierarchyList
                                 renderRightElement={renderRightElement}
-                                onClickRisk={handleClick}
+                                onClick={handleClick}
                                 hierarchies={results}
                                 selectedIds={hierarchyIds}
                             />

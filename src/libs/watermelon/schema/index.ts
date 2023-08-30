@@ -15,9 +15,10 @@ import { riskDataSchema } from './riskDataSchema';
 import { riskSchema } from './riskSchema';
 import { recsRiskDataSchema } from './_MMSchema/recsRiskDataSchema';
 import { workspaceHierarchySchema } from './_MMSchema/workspaceHierarchySchema';
+import { characterizationHierarchySchema } from './_MMSchema/characterizationHierarchySchema';
 
 const schemas = appSchema({
-    version: 2,
+    version: 10,
     tables: [
         companySchema,
         workspaceSchema,
@@ -35,6 +36,7 @@ const schemas = appSchema({
         riskDataSchema,
         riskSchema,
         workspaceHierarchySchema,
+        characterizationHierarchySchema,
     ],
 });
 

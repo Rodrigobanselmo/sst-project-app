@@ -124,7 +124,6 @@ export class RiskDataRepository {
             if (riskData.episToRiskData) {
                 const episPromisses = Promise.all(
                     riskData.episToRiskData.map(async (epi) => {
-                        console.log(epi);
                         if (epi.id !== undefined) {
                             if (!epi.m2mId) {
                                 await MMEpisTable.create((newEpi) => {

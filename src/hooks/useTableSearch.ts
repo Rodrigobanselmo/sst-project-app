@@ -15,6 +15,8 @@ interface IUseTableSearch<T> {
     sortFunction?: (array: T[]) => T[];
     transformSearchTextBefore?: (search: string) => string;
     onLoadingSearchFn?: (loading: boolean) => void;
+
+    threshold?: number;
 }
 
 export const useTableSearch = <T>({
@@ -27,6 +29,7 @@ export const useTableSearch = <T>({
     searchValue,
     setSearchValue,
     onLoadingSearchFn,
+    threshold = 0.4,
 }: IUseTableSearch<T>) => {
     const [searchState, setSearchState] = useState<string>('');
 
@@ -56,8 +59,8 @@ export const useTableSearch = <T>({
     );
 
     const fuse = useMemo(() => {
-        return new Fuse(data, { keys, ignoreLocation: true, threshold: 0.4 });
-    }, [data, keys]);
+        return new Fuse(data, { keys, ignoreLocation: true, threshold: threshold });
+    }, [data, keys, threshold]);
 
     const results = useMemo(() => {
         let searchValue = minLengthSearch && minLengthSearch > 0 && search.length < minLengthSearch ? '' : search;

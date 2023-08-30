@@ -27,7 +27,7 @@ export const SSearchWorkspace = ({
     companyId?: string;
     setShowModal: (open: boolean) => void;
     handleGoBack?: () => void;
-    onSelect: (workspace: IWorkspace) => Promise<void>;
+    onSelect: (workspace: IWorkspace, workspaces: IWorkspace[]) => Promise<void>;
     renderTopItem?: () => React.ReactElement;
 }) => {
     const [search, setSearch] = useState('');
@@ -38,7 +38,7 @@ export const SSearchWorkspace = ({
     } = useQueryWorkspaces(1, { search, companyId, disabled: !showModal }, 20);
 
     const handleSelect = async (workspace: IWorkspace) => {
-        await onSelect(workspace);
+        await onSelect(workspace, data);
         setShowModal(false);
     };
 

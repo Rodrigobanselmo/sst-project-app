@@ -39,6 +39,8 @@ import { RecMedModel } from '@libs/watermelon/model/RecMedModel';
 import { GenerateSourceModel } from '@libs/watermelon/model/GenerateSourceModel';
 import { RiskDataModel } from '@libs/watermelon/model/RiskDataModel';
 import { RiskDataRepository } from '@repositories/riskDataRepository';
+import { IHierarchy } from '@interfaces/IHierarchy';
+import { Alert } from 'react-native';
 
 const Stack = createNativeStackNavigator<FormCharacterizationRoutesProps>();
 
@@ -47,7 +49,9 @@ export const GALLERY_IMAGE_PORTRAIT_WIDTH = (((GALLERY_IMAGE_Width * 9) / 16) * 
 export const GALLERY_IMAGE_HEIGHT = (GALLERY_IMAGE_Width * 9) / 16;
 
 export function Characterization({ navigation, route }: CharacterizationPageProps): React.ReactElement {
-    const [form, setForm] = useState({} as CharacterizationFormProps);
+    const [form, setForm] = useState({
+        workspaceId: route.params.workspaceId,
+    } as CharacterizationFormProps);
     const { user } = useAuth();
 
     const { control, trigger, getValues, setValue } = useForm<ICharacterizationValues>({
@@ -170,6 +174,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                     userId: user.id,
                     photos: form.photos?.map((photo) => ({ photoUrl: photo.uri, id: photo.id })),
                     riskData: form.riskData,
+                    hierarchiesIds: form.hierarchies?.map((h) => h.id),
                 });
             }
 
@@ -183,6 +188,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         navigation,
         form.photos,
         form.riskData,
+        form.hierarchies,
         user.id,
     ]);
 
@@ -191,7 +197,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
 
         if (id) {
             const characterizationRepo = new CharacterizationRepository();
-            const { characterization, photos, riskData } = await characterizationRepo.findOne(id);
+            const { characterization, photos, riskData, hierarchies } = await characterizationRepo.findOne(id);
 
             setValue('name', characterization.name);
             setValue('type', characterization.type);
@@ -211,6 +217,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                     probability: rd.probability,
                     probabilityAfter: rd.probabilityAfter,
                 })),
+                hierarchies: hierarchies.map((h) => ({ id: h.id })),
             });
         } else {
             const type = route.params?.type;
@@ -233,6 +240,49 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         navigation.navigate('formRiskData', params);
     };
 
+    const onClickHierarchy = async (hierarchy: IHierarchy) => {
+        const hierarchies = [...(form?.hierarchies || [])];
+        const hierarchyIndex = hierarchies.findIndex((rd) => rd.id === hierarchy.id);
+
+        if (hierarchyIndex >= 0) {
+            Alert.alert('Atenção', 'Você tem certeza que deseja remover permnentemente. Deseja continuar?', [
+                {
+                    text: 'Não',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Sim, apagar',
+                    onPress: async () => {
+                        hierarchies.splice(hierarchyIndex, 1);
+                        if (route.params?.id) {
+                            const characterizationRepository = new CharacterizationRepository();
+                            await characterizationRepository.deleteMMHierarchy(hierarchy.id, route.params.id);
+                        }
+                        setForm((prev) => {
+                            return { ...prev, hierarchies };
+                        });
+                    },
+                },
+            ]);
+        } else {
+            if (route.params?.id) {
+                const characterizationRepository = new CharacterizationRepository();
+                await database.write(async () => {
+                    await characterizationRepository.createMMHierarchy(
+                        [hierarchy.id],
+                        route.params.id as string,
+                        user.id,
+                    );
+                });
+            }
+
+            setForm((prev) => {
+                hierarchies.push(hierarchy);
+                return { ...prev, hierarchies };
+            });
+        }
+    };
+
     useEffect(() => {
         getCharacterization();
     }, [getCharacterization]);
@@ -253,6 +303,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                             openCamera={openCamera}
                             onGoBack={onGoBack}
                             onClickRisk={onClickRisk}
+                            onClickHierarchy={onClickHierarchy}
                             onAddRisk={onRiskDataSave}
                             form={form}
                             isEdit={!!route.params?.id}

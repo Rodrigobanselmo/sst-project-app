@@ -34,38 +34,46 @@ import {
 export function WorkspacesEnviroment({ route }: WorkspacesEviromentsPageProps): React.ReactElement {
     const [isOpenAdd, setIsOpenAdd] = useState(false);
     const [company, setCompany] = useState<ICompany | null>(null);
-    const { setHierarchyList } = usePersistedStateHierarchy({
-        companyId: company?.id,
-        autoFetch: false,
-    });
+    // const { setHierarchyList } = usePersistedStateHierarchy({
+    //     companyId: company?.id,
+    //     autoFetch: false,
+    // });
 
     const { navigate } = useNavigation<AppNavigatorRoutesProps>();
     const { user, isLoading, setIsLoading, userDatabase } = useUserDatabase();
     const toast = useSToast();
+    const { syncChanges } = useSync();
 
-    const handleCreateCharacterizationGroup = async (workspace: IWorkspace) => {
+    const handleCreateCharacterizationGroup = async (workspace: IWorkspace, workspaces: IWorkspace[]) => {
         if (company) {
             const companyRepository = new CompanyRepository();
             try {
                 setIsLoading(true);
+
+                // const hierarchies = await getHierarchySync({
+                //     companyId: company.id,
+                //     workspaceId: workspace.id,
+                // });
+
+                const sync = await syncChanges();
+                if (sync?.error) throw sync.error;
+                const syncCompany = await syncChanges({ companyStartIds: [company.id] });
+                if (syncCompany?.error) throw syncCompany.error;
+
                 await companyRepository.upsertByApiId({
                     ...company,
                     userId: user.id,
                     apiId: company.id,
-                    workspace: [workspace].map((workspace) => ({
-                        ...workspace,
-                        ...workspace.address,
-                        apiId: workspace.id,
-                        startChar_at: new Date(),
+                    workspace: [workspace].map((w) => ({
+                        ...w,
+                        ...w?.address,
+                        apiId: w.id,
                         userId: user.id,
+                        ...(workspace.id === w.id && {
+                            startChar_at: new Date(),
+                        }),
                     })),
                 });
-
-                const hierarchies = await getHierarchySync({
-                    companyId: company.id,
-                });
-
-                setHierarchyList(hierarchyListParents(hierarchies));
 
                 const foundWorkspace = await companyRepository.findWorkspaceByApiId({
                     apiId: workspace.id,
@@ -136,7 +144,7 @@ export function WorkspacesEnviroment({ route }: WorkspacesEviromentsPageProps): 
                         setIsOpenAdd(true);
                     }}
                     companyId={company?.id}
-                    onSelect={(item) => handleCreateCharacterizationGroup(item)}
+                    onSelect={(item, items) => handleCreateCharacterizationGroup(item, items)}
                     // renderTopItem={() => (
                     //     <SButton
                     //         mb={2}

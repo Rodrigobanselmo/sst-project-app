@@ -17,6 +17,10 @@ import { RecsRiskDataModel } from '@libs/watermelon/model/_MMModel/RecsRiskDataM
 import { RiskDataFormSelectedProps } from '@screens/Characterization/types';
 import uuidGenerator from 'react-native-uuid';
 import { IRiskDataCreate, RiskDataRepository } from './riskDataRepository';
+import { IHierarchyCreate } from './hierarchyRepository';
+import { CharacterizationHierarchyModel } from '@libs/watermelon/model/_MMModel/CharacterizationHierarchyModel';
+import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
+import { Q } from '@nozbe/watermelondb';
 
 interface IRecMedCreate {
     recName?: string;
@@ -50,6 +54,7 @@ export interface ICharacterizationCreate {
         photoUrl: string;
     }[];
     riskData?: IRiskDataCreate[];
+    hierarchiesIds?: string[];
 }
 
 export class CharacterizationRepository {
@@ -69,17 +74,20 @@ export class CharacterizationRepository {
 
         const characterization = await characterizationCollection.find(id);
 
-        const [photos, riskData]: [CharacterizationPhotoModel[], RiskDataModel[]] = await Promise.all([
-            (characterization?.photos as any)?.fetch(),
-            (characterization?.riskData as any)?.fetch(),
-        ]);
+        const [photos, riskData, hierarchies]: [CharacterizationPhotoModel[], RiskDataModel[], HierarchyModel[]] =
+            await Promise.all([
+                (characterization?.photos as any)?.fetch(),
+                (characterization?.riskData as any)?.fetch(),
+                (characterization?.hierarchies as any)?.fetch(),
+            ]);
 
-        return { characterization, photos, riskData };
+        return { characterization, photos, riskData, hierarchies };
     }
 
     async create(data: ICharacterizationCreate) {
         const riskDataRepository = new RiskDataRepository();
         const characterizationTable = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
+
         const characterizationPhotoTable = database.get<CharacterizationPhotoModel>(
             DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO,
         );
@@ -126,9 +134,33 @@ export class CharacterizationRepository {
             if (data.riskData) {
                 await riskDataRepository.createRiskData(data.riskData, newCharacterization.id, data.userId);
             }
+            if (data.hierarchiesIds) {
+                await this.createMMHierarchy(data.hierarchiesIds, newCharacterization.id, data.userId);
+            }
 
             return newCharacterization;
         });
+    }
+
+    async createMMHierarchy(hierarchyIds: string[], characterizationId: string, userId: number) {
+        const characterizationHierarchyTable = database.get<CharacterizationHierarchyModel>(
+            DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY,
+        );
+
+        try {
+            await Promise.all(
+                hierarchyIds.map(async (hierarchyId) => {
+                    await characterizationHierarchyTable.create((newMM) => {
+                        newMM.characterizationId = characterizationId;
+                        newMM.hierarchyId = hierarchyId;
+                        newMM.created_at = new Date();
+                        newMM.updated_at = new Date();
+                    });
+                }),
+            );
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     async update(id: string, data: Partial<ICharacterizationCreate> & { name: string }) {
@@ -225,6 +257,20 @@ export class CharacterizationRepository {
         await database.write(async () => {
             const characterizationTable = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
             const characterization = await characterizationTable.find(id);
+
+            await characterization?.destroyPermanently();
+        });
+    }
+
+    async deleteMMHierarchy(hierarchyId: string, characterizationId: string) {
+        await database.write(async () => {
+            const characterizationTable = database.get<CharacterizationHierarchyModel>(
+                DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY,
+            );
+            const [characterization] = await characterizationTable.query(
+                Q.where('hierarchyId', hierarchyId),
+                Q.where('characterizationId', characterizationId),
+            );
 
             await characterization?.destroyPermanently();
         });

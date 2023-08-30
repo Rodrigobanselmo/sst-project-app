@@ -64,7 +64,7 @@ export class CompanyRepository {
     async findCompanyByApiId({ apiId, userId }: { apiId: string; userId: number }) {
         const companyCollection = database.get<CompanyModel>(DBTablesEnum.COMPANY);
         const [company] = await companyCollection
-            .query(Q.where('apiId', apiId), Q.where('user_id', String(userId)))
+            .query(Q.where('id', apiId), Q.where('user_id', String(userId)))
             .fetch();
 
         return { company };
@@ -75,6 +75,7 @@ export class CompanyRepository {
             const companyTable = database.get<CompanyModel>(DBTablesEnum.COMPANY);
 
             const newCompany = await companyTable.create((company) => {
+                if (data.apiId) company._raw.id = data.apiId;
                 company.apiId = data.apiId;
                 company.name = data.name;
                 company.userId = String(data.userId);
@@ -146,6 +147,7 @@ export class CompanyRepository {
     async upsertByApiId(data: ICompanyCreate) {
         if (data.apiId) {
             const foundCompany = await this.findCompanyByApiId({ apiId: data.apiId, userId: data.userId });
+
             if (foundCompany?.company?.id) {
                 if (data.workspace) {
                     await asyncBatch(data.workspace, 10, async (works) => {
@@ -181,17 +183,18 @@ export class CompanyRepository {
 
     async findWorkspaceByApiId({ apiId, userId }: { apiId: string; userId: number }) {
         const workspaceTable = database.get<WorkspaceModel>(DBTablesEnum.WORKSPACE);
-        const workspaces = await workspaceTable
-            .query(Q.where('apiId', apiId), Q.where('user_id', String(userId)))
+        const [workspace] = await workspaceTable
+            .query(Q.where('id', apiId), Q.where('user_id', String(userId)))
             .fetch();
 
-        return { workspace: workspaces[0] };
+        return { workspace };
     }
 
     private async createWorkspace(companyId: string, workspace: IWorkspaceCreate) {
         const workspaceTable = database.get<WorkspaceModel>(DBTablesEnum.WORKSPACE);
 
         const newWorkspace = await workspaceTable.create((newWorkspace) => {
+            if (workspace.apiId) newWorkspace._raw.id = workspace.apiId;
             newWorkspace.apiId = workspace.apiId;
             newWorkspace.companyId = companyId;
             newWorkspace.name = workspace.name;
