@@ -9,6 +9,7 @@ import { WorkspaceModel } from './WorkspaceModel';
 import { UserAuthModel } from './UserAuthModel';
 import { RiskDataModel } from './RiskDataModel';
 import { CharacterizationHierarchyModel } from './_MMModel/CharacterizationHierarchyModel';
+import { CharacterizationEmployeeModel } from './_MMModel/CharacterizationEmployeeModel';
 
 class CharacterizationModel extends Model {
     static table = DBTablesEnum.COMPANY_CHARACTERIZATION;
@@ -20,6 +21,7 @@ class CharacterizationModel extends Model {
         [DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO]: { type: 'has_many', foreignKey: 'companyCharacterizationId' },
         [DBTablesEnum.RISK_DATA]: { type: 'has_many', foreignKey: 'characterizationId' },
         [DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY]: { type: 'has_many', foreignKey: 'characterizationId' },
+        [DBTablesEnum.MM_CHARACTERIZATION_EMPLOYEE]: { type: 'has_many', foreignKey: 'characterizationId' },
 
         // profiles: { type: 'has_many', foreignKey: 'profileParentId' },
         // profileParent: { type: 'belongs_to', key: 'profileParentId' },
@@ -55,10 +57,18 @@ class CharacterizationModel extends Model {
     @children(DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY)
     characterizationToHierarchy?: CharacterizationHierarchyModel[];
 
+    @children(DBTablesEnum.MM_CHARACTERIZATION_EMPLOYEE)
+    characterizationToEmployee?: CharacterizationEmployeeModel[];
+
     @lazy
     hierarchies = this.collections
         .get(DBTablesEnum.HIERARCHY)
         .query(Q.on(DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY, 'characterizationId', this.id));
+
+    @lazy
+    employees = this.collections
+        .get(DBTablesEnum.EMPLOYEE)
+        .query(Q.on(DBTablesEnum.MM_CHARACTERIZATION_EMPLOYEE, 'characterizationId', this.id));
 
     // @children(DBTablesEnum.COMPANY_CHARACTERIZATION) profiles?: CharacterizationModel[];
     // @relation(DBTablesEnum.COMPANY_CHARACTERIZATION, 'profileParentId') profileParent?: CharacterizationModel;

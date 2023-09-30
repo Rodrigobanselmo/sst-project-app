@@ -3,12 +3,12 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 import { AuthContext } from '@contexts/AuthContext';
 import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
 import { UserAuthRepository } from '@repositories/userAuthRepository';
-import { useAuth } from './useAuth';
+import { useAuth } from '../useAuth';
 import { database } from '@libs/watermelon';
 import { DBTablesEnum } from '@constants/enums/db-tables';
 import { RiskModel } from '@libs/watermelon/model/RiskModel';
 
-export function useUserDatabase() {
+export function useGetUser() {
     const [userDatabase, setUserDB] = useState<UserAuthModel>();
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(true);

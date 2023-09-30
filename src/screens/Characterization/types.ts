@@ -15,11 +15,14 @@ export interface ICharImageGallery {
 export interface CharacterizationFormProps {
     workspaceId: string;
     id?: string;
+    profileParentId?: string;
+    profileName?: string;
     isEdited?: boolean;
     type?: CharacterizationTypeEnum;
     photos?: ICharImageGallery[];
     riskData?: RiskDataFormProps[];
     hierarchies?: { id: string }[];
+    employees?: { id: string }[];
     // name?: string;
     // description?: string;
     // noiseValue?: string;

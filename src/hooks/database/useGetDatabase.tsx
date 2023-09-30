@@ -39,5 +39,5 @@ export function useGetDatabase<T>({ onFetchFunction }: IUseGetRiskDatabase<T>) {
         };
     }, [fetch]);
 
-    return { data, isError, setIsLoading, isLoading };
+    return { data, isError, setIsLoading, isLoading, refetch: fetch };
 }

@@ -14,9 +14,9 @@ import { IRiskDataValues } from './schemas';
 import { useCallback, useState } from 'react';
 import { RiskDataRepository } from '@repositories/riskDataRepository';
 import { RiskRepository } from '@repositories/riskRepository';
-import { useGetRiskDatabase } from '@hooks/useGetRiskDatabase';
 import { SSearchSimpleModal } from '@components/organisms/SSearchModal/components/SSearchSimpleModal';
 import { SLoadingPage } from '@components/organisms/SLoadingPage';
+import { useGetRiskDatabase } from '@hooks/database/useGetRiskDatabase';
 
 type PageProps = {
     onSaveForm: (form: RiskDataFormProps) => void;

@@ -1,4 +1,4 @@
-import { SBox, SFlatList } from '@components/core';
+import { SBox, SFlatList, SHStack } from '@components/core';
 import { SInput, SInputProps } from '../SInput/SInput';
 import { SButton } from '../SButton';
 import { pagePaddingPx } from '@constants/constants';
@@ -11,6 +11,7 @@ interface SHorizontalMenuProps<T> {
     getKeyExtractor: (value: T) => any;
     getIsActive?: (value: T) => boolean;
     // selectedInFirst?: boolean;
+    // onAddButtonChange: () => void;
     mb?: number;
     activeColor?: string;
     paddingHorizontal?: number | string;
@@ -22,6 +23,7 @@ export function SHorizontalMenu<T>({
     options,
     getLabel,
     getKeyExtractor,
+    // onAddButtonChange,
     getIsActive,
     paddingHorizontal,
     activeColor = 'primary.main',
@@ -42,6 +44,7 @@ export function SHorizontalMenu<T>({
 
     return (
         <SBox mb={mb}>
+            {/* <SHStack> */}
             <SFlatList
                 horizontal
                 data={options}
@@ -74,6 +77,8 @@ export function SHorizontalMenu<T>({
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: paddingHorizontal ?? pagePaddingPx }}
             />
+            {/* <SButton title=" d" bg="gray.300" autoWidth variant={'outline'} height={7} py={0} /> */}
+            {/* </SHStack> */}
         </SBox>
     );
 }

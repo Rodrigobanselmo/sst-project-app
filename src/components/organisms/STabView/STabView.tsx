@@ -27,6 +27,8 @@ export function STabView({ renderScene, index, pt, onIndexChange, routes, render
                 <TabBar
                     {...rest}
                     jumpTo={jumpTo}
+                    scrollEnabled
+                    tabStyle={{ width: 105 }}
                     style={{
                         backgroundColor: THEME.colors.background.default,
                     }}

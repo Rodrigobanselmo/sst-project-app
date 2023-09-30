@@ -11,6 +11,7 @@ class CompanyModel extends Model {
     static table = DBTablesEnum.COMPANY;
     static associations = {
         [DBTablesEnum.COMPANY_CHARACTERIZATION]: { type: 'has_many', foreignKey: 'companyId' },
+        [DBTablesEnum.EMPLOYEE]: { type: 'has_many', foreignKey: 'companyId' },
         [DBTablesEnum.RISK]: { type: 'has_many', foreignKey: 'companyId' },
         [DBTablesEnum.USER_AUTH]: { type: 'belongs_to', key: 'user_id' },
     } as const;

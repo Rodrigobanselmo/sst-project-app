@@ -17,7 +17,7 @@ import EnhancedWorkspaceEnviromentList from './components/WorkspaceEnviromentLis
 import { database } from '@libs/watermelon';
 import { DBTablesEnum } from '@constants/enums/db-tables';
 import { Q } from '@nozbe/watermelondb';
-import { useUserDatabase } from '@hooks/useUserDatabase';
+import { useGetUser } from '@hooks/database/useGetUser';
 import { useSync } from '@hooks/useSync';
 import getSyncChanges from '@nozbe/watermelondb/Schema/migrations/getSyncChanges';
 import { getHierarchySync, usePersistedStateHierarchy } from '@services/api/sync/getHierarchySync';
@@ -40,7 +40,7 @@ export function WorkspacesEnviroment({ route }: WorkspacesEviromentsPageProps): 
     // });
 
     const { navigate } = useNavigation<AppNavigatorRoutesProps>();
-    const { user, isLoading, setIsLoading, userDatabase } = useUserDatabase();
+    const { user, isLoading, setIsLoading, userDatabase } = useGetUser();
     const toast = useSToast();
     const { syncChanges } = useSync();
 

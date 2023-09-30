@@ -103,7 +103,7 @@ const enhance = withObservables(['workspace'], ({ workspace }) => {
     let characterizations: any;
 
     try {
-        characterizations = workspace.characterization;
+        characterizations = workspace.characterizationsList;
     } catch (error) {
         characterizations = undefined;
     }

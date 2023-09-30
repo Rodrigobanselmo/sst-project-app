@@ -1,16 +1,7 @@
 import { Button as SB, ISButtonProps, SText } from '@components/core';
 import { ColorType } from 'native-base/lib/typescript/components/types';
 
-interface ButtonProps extends ISButtonProps {
-    title: string;
-    fontSize?: string | number;
-    variant?: 'solid' | 'outline' | 'ghost';
-    bg?: ColorType;
-    bgPressed?: ColorType;
-    addColor?: boolean;
-    autoWidth?: boolean;
-    color?: ColorType;
-}
+interface ButtonProps extends ISButtonProps {}
 
 export function SButton({
     title,

@@ -39,6 +39,7 @@ export const THEME = extendTheme({
             label: '#63636f',
             light: '#7C7C8A',
             placeholder: '#7C7C8A',
+            disabled: '#3d62ba',
         },
         border: {
             main: '#dddee2',

@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 import { AuthContext } from '@contexts/AuthContext';
 import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
 import { UserAuthRepository } from '@repositories/userAuthRepository';
-import { useAuth } from './useAuth';
+import { useAuth } from '../useAuth';
 import { database } from '@libs/watermelon';
 import { DBTablesEnum } from '@constants/enums/db-tables';
 import { RiskModel } from '@libs/watermelon/model/RiskModel';
@@ -22,7 +22,6 @@ interface IUseGetDatabase {
 export function useGetHierarchyDatabase({ workspaceId, hierarchyIds }: IUseGetDatabase) {
     const [hierarchies, setHierarchy] = useState<HierarchyModel[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const { syncChanges } = useSync();
 
     const fetchHierarchies = useCallback(async () => {
         try {

@@ -33,7 +33,7 @@ class WorkspaceModel extends Model {
     @field('number') number?: string;
     @field('complement') complement?: string;
 
-    @field('companyId') companyId?: string;
+    @field('companyId') companyId!: string;
 
     @field('user_id') userId!: string;
     @date('created_at') created_at?: Date;
@@ -44,6 +44,11 @@ class WorkspaceModel extends Model {
 
     @children(DBTablesEnum.COMPANY_CHARACTERIZATION) characterization?: CharacterizationModel[];
     @children(DBTablesEnum.MM_WOKSPACE_HIERARCHY) workspaceToHierarchy?: WorkspaceHierarchyModel[];
+
+    @lazy
+    characterizationsList = this.collections
+        .get(DBTablesEnum.COMPANY_CHARACTERIZATION)
+        .query(Q.where('workspaceId', this.id), Q.where('profileParentId', Q.eq(null)));
 
     @lazy
     hierarchies = this.collections

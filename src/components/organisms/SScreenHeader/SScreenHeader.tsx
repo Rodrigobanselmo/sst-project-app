@@ -48,7 +48,7 @@ export function SScreenHeader({
         if (isAlert) {
             Alert.alert('Atenção', 'Você perderá todos os dados preenchidos até aqui. Deseja continuar?', [
                 {
-                    text: 'Voltar',
+                    text: 'Cancelar',
                     style: 'cancel',
                 },
                 {
@@ -65,7 +65,7 @@ export function SScreenHeader({
             onDelete?.();
         };
 
-        Alert.alert('Atenção', 'Você tem certeza que deseja apagar permnentemente. Deseja continuar?', [
+        Alert.alert('Atenção', 'Você tem certeza que deseja apagar permanentemente. Deseja continuar?', [
             {
                 text: 'Não',
                 style: 'cancel',

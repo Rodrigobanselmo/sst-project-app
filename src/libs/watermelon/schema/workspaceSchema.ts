@@ -19,7 +19,7 @@ const workspaceSchema = tableSchema({
         { name: 'number', type: 'string', isOptional: true },
         { name: 'complement', type: 'string', isOptional: true },
 
-        { name: 'companyId', type: 'string', isOptional: true },
+        { name: 'companyId', type: 'string' },
 
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },

@@ -48,7 +48,6 @@ export function useSync() {
                 try {
                     await offlineSynchronize(options);
                 } catch (error: any) {
-                    console.log('error', error);
                     return { error, errorMessage: 'message' in error ? error.message : 'Erro ao syncronizar dados' };
                 } finally {
                     synchronizing.current[getSyncChanges.name] = false;

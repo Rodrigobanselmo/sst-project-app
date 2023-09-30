@@ -4,56 +4,50 @@ import { Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback } fr
 import { CharacterizationFormProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
 import { SButton, SInputSearch } from '@components/index';
-import { SHorizontalMenu } from '@components/modelucules/SHorizontalMenu';
 import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
-import { RiskEnum } from '@constants/enums/risk.enum';
-import { riskOptionsList } from '@constants/maps/risk-options.map';
-import { useGetRisksDatabase } from '@hooks/database/useGetRisksDatabase';
+import { HierarchyEnum } from '@constants/enums/hierarchy.enum';
+import { useGetEmployee } from '@hooks/database/useGetEmployee';
 import { useTableSearch } from '@hooks/useTableSearch';
-import { RiskModel } from '@libs/watermelon/model/RiskModel';
+import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 import sortArray from 'sort-array';
-import { RiskList } from './RiskList';
+import { EmployeeList } from './EmployeeList';
 
 type PageProps = {
     form: CharacterizationFormProps;
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
     onSaveForm: () => Promise<void>;
     isEdit?: boolean;
-    onClickRisk?: (risk: RiskModel) => Promise<void>;
-    renderRightElement?: (risk: RiskModel, selected: boolean) => React.ReactElement;
+    onClick?: (employee: EmployeeModel) => Promise<void>;
+    renderRightElement?: (employee: EmployeeModel, selected: boolean) => React.ReactElement;
 };
 
-export function RiskTable({ onClickRisk, renderRightElement, form, onSaveForm }: PageProps): React.ReactElement {
+export function EmployeesTable({ onClick, renderRightElement, form, onSaveForm }: PageProps): React.ReactElement {
     const [search, setSearch] = React.useState<string>('');
     const inputRef = React.useRef<any>(null);
-    const riskIds = React.useMemo(() => {
-        return form.riskData?.map((risk) => risk.riskId) || [];
+
+    const employeeIds = React.useMemo(() => {
+        return form.employees?.map((h) => h.id) || [];
     }, [form]);
 
-    const { isLoading: isL1, risks: risksAll, setIsLoading } = useGetRisksDatabase({});
-    const { isLoading: isL2, risks: risksSelected } = useGetRisksDatabase({
-        riskIds,
-    });
+    const { isLoading: isL1, employees, setIsLoading } = useGetEmployee({ workspaceId: form.workspaceId });
+    const { isLoading: isL2, employees: employeesSelected } = useGetEmployee({ ids: employeeIds });
 
     const isLoading = isL1 || isL2;
 
-    const [activeType, setActiveType] = React.useState<RiskEnum | null>(null);
+    const filteredData = React.useMemo(() => {
+        const hierarchyData = search ? employees : employeesSelected;
 
-    const risksFiltered = React.useMemo(() => {
-        const risks = search ? risksAll : risksSelected;
-
-        if (!risks) return [];
-        if (!activeType) return risks;
-
-        return risks?.filter((characterization) => characterization.type === activeType);
-    }, [search, risksAll, risksSelected, activeType]);
+        if (!hierarchyData) return [];
+        return hierarchyData;
+    }, [search, employees, employeesSelected]);
 
     const { handleSearchChange, results } = useTableSearch({
-        data: risksFiltered,
+        data: filteredData,
         searchValue: search,
         setSearchValue: setSearch,
         onLoadingSearchFn: setIsLoading,
-        keys: ['name'],
+        keys: ['name', 'cpf', 'rg', 'socialName'],
+        threshold: 0.8,
         rowsPerPage: 30,
         sortFunction: (array) =>
             sortArray(array, {
@@ -62,8 +56,8 @@ export function RiskTable({ onClickRisk, renderRightElement, form, onSaveForm }:
             }),
     });
 
-    const handleClickRisk = async (risk: RiskModel) => {
-        if (onClickRisk) await onClickRisk(risk);
+    const handleClick = async (employee: EmployeeModel) => {
+        if (onClick) await onClick(employee);
     };
 
     return (
@@ -82,22 +76,14 @@ export function RiskTable({ onClickRisk, renderRightElement, form, onSaveForm }:
                             mx={'pagePaddingPx'}
                             onSearchChange={handleSearchChange}
                         />
-                        <SHorizontalMenu
-                            mb={4}
-                            onChange={(value) => setActiveType(value.type)}
-                            options={riskOptionsList}
-                            getKeyExtractor={(item) => item.value}
-                            getLabel={(item) => item.label}
-                            getIsActive={(item) => item.type === activeType}
-                        />
 
                         {isLoading && <SSpinner color={'primary.main'} size={32} />}
                         {!isLoading && results.length > 0 && (
-                            <RiskList
+                            <EmployeeList
                                 renderRightElement={renderRightElement}
-                                onClickRisk={handleClickRisk}
-                                risks={results}
-                                selectedIds={risksSelected.map((risk) => risk.id)}
+                                onClick={handleClick}
+                                employees={results}
+                                selectedIds={employeeIds}
                             />
                         )}
                     </SVStack>

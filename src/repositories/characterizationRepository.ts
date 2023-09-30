@@ -21,6 +21,8 @@ import { IHierarchyCreate } from './hierarchyRepository';
 import { CharacterizationHierarchyModel } from '@libs/watermelon/model/_MMModel/CharacterizationHierarchyModel';
 import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
 import { Q } from '@nozbe/watermelondb';
+import { CharacterizationEmployeeModel } from '@libs/watermelon/model/_MMModel/CharacterizationEmployeeModel';
+import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 
 interface IRecMedCreate {
     recName?: string;
@@ -45,6 +47,8 @@ export interface ICharacterizationCreate {
     noiseValue?: string;
     temperature?: string;
     luminosity?: string;
+    profileName?: string;
+    profileParentId?: string;
     workspaceId: string;
     moisturePercentage?: string;
     userId: number;
@@ -55,6 +59,7 @@ export interface ICharacterizationCreate {
     }[];
     riskData?: IRiskDataCreate[];
     hierarchiesIds?: string[];
+    employeeIds?: string[];
 }
 
 export class CharacterizationRepository {
@@ -69,19 +74,47 @@ export class CharacterizationRepository {
         return { characterizations };
     }
 
+    async findByIds({ ids }: { ids: string[] }) {
+        const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
+        const characterizations = await characterizationCollection.query(Q.where('id', Q.oneOf(ids)));
+
+        return { characterizations };
+    }
+
+    async findList({ workspaceId }: { workspaceId: string }) {
+        const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
+        const characterizations = await characterizationCollection
+            .query(Q.where('profileParentId', Q.eq(null)), Q.where('workspaceId', workspaceId))
+            .fetch();
+
+        return { characterizations };
+    }
+
+    async findByProfileId({ profileId }: { profileId: string }) {
+        const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
+        const characterizations = await characterizationCollection.query(Q.where('profileParentId', profileId)).fetch();
+
+        return { characterizations };
+    }
+
     async findOne(id: string) {
         const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
 
         const characterization = await characterizationCollection.find(id);
 
-        const [photos, riskData, hierarchies]: [CharacterizationPhotoModel[], RiskDataModel[], HierarchyModel[]] =
-            await Promise.all([
-                (characterization?.photos as any)?.fetch(),
-                (characterization?.riskData as any)?.fetch(),
-                (characterization?.hierarchies as any)?.fetch(),
-            ]);
+        const [photos, riskData, hierarchies, employees]: [
+            CharacterizationPhotoModel[],
+            RiskDataModel[],
+            HierarchyModel[],
+            EmployeeModel[],
+        ] = await Promise.all([
+            (characterization?.photos as any)?.fetch(),
+            (characterization?.riskData as any)?.fetch(),
+            (characterization?.hierarchies as any)?.fetch(),
+            (characterization?.employees as any)?.fetch(),
+        ]);
 
-        return { characterization, photos, riskData, hierarchies };
+        return { characterization, photos, riskData, hierarchies, employees };
     }
 
     async create(data: ICharacterizationCreate) {
@@ -92,7 +125,7 @@ export class CharacterizationRepository {
             DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO,
         );
 
-        await database.write(async () => {
+        return await database.write(async () => {
             if (data.riskData) {
                 data.riskData = await riskDataRepository.createRecMedGS(data.riskData, data.userId);
             }
@@ -106,6 +139,8 @@ export class CharacterizationRepository {
                 characterization.noiseValue = data.noiseValue;
                 characterization.temperature = data.temperature;
                 characterization.luminosity = data.luminosity;
+                characterization.profileParentId = data.profileParentId;
+                characterization.profileName = data.profileName;
                 characterization.moisturePercentage = data.moisturePercentage;
                 characterization.workspaceId = data.workspaceId;
                 characterization.status = StatusEnum.ACTIVE;
@@ -137,34 +172,16 @@ export class CharacterizationRepository {
             if (data.hierarchiesIds) {
                 await this.createMMHierarchy(data.hierarchiesIds, newCharacterization.id, data.userId);
             }
+            if (data.employeeIds) {
+                await this.createMMEmployee(data.employeeIds, newCharacterization.id, data.userId);
+            }
 
             return newCharacterization;
         });
     }
 
-    async createMMHierarchy(hierarchyIds: string[], characterizationId: string, userId: number) {
-        const characterizationHierarchyTable = database.get<CharacterizationHierarchyModel>(
-            DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY,
-        );
-
-        try {
-            await Promise.all(
-                hierarchyIds.map(async (hierarchyId) => {
-                    await characterizationHierarchyTable.create((newMM) => {
-                        newMM.characterizationId = characterizationId;
-                        newMM.hierarchyId = hierarchyId;
-                        newMM.created_at = new Date();
-                        newMM.updated_at = new Date();
-                    });
-                }),
-            );
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    async update(id: string, data: Partial<ICharacterizationCreate> & { name: string }) {
-        await database.write(async () => {
+    async update(id: string, data: Partial<ICharacterizationCreate>) {
+        return await database.write(async () => {
             const characterizationTable = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
             const characterizationPhotoTable = database.get<CharacterizationPhotoModel>(
                 DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO,
@@ -175,6 +192,7 @@ export class CharacterizationRepository {
                 const newCharacterization = await characterization.update(() => {
                     if (data.apiId) characterization.apiId = data.apiId;
                     if (data.name) characterization.name = data.name;
+                    if (data.profileName) characterization.profileName = data.profileName;
                     if (data.description) characterization.description = data.description;
                     if (data.type) characterization.type = data.type;
                     if (data.noiseValue) characterization.noiseValue = data.noiseValue;
@@ -221,7 +239,7 @@ export class CharacterizationRepository {
                             imagesToCreate.map(async (photo) => {
                                 await characterizationPhotoTable.create((newPhoto) => {
                                     newPhoto.companyCharacterizationId = newCharacterization.id;
-                                    newPhoto.name = data.name;
+                                    newPhoto.name = newCharacterization.name;
                                     newPhoto.photoUrl = photo.photoUrl;
                                     newPhoto.created_at = new Date();
                                     newPhoto.updated_at = new Date();
@@ -237,7 +255,7 @@ export class CharacterizationRepository {
                                     const photoToUpdate = await characterizationPhotoTable.find(photo.id);
 
                                     await photoToUpdate.update(() => {
-                                        photoToUpdate.name = data.name;
+                                        photoToUpdate.name = newCharacterization.name;
                                         photoToUpdate.photoUrl = photo.photoUrl;
                                         photoToUpdate.updated_at = new Date();
                                     });
@@ -246,6 +264,8 @@ export class CharacterizationRepository {
                         );
                     }
                 }
+
+                return characterization;
             } catch (error) {
                 console.error(error);
             }
@@ -262,6 +282,27 @@ export class CharacterizationRepository {
         });
     }
 
+    async createMMHierarchy(hierarchyIds: string[], characterizationId: string, userId: number) {
+        const characterizationHierarchyTable = database.get<CharacterizationHierarchyModel>(
+            DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY,
+        );
+
+        try {
+            await Promise.all(
+                hierarchyIds.map(async (hierarchyId) => {
+                    await characterizationHierarchyTable.create((newMM) => {
+                        newMM.characterizationId = characterizationId;
+                        newMM.hierarchyId = hierarchyId;
+                        newMM.created_at = new Date();
+                        newMM.updated_at = new Date();
+                    });
+                }),
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     async deleteMMHierarchy(hierarchyId: string, characterizationId: string) {
         await database.write(async () => {
             const characterizationTable = database.get<CharacterizationHierarchyModel>(
@@ -273,6 +314,41 @@ export class CharacterizationRepository {
             );
 
             await characterization?.destroyPermanently();
+        });
+    }
+
+    async createMMEmployee(employeeIds: string[], characterizationId: string, userId: number) {
+        const characterizationEmployeeTable = database.get<CharacterizationEmployeeModel>(
+            DBTablesEnum.MM_CHARACTERIZATION_EMPLOYEE,
+        );
+
+        try {
+            await Promise.all(
+                employeeIds.map(async (employeeId) => {
+                    await characterizationEmployeeTable.create((newMM) => {
+                        newMM.characterizationId = characterizationId;
+                        newMM.employeeId = employeeId;
+                        newMM.created_at = new Date();
+                        newMM.updated_at = new Date();
+                    });
+                }),
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async deleteMMEmployee(employeeId: string, characterizationId: string) {
+        await database.write(async () => {
+            const characterizationEmployeeTable = database.get<CharacterizationEmployeeModel>(
+                DBTablesEnum.MM_CHARACTERIZATION_EMPLOYEE,
+            );
+            const [mmCharacterization] = await characterizationEmployeeTable.query(
+                Q.where('employeeId', employeeId),
+                Q.where('characterizationId', characterizationId),
+            );
+
+            await mmCharacterization?.destroyPermanently();
         });
     }
 }

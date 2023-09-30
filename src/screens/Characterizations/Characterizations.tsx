@@ -30,12 +30,6 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
 
             const company = await (workspace.Company as any).fetch();
 
-            try {
-                await (workspace.characterization as any).fetch();
-            } catch (e) {
-                console.error(e);
-            }
-
             setCompanyDB(company);
             setWorkspaceDB(workspace);
         } catch (error) {

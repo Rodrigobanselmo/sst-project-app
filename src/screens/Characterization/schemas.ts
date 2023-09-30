@@ -3,6 +3,7 @@ import * as yup from 'yup';
 
 export type ICharacterizationValues = {
     name?: string;
+    profileName?: string;
     description?: string;
     type: CharacterizationTypeEnum;
     noiseValue?: string;

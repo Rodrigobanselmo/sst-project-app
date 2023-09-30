@@ -19,6 +19,8 @@ import { RecsRiskDataModel } from './model/_MMModel/RecsRiskDataModel';
 import { GenerateRiskDataModel } from './model/_MMModel/GenerateRiskDataModel';
 import { WorkspaceHierarchyModel } from './model/_MMModel/WorkspaceHierarchyModel';
 import { CharacterizationHierarchyModel } from './model/_MMModel/CharacterizationHierarchyModel';
+import { CharacterizationEmployeeModel } from './model/_MMModel/CharacterizationEmployeeModel';
+import { EmployeeModel } from './model/EmployeeModel';
 
 const adapter = new SQLiteAdapter({
     schema: schemas,
@@ -46,5 +48,7 @@ export const database = new Database({
         GenerateRiskDataModel,
         WorkspaceHierarchyModel,
         CharacterizationHierarchyModel,
+        CharacterizationEmployeeModel,
+        EmployeeModel,
     ],
 });

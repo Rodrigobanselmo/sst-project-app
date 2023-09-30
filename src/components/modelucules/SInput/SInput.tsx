@@ -16,14 +16,17 @@ export interface SInputProps extends ISInputProps {
 }
 
 export const SInput = React.forwardRef<any, SInputProps>(
-    ({ startAdornmentText, errorMessage = null, isInvalid, endAdornmentText, inputProps, ...props }, refPass) => {
+    (
+        { isDisabled, startAdornmentText, errorMessage = null, isInvalid, endAdornmentText, inputProps, ...props },
+        refPass,
+    ) => {
         const refValue = useRef(null);
         const invalid = !!errorMessage || isInvalid;
 
         const ref = refPass || refValue;
 
         return (
-            <SFormControl isInvalid={invalid} mb={4}>
+            <SFormControl isDisabled={isDisabled} isReadOnly={isDisabled} isInvalid={invalid} mb={4}>
                 <SI
                     bg="background.default"
                     h={12}
@@ -68,6 +71,10 @@ export const SInput = React.forwardRef<any, SInputProps>(
                     _invalid={{
                         borderWidth: 1,
                         borderColor: 'status.error',
+                    }}
+                    _disabled={{
+                        opacity: 1,
+                        color: 'text.disabled',
                     }}
                     _focus={{
                         bg: 'background.default',

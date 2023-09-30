@@ -14,29 +14,43 @@ import { SButton } from '@components/modelucules';
 import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
 import { HierarchyTable } from '../Hierarchy/HierarchyTable';
 import { IHierarchy } from '@interfaces/IHierarchy';
+import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
+import { EmployeesTable } from '../Employees/EmployeesTable';
+import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 
 type PageProps = {
     // onIndexChange: (index: number) => void;
     // index: number;
+    isLoading?: boolean;
     openCamera: () => void;
     form: CharacterizationFormProps;
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
-    onSaveForm: () => Promise<void>;
+    onSaveForm: () => Promise<any>;
     onGoBack: () => void;
     onDeleteForm?: () => Promise<void>;
     control: Control<ICharacterizationValues, any>;
     isEdit?: boolean;
     onClickRisk?: (risk: RiskModel, options?: { cb: () => void }) => Promise<void>;
     onClickHierarchy?: (hierarchy: IHierarchy, options?: { cb: () => void }) => Promise<void>;
+    onClickEmployee?: (employee: EmployeeModel, options?: { cb: () => void }) => Promise<void>;
     onAddRisk: (formValues: RiskDataFormProps) => void;
+    profilesProps: {
+        characterizationsProfiles?: CharacterizationModel[];
+        isLoadingProfiles?: boolean;
+        principalProfileId?: string;
+        isPrincipalProfile?: boolean;
+        onChangeProfile?: (characterzationId: string) => Promise<void>;
+        onAddProfile?: () => Promise<void>;
+    };
 };
 
 export function CharacterizationTabView(props: PageProps) {
     const [index, setIndex] = React.useState(0);
     const [routes] = React.useState([
-        { key: 'first', title: 'Principal' },
-        { key: 'second', title: 'Riscos' },
-        { key: 'third', title: 'Cargos' },
+        { key: '1', title: 'Principal' },
+        { key: '2', title: 'Riscos' },
+        { key: '3', title: 'Cargos' },
+        { key: '4', title: 'Funcionários' },
     ]);
 
     const onSave = React.useCallback(async () => {
@@ -47,9 +61,9 @@ export function CharacterizationTabView(props: PageProps) {
     const renderScene = React.useCallback(
         ({ route }: any) => {
             switch (route.key) {
-                case 'first':
+                case '1':
                     return <CharacterizationForm {...props} />;
-                case 'second':
+                case '2':
                     return (
                         <>
                             <RiskTable
@@ -73,8 +87,10 @@ export function CharacterizationTabView(props: PageProps) {
                             />
                         </>
                     );
-                case 'third':
+                case '3':
                     return <HierarchyTable {...props} onClick={props?.onClickHierarchy} onSaveForm={onSave} />;
+                case '4':
+                    return <EmployeesTable {...props} onClick={props?.onClickEmployee} onSaveForm={onSave} />;
                 default:
                     return null as any;
             }
@@ -86,7 +102,10 @@ export function CharacterizationTabView(props: PageProps) {
         <>
             <SScreenHeader
                 isAlert={true}
-                title={!props.isEdit ? 'Adicionar' : 'Editar'}
+                title={
+                    (!props.isEdit ? 'Adicionar' : 'Editar') +
+                    (props.form.profileName ? ` (${props.form.profileName})` : '')
+                }
                 onDelete={props.onDeleteForm}
                 backButton
                 navidateFn={props.onGoBack}

@@ -9,7 +9,15 @@ interface SRadioProps extends ISRadioGroupProps {
     sizeRadio?: ISRadioProps['size'];
 }
 
-export function SRadio({ errorMessage = null, isInvalid, options, boxProps, sizeRadio, ...props }: SRadioProps) {
+export function SRadio({
+    isDisabled,
+    errorMessage = null,
+    isInvalid,
+    options,
+    boxProps,
+    sizeRadio,
+    ...props
+}: SRadioProps) {
     const invalid = !!errorMessage || isInvalid;
 
     return (
@@ -23,7 +31,7 @@ export function SRadio({ errorMessage = null, isInvalid, options, boxProps, size
                             value={option.value}
                             my={2}
                             isInvalid={invalid}
-                            isDisabled={false}
+                            isDisabled={isDisabled}
                             {...(option as any)?.radioProps}
                         >
                             <SText mx={2} {...(isInvalid && { color: 'red.500' })}>

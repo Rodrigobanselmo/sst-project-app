@@ -21,6 +21,7 @@ class UserAuthModel extends Model {
         [DBTablesEnum.COMPANY_CHARACTERIZATION]: { type: 'has_many', foreignKey: 'user_id' },
         [DBTablesEnum.COMPANY]: { type: 'has_many', foreignKey: 'user_id' },
         [DBTablesEnum.WORKSPACE]: { type: 'has_many', foreignKey: 'user_id' },
+        [DBTablesEnum.EMPLOYEE]: { type: 'has_many', foreignKey: 'user_id' },
 
         [DBTablesEnum.MM_ADMS_TO_RISK_DATA]: { type: 'has_many', foreignKey: 'user_id' },
         [DBTablesEnum.MM_ENGS_TO_RISK_DATA]: { type: 'has_many', foreignKey: 'user_id' },

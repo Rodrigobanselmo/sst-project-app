@@ -1,0 +1,1 @@
+export { SHorizontalMenuScroll } from './SHorizontalMenuScroll';

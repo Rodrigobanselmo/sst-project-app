@@ -1,23 +1,17 @@
-import { SBox, SCenter, SFlatList, SHStack, SScrollView, SText, SVStack } from '@components/core';
+import { SBox, SCenter, SFlatList, SHStack, SScrollView, SSpinner, SText, SVStack } from '@components/core';
 import React from 'react';
-import {
-    Alert,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-} from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity } from 'react-native';
 import { CharacterizationFormProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
 import PhotoEditor from '@baronha/react-native-photo-editor';
-import { SButton, SInput, SInputArea, SScreenHeader } from '@components/index';
+import { SButton, SInput, SInputArea } from '@components/index';
+import { SHorizontalMenuScroll } from '@components/modelucules/SHorizontalMenuScroll';
 import { SLabel } from '@components/modelucules/SLabel';
 import { SRadio } from '@components/modelucules/SRadio';
 import { SAFE_AREA_PADDING, SCREEN_WIDTH, pagePadding, pagePaddingPx } from '@constants/constants';
 import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { characterizationMap } from '@constants/maps/characterization.map';
+import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
 import { deleteImageToGallery } from '@utils/helpers/saveImage';
 import * as ImagePickerExpo from 'expo-image-picker';
 import { Orientation } from 'expo-screen-orientation';
@@ -35,6 +29,14 @@ type PageProps = {
     onDeleteForm?: () => Promise<void>;
     control: Control<ICharacterizationValues, any>;
     isEdit?: boolean;
+    profilesProps: {
+        characterizationsProfiles?: CharacterizationModel[];
+        isLoadingProfiles?: boolean;
+        principalProfileId?: string;
+        onChangeProfile?: (characterzationId: string) => Promise<void>;
+        onAddProfile?: () => Promise<void>;
+        isPrincipalProfile?: boolean;
+    };
 };
 
 export const GALLERY_IMAGE_Width = 300;
@@ -48,6 +50,14 @@ export function CharacterizationForm({
     form,
     control,
     isEdit,
+    profilesProps: {
+        principalProfileId,
+        characterizationsProfiles,
+        isLoadingProfiles,
+        onChangeProfile,
+        onAddProfile,
+        isPrincipalProfile,
+    },
 }: PageProps): React.ReactElement {
     const { photos, isEdited } = form;
 
@@ -180,6 +190,7 @@ export function CharacterizationForm({
                     contentContainerStyle={{ paddingBottom: 80 }}
                     keyboardShouldPersistTaps="handled"
                 >
+                    {/* NAME & TYPE */}
                     <SVStack mx={pagePadding}>
                         {/* <SLabel>Dados</SLabel> */}
                         <Controller
@@ -193,15 +204,17 @@ export function CharacterizationForm({
                                         autoCapitalize: 'none',
                                         value,
                                         onChangeText: onChange,
-                                        ...(!isEdit && {
-                                            autoFocus: true,
-                                        }),
+                                        // ...(!isEdit && {
+                                        //     autoFocus: true,
+                                        // }),
                                     }}
+                                    isDisabled={!isPrincipalProfile}
                                     startAdornmentText="Nome"
                                     errorMessage={errors.name?.message}
                                 />
                             )}
                         />
+
                         <SScrollView keyboardShouldPersistTaps="handled" horizontal>
                             <SHStack>
                                 <SBox mr={5}>
@@ -211,6 +224,7 @@ export function CharacterizationForm({
                                         name="type"
                                         render={({ field, formState: { errors } }) => (
                                             <SRadio
+                                                isDisabled={!isPrincipalProfile}
                                                 value={field.value}
                                                 sizeRadio={'sm'}
                                                 name={field.name}
@@ -228,6 +242,7 @@ export function CharacterizationForm({
                                     name="type"
                                     render={({ field, formState: { errors } }) => (
                                         <SRadio
+                                            isDisabled={!isPrincipalProfile}
                                             value={field.value}
                                             name={field.name}
                                             onChange={(val) => field.onChange(val)}
@@ -242,64 +257,122 @@ export function CharacterizationForm({
                         </SScrollView>
                     </SVStack>
 
-                    <SHStack mb={3} mt={0}>
-                        <SLabel mb={0} mr={2} ml={pagePadding}>
-                            Fotos
-                        </SLabel>
+                    {/* PROFILE */}
+                    <SVStack mx={pagePadding} mt={0}>
+                        <SLabel mb={2}>Perfil</SLabel>
 
-                        {photos && photos.length > 1 && (
-                            <SCenter px={2} borderRadius={10} bg="#00000044">
-                                <SText fontSize={12} color="white">
-                                    {photos.length}
-                                </SText>
-                            </SCenter>
-                        )}
-                    </SHStack>
-
-                    <SCenter style={styles.galleryContainer}>
-                        {!photos?.length && (
-                            <TouchableOpacity onPress={openCamera}>
-                                <PhotoComponent
-                                    width={SCREEN_WIDTH - pagePaddingPx * 2}
-                                    orientation={Orientation.LANDSCAPE_LEFT}
-                                    uri={''}
-                                />
-                            </TouchableOpacity>
-                        )}
-
-                        {!!photos?.length && (
-                            <SFlatList
-                                // keyboardShouldPersistTaps={'handled'}
-                                data={photos || []}
-                                ItemSeparatorComponent={() => <SBox style={{ height: 10 }} />}
-                                contentContainerStyle={{
-                                    paddingHorizontal: 10,
-                                    gap: 10,
-                                }}
-                                renderItem={({ item, index }) => (
-                                    <PhotoComponent
-                                        maxHeight={null}
-                                        key={item.uri}
-                                        handleEditImage={() => handleEditImage(item.uri)}
-                                        handleDeleteImage={() => handleDeleteImage(index)}
-                                        orientation={item.orientation || Orientation.PORTRAIT_UP}
-                                        uri={item.uri}
-                                    />
-                                )}
-                                horizontal
-                                keyExtractor={(item, index) => index.toString()}
-                                showsVerticalScrollIndicator={false}
-                                showsHorizontalScrollIndicator={false}
+                        {isLoadingProfiles ? (
+                            <SSpinner color="primary.main" size={32} />
+                        ) : (
+                            <SHorizontalMenuScroll
+                                activeColor="gray.300"
+                                mb={4}
+                                paddingHorizontal={0}
+                                onAddButtonChange={onAddProfile}
+                                onChange={(value) => value.value && onChangeProfile?.(value.value)}
+                                options={[
+                                    { value: principalProfileId || '', name: 'Principal' },
+                                    ...(characterizationsProfiles || []).map((profile) => ({
+                                        value: profile.id,
+                                        name: profile.profileName || 'Novo Perfil',
+                                    })),
+                                ]}
+                                getKeyExtractor={(item) => item.value}
+                                getLabel={(item) => item.name}
+                                getIsActive={(item) => item.value === form.id}
                             />
                         )}
-                    </SCenter>
 
-                    <SHStack justifyContent="center" mt={3}>
-                        <SButton mr={2} variant="outline" w="30%" title="Galeria" onPress={handlePickImage} addColor />
-                        <SButton w="30%" title="Tirar Foto" onPress={openCamera} addColor />
-                    </SHStack>
+                        {!isPrincipalProfile && (
+                            <Controller
+                                control={control}
+                                name="profileName"
+                                render={({ field: { onChange, value }, formState: { errors } }) => (
+                                    <SInput
+                                        inputProps={{
+                                            placeholder: '',
+                                            keyboardType: 'default',
+                                            autoCapitalize: 'none',
+                                            value,
+                                            onChangeText: onChange,
+                                        }}
+                                        startAdornmentText="Nome do perfil"
+                                        errorMessage={errors.profileName?.message}
+                                    />
+                                )}
+                            />
+                        )}
+                    </SVStack>
 
-                    <SVStack mt={5} mx={pagePadding}>
+                    {/* PHOTO */}
+                    <>
+                        <SHStack mb={3} mt={2}>
+                            <SLabel mb={0} mr={2} ml={pagePadding}>
+                                Fotos
+                            </SLabel>
+
+                            {photos && photos.length > 1 && (
+                                <SCenter px={2} borderRadius={10} bg="#00000044">
+                                    <SText fontSize={12} color="white">
+                                        {photos.length}
+                                    </SText>
+                                </SCenter>
+                            )}
+                        </SHStack>
+
+                        <SCenter style={styles.galleryContainer}>
+                            {!photos?.length && (
+                                <TouchableOpacity onPress={openCamera}>
+                                    <PhotoComponent
+                                        width={SCREEN_WIDTH - pagePaddingPx * 2}
+                                        orientation={Orientation.LANDSCAPE_LEFT}
+                                        uri={''}
+                                    />
+                                </TouchableOpacity>
+                            )}
+
+                            {!!photos?.length && (
+                                <SFlatList
+                                    // keyboardShouldPersistTaps={'handled'}
+                                    data={photos || []}
+                                    ItemSeparatorComponent={() => <SBox style={{ height: 10 }} />}
+                                    contentContainerStyle={{
+                                        paddingHorizontal: 10,
+                                        gap: 10,
+                                    }}
+                                    renderItem={({ item, index }) => (
+                                        <PhotoComponent
+                                            maxHeight={null}
+                                            key={item.uri}
+                                            handleEditImage={() => handleEditImage(item.uri)}
+                                            handleDeleteImage={() => handleDeleteImage(index)}
+                                            orientation={item.orientation || Orientation.LANDSCAPE_LEFT}
+                                            uri={item.uri}
+                                        />
+                                    )}
+                                    horizontal
+                                    keyExtractor={(item, index) => index.toString()}
+                                    showsVerticalScrollIndicator={false}
+                                    showsHorizontalScrollIndicator={false}
+                                />
+                            )}
+                        </SCenter>
+
+                        <SHStack justifyContent="center" mt={3}>
+                            <SButton
+                                mr={2}
+                                variant="outline"
+                                w="30%"
+                                title="Galeria"
+                                onPress={handlePickImage}
+                                addColor
+                            />
+                            <SButton w="30%" title="Tirar Foto" onPress={openCamera} addColor />
+                        </SHStack>
+                    </>
+
+                    {/* PARAMETHERS */}
+                    <SVStack mx={pagePadding} mt={5}>
                         <SLabel>Parâmetros ambientais</SLabel>
                         <SHStack>
                             <SBox flex={1} mr={4}>
@@ -379,6 +452,7 @@ export function CharacterizationForm({
                         </SHStack>
                     </SVStack>
 
+                    {/* DESCRIPTION */}
                     <SVStack mt={3} mx={pagePadding}>
                         {/* <SLabel mr={2}>Descrição</SLabel> */}
                         <Controller
@@ -400,9 +474,6 @@ export function CharacterizationForm({
                         />
                     </SVStack>
 
-                    {/* <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={24} mx={pagePadding}>
-                    <SButton size={'sm'} title="Salvar" onPress={handleSave} />
-                </SVStack> */}
                     <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={5} mx={pagePadding}>
                         <SButton size={'sm'} title="Salvar" onPress={handleSave} />
                     </SVStack>
