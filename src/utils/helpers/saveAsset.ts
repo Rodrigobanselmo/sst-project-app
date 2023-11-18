@@ -1,17 +1,20 @@
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
-import { ALBUM_NAME } from '@constants/constants';
+import { ALBUM_NAME, ALBUM_NAME_VIDEO } from '@constants/constants';
 import { isAndroid } from './getPlataform';
 
-export const saveImageToGallery = async (uri: string) => {
+export const saveImageOrVideoToGallery = async (uri: string) => {
+    const isVideo = uri.includes('.mp4') || uri.includes('.mov');
+    const albumName = isVideo ? ALBUM_NAME_VIDEO : ALBUM_NAME;
+
     try {
         const { status } = await MediaLibrary.requestPermissionsAsync();
         if (status === 'granted') {
             const asset = await MediaLibrary.createAssetAsync(uri);
 
-            let album = await MediaLibrary.getAlbumAsync(ALBUM_NAME);
+            let album = await MediaLibrary.getAlbumAsync(albumName);
             if (!album) {
-                album = await MediaLibrary.createAlbumAsync(ALBUM_NAME, asset);
+                album = await MediaLibrary.createAlbumAsync(albumName, asset);
             } else {
                 await MediaLibrary.addAssetsToAlbumAsync([asset], album.id);
             }
@@ -23,18 +26,18 @@ export const saveImageToGallery = async (uri: string) => {
     }
 };
 
-export const deleteImageToGallery = async (uri: string) => {
+export const deleteImageOrVideoFromGallery = async (uri: string) => {
     try {
         const { status } = await MediaLibrary.requestPermissionsAsync();
         if (status === 'granted') {
-            if (!isAndroid()) {
-                //TODO: to delete from editable pic album
-                await MediaLibrary.removeAssetsFromAlbumAsync([uri], ALBUM_NAME);
-            } else {
+            if (isAndroid()) {
                 // const fileInfo = await FileSystem.getInfoAsync(uri);
                 // if (fileInfo.exists && !fileInfo.isDirectory) {
                 //     await FileSystem.deleteAsync(uri, { idempotent: true });
                 // }
+            } else {
+                //TODO: to delete from editable pic album
+                await MediaLibrary.removeAssetsFromAlbumAsync([uri], ALBUM_NAME);
             }
 
             return true;

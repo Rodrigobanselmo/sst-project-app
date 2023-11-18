@@ -12,13 +12,15 @@ import { SAFE_AREA_PADDING, SCREEN_WIDTH, pagePadding, pagePaddingPx } from '@co
 import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { characterizationMap } from '@constants/maps/characterization.map';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
-import { deleteImageToGallery } from '@utils/helpers/saveImage';
+import { deleteImageOrVideoFromGallery } from '@utils/helpers/saveAsset';
 import * as ImagePickerExpo from 'expo-image-picker';
 import { Orientation } from 'expo-screen-orientation';
 import { Control, Controller } from 'react-hook-form';
 import ImagePicker from 'react-native-image-crop-picker';
 import { ICharacterizationValues } from '../../schemas';
 import { PhotoComponent } from './PhotoComponent';
+import SAudioRecorder from '@components/modelucules/SAudioRecording/SAudioRecording';
+import SVideoRecorder from '@components/modelucules/SVideoRecorder/SVideoRecorder';
 
 type PageProps = {
     openCamera: () => void;
@@ -127,7 +129,7 @@ export function CharacterizationForm({
             const updatedImages = [...(photos || [])];
             const image = updatedImages.splice(index, 1);
 
-            if (image[0].uri) deleteImageToGallery(image[0].uri);
+            if (image[0].uri) deleteImageOrVideoFromGallery(image[0].uri);
 
             onEditForm({ photos: updatedImages });
         };
@@ -473,6 +475,15 @@ export function CharacterizationForm({
                             )}
                         />
                     </SVStack>
+
+                    <SAudioRecorder
+                        audios={form.audios?.map((audio) => audio.uri) || []}
+                        setAudios={(audios) => onEditForm({ audios: audios.map((audio) => ({ uri: audio })) })}
+                    />
+                    <SVideoRecorder
+                        videos={form.videos?.map((video) => video.uri) || []}
+                        setVideos={(videos) => onEditForm({ videos: videos.map((video) => ({ uri: video })) })}
+                    />
 
                     <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={5} mx={pagePadding}>
                         <SButton size={'sm'} title="Salvar" onPress={handleSave} />

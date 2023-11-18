@@ -18,6 +18,8 @@ const characterizationSchema = tableSchema({
         { name: 'temperature', type: 'string', isOptional: true },
         { name: 'luminosity', type: 'string', isOptional: true },
         { name: 'moisturePercentage', type: 'string', isOptional: true },
+        { name: 'audios', type: 'string', isOptional: true },
+        { name: 'videos', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
     ],

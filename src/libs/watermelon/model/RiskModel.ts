@@ -50,7 +50,7 @@ class RiskModel extends Model {
         .query(
             Q.experimentalJoinTables([DBTablesEnum.RISK]),
             Q.or(
-                Q.where('riskId', this.id),
+                Q.and(Q.where('riskId', this.id), Q.where('status', StatusEnum.ACTIVE)),
                 Q.on(
                     DBTablesEnum.RISK,
                     Q.and(Q.where('representAll', true), Q.or(Q.where('type', this.type), Q.where('id', riskAllId))),
@@ -67,7 +67,7 @@ class RiskModel extends Model {
             Q.where('medName', Q.notEq('')),
             Q.where('medType', MeasuresTypeEnum.ENG),
             Q.or(
-                Q.where('riskId', this.id),
+                Q.and(Q.where('riskId', this.id), Q.where('status', StatusEnum.ACTIVE)),
                 Q.on(
                     DBTablesEnum.RISK,
                     Q.and(Q.where('representAll', true), Q.or(Q.where('type', this.type), Q.where('id', riskAllId))),
@@ -84,7 +84,7 @@ class RiskModel extends Model {
             Q.where('medName', Q.notEq('')),
             Q.where('medType', MeasuresTypeEnum.ADM),
             Q.or(
-                Q.where('riskId', this.id),
+                Q.and(Q.where('riskId', this.id), Q.where('status', StatusEnum.ACTIVE)),
                 Q.on(
                     DBTablesEnum.RISK,
                     Q.and(Q.where('representAll', true), Q.or(Q.where('type', this.type), Q.where('id', riskAllId))),
@@ -100,7 +100,7 @@ class RiskModel extends Model {
             Q.where('recName', Q.notEq(null)),
             Q.where('recName', Q.notEq('')),
             Q.or(
-                Q.where('riskId', this.id),
+                Q.and(Q.where('riskId', this.id), Q.where('status', StatusEnum.ACTIVE)),
                 Q.on(
                     DBTablesEnum.RISK,
                     Q.and(Q.where('representAll', true), Q.or(Q.where('type', this.type), Q.where('id', riskAllId))),

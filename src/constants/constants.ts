@@ -4,6 +4,7 @@ import { THEME } from '../theme/theme';
 
 export const CONTENT_SPACING = 15;
 export const ALBUM_NAME = 'SimpleSST';
+export const ALBUM_NAME_VIDEO = 'SimpleSST Videos';
 
 export const pagePadding = THEME.space.pagePadding;
 export const pagePaddingPx = THEME.space.pagePaddingPx;

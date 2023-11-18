@@ -154,7 +154,7 @@ export const Profile = () => {
 
     return (
         <SVStack flex={1}>
-            <SScreenHeader title="Perfil" />
+            <SScreenHeader title="Perfil" backButton />
             <ScrollView contentContainerStyle={{ paddingBottom: 36 }}>
                 <SCenter mt={6} px={10}>
                     <SBox mb={6}>

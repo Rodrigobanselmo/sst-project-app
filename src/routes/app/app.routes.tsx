@@ -31,16 +31,28 @@ export const BottomRoutes = () => {
                 headerShown: false,
                 tabBarActiveTintColor: primaryMain,
                 tabBarShowLabel: false,
+
+                //hide
+                tabBarStyle: {
+                    backgroundColor: 'transparent',
+                    elevation: 0,
+                    borderTopWidth: 0,
+                    height: 0,
+                    margin: 0,
+                    padding: 0,
+                    pointerEvents: 'none',
+                    opacity: 0,
+                },
             }}
         >
-            <Bottom.Screen
+            {/* <Bottom.Screen
                 name="home"
                 component={Home}
                 options={{
                     tabBarLabel: 'Início',
                     tabBarIcon: ({ color }) => <HomeSvg fill={color} width={iconSize} height={iconSize} />,
                 }}
-            />
+            /> */}
             <Bottom.Screen
                 name="workspacesEnviroment"
                 component={WorkspacesEnviroment}

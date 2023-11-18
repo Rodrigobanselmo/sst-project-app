@@ -1,5 +1,5 @@
 import { SFloatingButton, SIcon, SSpinner, SVStack, useSToast } from '@components/core';
-import { SScreenHeader } from '@components/index';
+import { SHomeHeader, SScreenHeader } from '@components/index';
 import { SSearchCompany } from '@components/organisms/SSearchModal/components/SSearchCompany';
 import { SSearchWorkspace } from '@components/organisms/SSearchModal/components/SSearchWorkspace';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -96,7 +96,9 @@ export function WorkspacesEnviroment({ route }: WorkspacesEviromentsPageProps): 
 
     return (
         <SVStack flex={1}>
-            <SScreenHeader title="Caracterizações" mb={4} />
+            {/* <SScreenHeader title="Caracterizações" mb={4} /> */}
+            <SHomeHeader bottomSpace />
+
             {isLoading && <SSpinner color={'primary.main'} size={32} />}
             {userDatabase && <EnhancedWorkspaceEnviromentList user={userDatabase} />}
 

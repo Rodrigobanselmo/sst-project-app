@@ -7,21 +7,19 @@ import { SHorizontalMenu } from '@components/modelucules/SHorizontalMenu';
 import { SLabel } from '@components/modelucules/SLabel';
 import { SSearchSimpleModal } from '@components/organisms/SSearchModal/components/SSearchSimpleModal';
 import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
+import { RecTypeEnum } from '@constants/enums/risk.enum';
 import { IReturnUseFuseSearch, useFuseFuncSearch } from '@hooks/useFuseFuncSearch';
 import { GenerateSourceModel } from '@libs/watermelon/model/GenerateSourceModel';
+import { RecMedModel } from '@libs/watermelon/model/RecMedModel';
 import { RiskModel } from '@libs/watermelon/model/RiskModel';
+import { useFetchQueryEpis } from '@services/api/epis/useQueryEpis';
+import { convertCaToDescription, isNaEpi, isNaRecMed } from '@utils/helpers/isNa';
 import { Control, Controller, UseFormWatch } from 'react-hook-form';
+import { Alert } from 'react-native';
+import sortArray from 'sort-array';
+import { RiskDataSelectedItem } from './RiskDataSelectedList';
 import { RiskOcupacionalTag } from './RiskOcupacionalTag';
 import { IRiskDataValues } from './schemas';
-import { RiskDataSelectedItem } from './RiskDataSelectedList';
-import { Alert } from 'react-native';
-import { getEpis, useFetchQueryEpis } from '@services/api/epis/useQueryEpis';
-import { addDotsText } from '@utils/helpers/addDotsText';
-import { convertCaToDescription, isNaEpi, isNaRecMed } from '@utils/helpers/isNa';
-import { RecMedModel } from '@libs/watermelon/model/RecMedModel';
-import sortArray from 'sort-array';
-import { RecTypeEnum } from '@constants/enums/risk.enum';
-import { RiskDataRepository } from '@repositories/riskDataRepository';
 
 type PageProps = {
     form: RiskDataFormProps;
@@ -160,6 +158,19 @@ export function RiskDataForm({
         onSaveForm();
     };
 
+    const removeDuplicatesAndOrder = useCallback((data: DataProps[]) => {
+        const uniqueItems: Record<string, DataProps> = {};
+
+        data.forEach((item) => {
+            if (!uniqueItems[item.name]) {
+                uniqueItems[item.name] = item;
+            }
+        });
+        console.log(uniqueItems);
+        const uniqueItemsArray = Object.values(uniqueItems);
+        return uniqueItemsArray;
+    }, []);
+
     const onGetRiskRelations = useCallback(
         async (search: string, options: { key: keyof RiskModel; fuseSearch: IReturnUseFuseSearch<DataProps> }) => {
             let results: DataProps[] = [];
@@ -177,7 +188,8 @@ export function RiskDataForm({
                             name: (item as any)?.[itemKey],
                             id: item.id,
                         }));
-                        results = options.fuseSearch.getResult({ data: resultData, search });
+
+                        results = options.fuseSearch.getResult({ data: removeDuplicatesAndOrder(resultData), search });
                     }
                 } catch (e) {
                     console.error(e);
@@ -187,7 +199,7 @@ export function RiskDataForm({
 
             return results || [];
         },
-        [risk],
+        [risk, removeDuplicatesAndOrder],
     );
 
     const onGetEpis = useCallback(

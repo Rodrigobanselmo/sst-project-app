@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDeviceRotation } from '@hooks/useDeviceRotation';
+import { useIsFocused } from '@react-navigation/core';
+import * as ScreenOrientation from 'expo-screen-orientation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PinchGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import {
     Extrapolate,
@@ -7,21 +10,9 @@ import {
     useAnimatedProps,
     useSharedValue,
 } from 'react-native-reanimated';
-import {
-    Camera,
-    CameraDeviceFormat,
-    CameraRuntimeError,
-    PhotoFile,
-    VideoFile,
-    frameRateIncluded,
-    sortFormats,
-    useCameraDevices,
-} from 'react-native-vision-camera';
-import { MAX_ZOOM_FACTOR } from '../../../constants/constants';
+import { CameraRuntimeError, useCameraDevice, useCameraFormat } from 'react-native-vision-camera';
+import { MAX_ZOOM_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH } from '../../../constants/constants';
 import { useIsForeground } from './useIsForeground';
-import { useDeviceRotation } from '@hooks/useDeviceRotation';
-import { useIsFocused } from '@react-navigation/core';
-import * as ScreenOrientation from 'expo-screen-orientation';
 
 const SCALE_FULL_ZOOM = 3;
 
@@ -38,6 +29,7 @@ export const useCameraEffects = () => {
     const [flash, setFlash] = useState<'off' | 'on'>('off');
     const [enableNightMode, setEnableNightMode] = useState(false);
 
+    const [targetFps, setTargetFps] = useState(60);
     const { orientation } = useDeviceRotation();
 
     const isPortrait = useMemo(() => {
@@ -68,32 +60,25 @@ export const useCameraEffects = () => {
         };
     }, []);
 
-    const devices = useCameraDevices();
-    const device = devices[cameraPosition];
+    const device = useCameraDevice(cameraPosition, {
+        physicalDevices: ['ultra-wide-angle-camera', 'wide-angle-camera', 'telephoto-camera'],
+    });
 
-    const formats = useMemo<CameraDeviceFormat[]>(() => {
-        if (device?.formats == null) return [];
-        return device.formats.sort(sortFormats);
-    }, [device?.formats]);
+    const screenAspectRatio = SCREEN_HEIGHT / SCREEN_WIDTH;
+    const format = useCameraFormat(device, [
+        { fps: targetFps },
+        { videoAspectRatio: screenAspectRatio },
+        { videoResolution: 'max' },
+        { photoAspectRatio: screenAspectRatio },
+        { photoResolution: 'max' },
+    ]);
 
-    const fps = useMemo(() => {
-        if (enableNightMode && !device?.supportsLowLightBoost) {
-            return 30;
-        }
+    const fps = Math.min(format?.maxFps ?? 1, targetFps);
 
-        const supports60Fps = formats.some((f) => f.frameRateRanges.some((r) => frameRateIncluded(r, 60)));
-        if (!supports60Fps) {
-            return 30;
-        }
-        return 60;
-    }, [device?.supportsLowLightBoost, enableNightMode, formats]);
-
-    const supportsCameraFlipping = useMemo(
-        () => devices.back != null && devices.front != null,
-        [devices.back, devices.front],
-    );
+    const supportsCameraFlipping = true;
+    const supports60Fps = useMemo(() => device?.formats.some((f) => f.maxFps >= 60), [device?.formats]);
     const supportsFlash = device?.hasFlash ?? false;
-    const canToggleNightMode = enableNightMode ? true : (device?.supportsLowLightBoost ?? false) || fps > 30;
+    const canToggleNightMode = device?.supportsLowLightBoost ?? false;
 
     const minZoom = device?.minZoom ?? 1;
     const maxZoom = Math.min(device?.maxZoom ?? 1, MAX_ZOOM_FACTOR);
@@ -133,6 +118,7 @@ export const useCameraEffects = () => {
     }, [onFlipCameraPressed]);
 
     const neutralZoom = device?.neutralZoom ?? 1;
+
     useEffect(() => {
         zoom.value = neutralZoom;
     }, [neutralZoom, zoom]);
@@ -181,5 +167,7 @@ export const useCameraEffects = () => {
         minZoom,
         maxZoom,
         orientation,
+        supports60Fps,
+        format,
     };
 };

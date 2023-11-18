@@ -10,6 +10,7 @@ const workspaceSchema = tableSchema({
         { name: 'abbreviation', type: 'string', isOptional: true },
         { name: 'status', type: 'string' },
         { name: 'startChar_at', type: 'number', isIndexed: true, isOptional: true },
+        { name: 'lastSendApiCharacterization_at', type: 'number', isOptional: true },
 
         { name: 'cep', type: 'string', isOptional: true },
         { name: 'street', type: 'string', isOptional: true },

@@ -7,44 +7,29 @@ import {
     RiskDataFormProps,
 } from './types';
 // import * as ImagePicker from 'expo-image-picker';
+import { SLoading } from '@components/modelucules';
+import { SLoadingPage } from '@components/organisms/SLoadingPage';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useGetCharacterization } from '@hooks/database/useGetCharacterization';
+import { useAuth } from '@hooks/useAuth';
+import { IHierarchy } from '@interfaces/IHierarchy';
+import { database } from '@libs/watermelon';
+import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
+import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
+import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
+import { RiskModel } from '@libs/watermelon/model/RiskModel';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { CharacterizationRepository } from '@repositories/characterizationRepository';
+import { RiskDataRepository } from '@repositories/riskDataRepository';
 import { CameraPage } from '@screens/Camera';
 import { IImageGallery } from '@screens/Camera/types';
-import * as ImagePickerExpo from 'expo-image-picker';
-import { CharacterizationForm } from './components/Characterization/CharacterizationForm';
 import { useForm } from 'react-hook-form';
-import { ICharacterizationValues, characterizationSchema } from './schemas';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { database } from '@libs/watermelon';
-import { DBTablesEnum } from '@constants/enums/db-tables';
-import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
-import { StatusEnum } from '@constants/enums/status.enum';
-import { useAuth } from '@hooks/useAuth';
-import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
-import { Collection } from '@nozbe/watermelondb';
-import { SButton, SLoading } from '@components/modelucules';
-import { CharacterizationRepository } from '@repositories/characterizationRepository';
+import { Alert, Linking, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Camera } from 'react-native-vision-camera';
 import { CharacterizationTabView } from './components/Characterization/CharacterizationTabView';
-import { RiskDataForm } from './components/RiskData/RiskDataForm';
-import { RiskModel } from '@libs/watermelon/model/RiskModel';
 import { RiskDataPage } from './components/RiskData/RiskDataPage';
-import { SVStack } from '@components/core';
-import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
-import { RecsRiskDataModel } from '@libs/watermelon/model/_MMModel/RecsRiskDataModel';
-import { AdmsRiskDataModel } from '@libs/watermelon/model/_MMModel/AdmsRiskDataModel';
-import { EngsRiskDataModel } from '@libs/watermelon/model/_MMModel/EngsRiskDataModel';
-import { EpisRiskDataModel } from '@libs/watermelon/model/_MMModel/EpisRiskDataModel';
-import { GenerateRiskDataModel } from '@libs/watermelon/model/_MMModel/GenerateRiskDataModel';
-import { RecMedModel } from '@libs/watermelon/model/RecMedModel';
-import { GenerateSourceModel } from '@libs/watermelon/model/GenerateSourceModel';
-import { RiskDataModel } from '@libs/watermelon/model/RiskDataModel';
-import { RiskDataRepository } from '@repositories/riskDataRepository';
-import { IHierarchy } from '@interfaces/IHierarchy';
-import { Alert } from 'react-native';
-import { useGetCharacterization } from '@hooks/database/useGetCharacterization';
-import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
-import { useThrottle } from '@hooks/useThrottle';
-import { SLoadingPage } from '@components/organisms/SLoadingPage';
+import { ICharacterizationValues, characterizationSchema } from './schemas';
 
 const Stack = createNativeStackNavigator<FormCharacterizationRoutesProps>();
 
@@ -53,7 +38,7 @@ export const GALLERY_IMAGE_PORTRAIT_WIDTH = (((GALLERY_IMAGE_Width * 9) / 16) * 
 export const GALLERY_IMAGE_HEIGHT = (GALLERY_IMAGE_Width * 9) / 16;
 
 export function Characterization({ navigation, route }: CharacterizationPageProps): React.ReactElement {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const saveRef = useRef(false);
     const { control, trigger, getValues, setValue } = useForm<ICharacterizationValues>({
         resolver: yupResolver(characterizationSchema),
@@ -112,6 +97,8 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                             luminosity,
                             description,
                             moisturePercentage,
+                            audios: form.audios || [],
+                            videos: form.videos || [],
                             ...(isPrincipalProfile && {
                                 photos: form.photos?.map((photo) => ({ photoUrl: photo.uri, id: photo.id })),
                             }),
@@ -140,20 +127,21 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                             riskData: form.riskData,
                             hierarchiesIds: form.hierarchies?.map((h) => h.id),
                             employeeIds: form.employees?.map((h) => h.id),
+                            audios: form.audios || [],
+                            videos: form.videos || [],
                         });
                     }
 
                     if (!options?.skipGoBack)
                         navigation.navigate('characterizations', { workspaceId: route.params.workspaceId });
-
-                    return characterization;
                 }
             } catch (error) {
-                //
+                console.error(error);
             }
 
             saveRef.current = false;
             setIsLoading(false);
+            return characterization;
         },
         [
             trigger,
@@ -161,11 +149,13 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
             characterizationId,
             navigation,
             route.params.workspaceId,
-            isPrincipalProfile,
+            form.audios,
+            form.videos,
             form.photos,
             form.riskData,
             form.hierarchies,
             form.employees,
+            isPrincipalProfile,
             principalProfileId,
             user.id,
         ],
@@ -189,10 +179,11 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
 
     const openCamera = async () => {
         try {
-            const permissionResult = await ImagePickerExpo.requestCameraPermissionsAsync();
+            const permissionResult = await Camera.requestCameraPermission();
 
-            if (permissionResult.granted === false) {
-                alert('Você recusou permitir que este aplicativo acesse sua câmera!');
+            if (permissionResult === 'denied') {
+                await Linking.openSettings();
+                // alert('Você recusou permitir que este aplicativo acesse sua câmera!');
                 return;
             }
 
@@ -214,6 +205,9 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                     await riskDataRepository.update(formValues.id, {
                         ...formValues,
                     });
+                } else if (characterizationId) {
+                    const riskDataRepository = new RiskDataRepository();
+                    await riskDataRepository.createRiskDataWithRecMedGs([formValues], characterizationId, user.id);
                 }
 
                 setForm((prev) => {
@@ -359,62 +353,74 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
     const getCharacterization = useCallback(
         async (options?: { characterizationId?: string; principalProfileId?: string }) => {
             const id = options?.characterizationId || route.params.id;
+            setIsLoading(true);
 
-            if (id) {
-                const characterizationRepo = new CharacterizationRepository();
-                const {
-                    characterization,
-                    photos: p,
-                    riskData,
-                    hierarchies,
-                    employees,
-                } = await characterizationRepo.findOne(id);
+            try {
+                if (id) {
+                    const characterizationRepo = new CharacterizationRepository();
+                    const {
+                        characterization,
+                        photos: p,
+                        riskData,
+                        hierarchies,
+                        employees,
+                    } = await characterizationRepo.findOne(id);
 
-                let name = characterization.name;
-                let type = characterization.type;
-                let photos = p;
+                    let name = characterization.name;
+                    let type = characterization.type;
+                    let photos = p;
 
-                const isProfile =
-                    options?.principalProfileId &&
-                    options?.characterizationId &&
-                    options.principalProfileId !== options.characterizationId;
+                    const isProfile =
+                        options?.principalProfileId &&
+                        options?.characterizationId &&
+                        options.principalProfileId !== options.characterizationId;
 
-                if (isProfile) {
-                    const principalData = await characterizationRepo.findOne(options.principalProfileId as string);
-                    name = principalData.characterization.name;
-                    type = principalData.characterization.type;
-                    photos = principalData.photos;
+                    if (isProfile) {
+                        const principalData = await characterizationRepo.findOne(options.principalProfileId as string);
+                        name = principalData.characterization.name;
+                        type = principalData.characterization.type;
+                        photos = principalData.photos;
 
-                    setValue('profileName', characterization.profileName || '');
+                        setValue('profileName', characterization.profileName || '');
+                    }
+
+                    setValue('name', name || '');
+                    setValue('type', type);
+                    setValue('noiseValue', characterization.noiseValue || '');
+                    setValue('temperature', characterization.temperature || '');
+                    setValue('luminosity', characterization.luminosity || '');
+                    setValue('moisturePercentage', characterization.moisturePercentage || '');
+                    setValue('description', characterization.description || '');
+
+                    setForm({
+                        id: characterization.id,
+                        profileParentId: characterization.profileParentId,
+                        workspaceId: characterization.workspaceId,
+                        photos: photos.map((photo: CharacterizationPhotoModel) => ({
+                            uri: photo.photoUrl,
+                            id: photo.id,
+                        })),
+                        profileName: characterization.profileName,
+                        audios: characterization.audios ? JSON.parse(characterization.audios) : [],
+                        videos: characterization.videos ? JSON.parse(characterization.videos) : [],
+                        riskData: riskData.map((rd) => ({
+                            id: rd.id,
+                            riskId: rd.riskId,
+                            probability: rd.probability,
+                            probabilityAfter: rd.probabilityAfter,
+                        })),
+                        hierarchies: hierarchies.map((h) => ({ id: h.id })),
+                        employees: employees.map((h) => ({ id: h.id })),
+                    });
+                } else {
+                    const type = route.params.type;
+
+                    if (type) setValue('type', type);
                 }
-
-                setValue('name', name || '');
-                setValue('type', type);
-                setValue('noiseValue', characterization.noiseValue || '');
-                setValue('temperature', characterization.temperature || '');
-                setValue('luminosity', characterization.luminosity || '');
-                setValue('moisturePercentage', characterization.moisturePercentage || '');
-                setValue('description', characterization.description || '');
-
-                setForm({
-                    id: characterization.id,
-                    profileParentId: characterization.profileParentId,
-                    workspaceId: characterization.workspaceId,
-                    photos: photos.map((photo: CharacterizationPhotoModel) => ({ uri: photo.photoUrl, id: photo.id })),
-                    profileName: characterization.profileName,
-                    riskData: riskData.map((rd) => ({
-                        id: rd.id,
-                        riskId: rd.riskId,
-                        probability: rd.probability,
-                        probabilityAfter: rd.probabilityAfter,
-                    })),
-                    hierarchies: hierarchies.map((h) => ({ id: h.id })),
-                    employees: employees.map((h) => ({ id: h.id })),
-                });
-            } else {
-                const type = route.params.type;
-
-                if (type) setValue('type', type);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setIsLoading(false);
             }
         },
         [route.params.id, route.params.type, setValue],
@@ -477,60 +483,68 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
 
     return (
         <>
-            <Stack.Navigator initialRouteName="formCharacterization">
-                <Stack.Screen name="formCharacterization" options={{ headerShown: false }}>
-                    {({ navigation }: FormCharacterizationScreenProps) => (
-                        <CharacterizationTabView
-                            control={control}
-                            onEditForm={onEditForm}
-                            onSaveForm={onSaveForm}
-                            openCamera={openCamera}
-                            onGoBack={onGoBack}
-                            onClickRisk={onClickRisk}
-                            onClickHierarchy={onClickHierarchy}
-                            onClickEmployee={onClickEmployee}
-                            onAddRisk={onRiskDataSave}
-                            form={form}
-                            isLoading={isLoading}
-                            profilesProps={{
-                                characterizationsProfiles,
-                                isLoadingProfiles,
-                                principalProfileId,
-                                onChangeProfile,
-                                isPrincipalProfile,
-                                onAddProfile,
-                            }}
-                            isEdit={!!characterizationId}
-                            {...(characterizationId && {
-                                onDeleteForm: onDeleteForm,
-                            })}
-                        />
-                    )}
-                </Stack.Screen>
-                <Stack.Screen name="cameraCharacterization" options={{ headerShown: false }}>
-                    {({ route, navigation }: FormCharacterizationScreenProps) => (
-                        <CameraPage
-                            onCancel={navigation.goBack}
-                            onSave={(props) => {
-                                onCameraSave(props);
-                                navigation.goBack();
-                            }}
-                        />
-                    )}
-                </Stack.Screen>
-                <Stack.Screen name="formRiskData" options={{ headerShown: false }}>
-                    {({ navigation, route: riskRoute }: FormCharacterizationScreenProps) => (
-                        <RiskDataPage
-                            onSaveForm={onRiskDataSave}
-                            onGoBack={navigation.goBack}
-                            initFormData={riskRoute.params}
-                            isEdit={!!characterizationId}
-                            onDeleteForm={onRiskDataDelete}
-                        />
-                    )}
-                </Stack.Screen>
-            </Stack.Navigator>
+            <GestureHandlerRootView style={styles.root}>
+                <Stack.Navigator initialRouteName="formCharacterization">
+                    <Stack.Screen name="formCharacterization" options={{ headerShown: false }}>
+                        {({ navigation }: FormCharacterizationScreenProps) => (
+                            <CharacterizationTabView
+                                control={control}
+                                onEditForm={onEditForm}
+                                onSaveForm={onSaveForm}
+                                openCamera={openCamera}
+                                onGoBack={onGoBack}
+                                onClickRisk={onClickRisk}
+                                onClickHierarchy={onClickHierarchy}
+                                onClickEmployee={onClickEmployee}
+                                onAddRisk={onRiskDataSave}
+                                form={form}
+                                isLoading={isLoading}
+                                profilesProps={{
+                                    characterizationsProfiles,
+                                    isLoadingProfiles,
+                                    principalProfileId,
+                                    onChangeProfile,
+                                    isPrincipalProfile,
+                                    onAddProfile,
+                                }}
+                                isEdit={!!characterizationId}
+                                {...(characterizationId && {
+                                    onDeleteForm: onDeleteForm,
+                                })}
+                            />
+                        )}
+                    </Stack.Screen>
+                    <Stack.Screen name="cameraCharacterization" options={{ headerShown: false }}>
+                        {({ route, navigation }: FormCharacterizationScreenProps) => (
+                            <CameraPage
+                                onCancel={navigation.goBack}
+                                onSave={(props) => {
+                                    onCameraSave(props);
+                                    navigation.goBack();
+                                }}
+                            />
+                        )}
+                    </Stack.Screen>
+                    <Stack.Screen name="formRiskData" options={{ headerShown: false }}>
+                        {({ navigation, route: riskRoute }: FormCharacterizationScreenProps) => (
+                            <RiskDataPage
+                                onSaveForm={onRiskDataSave}
+                                onGoBack={navigation.goBack}
+                                initFormData={riskRoute.params}
+                                isEdit={!!characterizationId}
+                                onDeleteForm={onRiskDataDelete}
+                            />
+                        )}
+                    </Stack.Screen>
+                </Stack.Navigator>
+            </GestureHandlerRootView>
             <SLoadingPage isLoading={isLoading} />
         </>
     );
 }
+
+const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+    },
+});

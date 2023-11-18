@@ -24,6 +24,7 @@ class WorkspaceModel extends Model {
     @field('status') status!: StatusEnum;
 
     @date('startChar_at') startChar_at?: Date;
+    @date('lastSendApiCharacterization_at') lastSendApiCharacterization_at?: Date;
 
     @field('cep') cep?: string;
     @field('street') street?: string;

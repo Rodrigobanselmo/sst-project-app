@@ -38,6 +38,8 @@ class CharacterizationModel extends Model {
     @field('temperature') temperature?: string;
     @field('luminosity') luminosity?: string;
     @field('moisturePercentage') moisturePercentage?: string;
+    @field('audios') audios?: string;
+    @field('videos') videos?: string;
 
     @field('workspaceId') workspaceId!: string;
     @field('companyId') companyId?: string;

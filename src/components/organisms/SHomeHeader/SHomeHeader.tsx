@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
 import { useNavigation } from '@react-navigation/native';
 
-export function SHomeHeader() {
+export function SHomeHeader({ bottomSpace }: { bottomSpace?: boolean }) {
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
     const { navigate } = useNavigation<AppNavigatorRoutesProps>();
@@ -25,7 +25,15 @@ export function SHomeHeader() {
     const paddingTop = insets.top + 20;
 
     return (
-        <SHStack bg="background.default" pt={paddingTop + 'px'} pb={'16px'} px={6} alignItems="center" shadow={'1'}>
+        <SHStack
+            mb={bottomSpace ? 6 : 0}
+            bg="background.default"
+            pt={paddingTop + 'px'}
+            pb={'16px'}
+            px={6}
+            alignItems="center"
+            shadow={'1'}
+        >
             <UserPhoto source={defaultUserPhotoImage} mr={4} sizeBox={10} />
 
             <SVStack flex={1}>

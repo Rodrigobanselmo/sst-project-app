@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import Fuse from 'fuse.js';
 import sortArray from 'sort-array';
 import { useDebouncedCallback } from 'use-debounce';
+import { normalizeString } from '@utils/helpers/normalizeString';
 
 interface IUseTableSearch<T> {
     data: T[];
@@ -58,8 +59,23 @@ export const useTableSearch = <T>({
         [handleSearchChangeDebounce, onLoadingSearchFn],
     );
 
+    function getFn(obj: any, path: any) {
+        const value = Fuse.config.getFn(obj, path);
+        if (Array.isArray(value)) {
+            return value.map((el) => normalizeString(el));
+        }
+
+        return normalizeString(value as string);
+    }
+
     const fuse = useMemo(() => {
-        return new Fuse(data, { keys, ignoreLocation: true, threshold: threshold });
+        return new Fuse(data, {
+            keys,
+            ignoreLocation: true,
+            threshold: threshold,
+            isCaseSensitive: false,
+            getFn,
+        });
     }, [data, keys, threshold]);
 
     const results = useMemo(() => {

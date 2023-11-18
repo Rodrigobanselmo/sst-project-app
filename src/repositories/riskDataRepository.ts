@@ -66,7 +66,6 @@ export class RiskDataRepository {
 
     async createRiskData(riskData: IRiskDataCreate[], characterizationId: string, userId: number) {
         const riskDataTable = database.get<RiskDataModel>(DBTablesEnum.RISK_DATA);
-
         try {
             await Promise.all(
                 riskData.map(async (_riskData) => {
@@ -86,6 +85,13 @@ export class RiskDataRepository {
         } catch (error) {
             console.error(error);
         }
+    }
+
+    async createRiskDataWithRecMedGs(riskData: IRiskDataCreate[], characterizationId: string, userId: number) {
+        await database.write(async () => {
+            const newRiskData = await this.createRecMedGS(riskData, userId);
+            await this.createRiskData(newRiskData, characterizationId, userId);
+        });
     }
 
     async createRiskDataRelations<T>(

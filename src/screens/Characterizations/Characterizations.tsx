@@ -12,11 +12,11 @@ import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import RenderEnhancedCharacterizationList from './components/CharacterizationList';
 import { CharacterizationsPageProps } from './types';
-import { MaterialIcons } from '@expo/vector-icons';
-import { SAFE_AREA_PADDING } from '@constants/constants';
+import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
 import { CompanyModel } from '@libs/watermelon/model/CompanyModel';
 import { addDotsText } from '@utils/helpers/addDotsText';
-import { Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export function Characterizations({ route }: CharacterizationsPageProps): React.ReactElement {
     const [workspaceDB, setWorkspaceDB] = useState<WorkspaceModel>();
@@ -38,6 +38,27 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
             setLoading(false);
         }
     }, [route.params.workspaceId]);
+
+    const handleSendApi = () => {
+        const action = () => {
+            //
+        };
+
+        Alert.alert(
+            'Atenção',
+            'Você tem certeza que deseja enviar os dados de caracterização para o sistema. Deseja continuar?',
+            [
+                {
+                    text: 'Não',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Sim, Enviar',
+                    onPress: action,
+                },
+            ],
+        );
+    };
 
     useEffect(() => {
         let isMounted = true;
@@ -73,6 +94,23 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                 />
                 {loading && <SSpinner color={'primary.main'} size={32} />}
                 {!loading && <RenderEnhancedCharacterizationList workspace={workspaceDB} />}
+
+                <SFloatingButton
+                    renderInPortal={false}
+                    shadow={2}
+                    placement="bottom-right"
+                    size="md"
+                    mr={130}
+                    bg="transparent"
+                    borderColor={'primary.main'}
+                    borderWidth={1}
+                    _text={{ color: 'primary.main' }}
+                    _pressed={{ bg: 'amber.100' }}
+                    icon={<SIcon color="primary.main" as={Ionicons} name="cloud-upload-outline" size="4" />}
+                    label="Enviar"
+                    bottom={SAFE_AREA_PADDING.paddingBottom}
+                    onPress={handleSendApi}
+                />
             </SVStack>
         </TouchableWithoutFeedback>
     );

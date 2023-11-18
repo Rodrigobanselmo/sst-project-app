@@ -16,10 +16,10 @@ export function SNoContent({ text = 'Nenhum dado encontrado', ...props }: Props)
             maxHeight={20}
             borderRadius={5}
             borderWidth={1}
-            borderColor={'gray.600'}
+            borderColor={'gray.200'}
             {...props}
         >
-            <SText color={'gray.700'}>{text}</SText>
+            <SText color={'gray.300'}>{text}</SText>
         </SCenter>
     );
 }

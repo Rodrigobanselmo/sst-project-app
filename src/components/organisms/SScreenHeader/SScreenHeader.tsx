@@ -60,6 +60,7 @@ export function SScreenHeader({
             action();
         }
     };
+
     const handleDelete = () => {
         const action = () => {
             onDelete?.();

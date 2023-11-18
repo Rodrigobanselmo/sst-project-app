@@ -8,7 +8,7 @@ import { CONTENT_SPACING, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from 
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { calculateActualDimensions } from '@utils/helpers/calculateAspectRatio';
 import { isAndroid } from '@utils/helpers/getPlataform';
-import { saveImageToGallery } from '@utils/helpers/saveImage';
+import { saveImageOrVideoToGallery } from '@utils/helpers/saveAsset';
 import { ImageResult, manipulateAsync } from 'expo-image-manipulator';
 import { Orientation } from 'expo-screen-orientation';
 import { SBox, SCenter, SFlatList, SIcon, SImage, SSpinner, SText, useSToast } from '@components/core';
@@ -58,6 +58,7 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
         minZoom,
         maxZoom,
         orientation,
+        format,
     } = useCameraEffects();
 
     const [galleryImages, setGalleryImages] = useState<IImageGallery[]>([]);
@@ -109,7 +110,7 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                         });
                     }
 
-                    const asset = await saveImageToGallery(manipResult.uri);
+                    const asset = await saveImageOrVideoToGallery(manipResult.uri);
 
                     if (asset) {
                         saveImages.push({
@@ -165,6 +166,7 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                                         backgroundColor: 'black',
                                         aspectRatio: 9 / 16,
                                     }}
+                                    format={format}
                                     device={device}
                                     lowLightBoost={device.supportsLowLightBoost && enableNightMode}
                                     isActive={isActive}
@@ -332,8 +334,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'black',
         flex: 1,
         justifyContent: 'center',
-        // width: '300px',
-        // height: '200px',
     },
     deleteButton: {
         backgroundColor: 'rgba(0, 0, 0, 0.6)',

@@ -60,6 +60,8 @@ export interface ICharacterizationCreate {
     riskData?: IRiskDataCreate[];
     hierarchiesIds?: string[];
     employeeIds?: string[];
+    audios?: { uri: string }[];
+    videos?: { uri: string }[];
 }
 
 export class CharacterizationRepository {
@@ -146,6 +148,8 @@ export class CharacterizationRepository {
                 characterization.status = StatusEnum.ACTIVE;
                 characterization.created_at = new Date();
                 characterization.updated_at = new Date();
+                characterization.audios = JSON.stringify(data.audios);
+                characterization.videos = JSON.stringify(data.videos);
             });
 
             try {
@@ -199,6 +203,8 @@ export class CharacterizationRepository {
                     if (data.temperature) characterization.temperature = data.temperature;
                     if (data.luminosity) characterization.luminosity = data.luminosity;
                     if (data.moisturePercentage) characterization.moisturePercentage = data.moisturePercentage;
+                    if (data.audios) characterization.audios = JSON.stringify(data.audios);
+                    if (data.videos) characterization.videos = JSON.stringify(data.videos);
 
                     characterization.updated_at = new Date();
                 });
