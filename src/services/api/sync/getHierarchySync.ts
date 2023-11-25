@@ -34,8 +34,10 @@ export const getHierarchySync = async (query: IQuerySync) => {
 export function useFetchQueryEpis() {
     const fetchHierarchySync = async (query = {} as IQuerySync, take = 20, page = 1) => {
         const data = await queryClient
-            .fetchQuery([QueryEnum.HIERARCHY, QueryEnum.SYNC, { ...query }], () => getHierarchySync({ ...query }), {
-                staleTime: 1000 * 60 * 10, // 10 minute
+            .fetchQuery({
+                queryKey: [QueryEnum.HIERARCHY, QueryEnum.SYNC, { ...query }],
+                queryFn: () => getHierarchySync({ ...query }),
+                staleTime: 1000 * 60 * 60, // 60 minute
             })
             .catch((e) => console.error(e));
 

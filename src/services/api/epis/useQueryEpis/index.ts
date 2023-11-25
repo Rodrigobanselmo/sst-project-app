@@ -28,13 +28,11 @@ export function useQueryEpis(page = 0, query = {} as IQueryEpi, take: number) {
         take: take || 20,
     };
 
-    const { data, ...result } = useQuery(
-        [QueryEnum.EPIS, page, { ...pagination, ...query }],
-        () => getEpis(pagination, query),
-        {
-            staleTime: 1000 * 60 * 60, // 1 hour
-        },
-    );
+    const { data, ...result } = useQuery({
+        queryKey: [QueryEnum.EPIS, page, { ...pagination, ...query }],
+        queryFn: () => getEpis(pagination, query),
+        staleTime: 1000 * 60 * 60, // 60 minute
+    });
 
     const response = {
         data: data?.data || ([] as IEpi[]),
@@ -52,8 +50,10 @@ export function useFetchQueryEpis() {
         };
 
         const data = await queryClient
-            .fetchQuery([QueryEnum.EPIS, page, { ...pagination, ...query }], () => getEpis(pagination, { ...query }), {
-                staleTime: 1000 * 60 * 10, // 10 minute
+            .fetchQuery({
+                queryKey: [QueryEnum.EPIS, page, { ...pagination, ...query }],
+                queryFn: () => getEpis(pagination, { ...query }),
+                staleTime: 1000 * 60 * 60, // 60 minute
             })
             .catch((e) => console.error(e));
         const response = {

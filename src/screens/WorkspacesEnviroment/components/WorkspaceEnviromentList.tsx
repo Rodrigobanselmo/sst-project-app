@@ -1,6 +1,6 @@
 import { SFlatList } from '@components/core';
 import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
-import withObservables from '@nozbe/with-observables';
+import { withObservables } from '@nozbe/watermelondb/react';
 import EnhancedWorkspaceEnviromentCard from './WorkspaceEnviromentCard';
 import { SNoContent } from '@components/modelucules';
 

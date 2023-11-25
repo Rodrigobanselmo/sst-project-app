@@ -2,7 +2,7 @@ import { SBox, SImage, SText } from '@components/core';
 // import * as ImagePicker from 'expo-image-picker';
 import PlaceholderImage from '@assets/placeholder-image.png';
 import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
-import withObservables from '@nozbe/with-observables';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { Orientation } from 'expo-screen-orientation';
 import { View, Image, StyleSheet } from 'react-native';
 

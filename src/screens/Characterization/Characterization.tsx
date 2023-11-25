@@ -9,9 +9,9 @@ import {
 // import * as ImagePicker from 'expo-image-picker';
 import { SLoading } from '@components/modelucules';
 import { SLoadingPage } from '@components/organisms/SLoadingPage';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { useGetCharacterization } from '@hooks/database/useGetCharacterization';
 import { useAuth } from '@hooks/useAuth';
+import { useYupValidationResolver } from '@hooks/useYupValidationResolver';
 import { IHierarchy } from '@interfaces/IHierarchy';
 import { database } from '@libs/watermelon';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
@@ -40,8 +40,10 @@ export const GALLERY_IMAGE_HEIGHT = (GALLERY_IMAGE_Width * 9) / 16;
 export function Characterization({ navigation, route }: CharacterizationPageProps): React.ReactElement {
     const [isLoading, setIsLoading] = useState(true);
     const saveRef = useRef(false);
+
+    const resolver = useYupValidationResolver(characterizationSchema);
     const { control, trigger, getValues, setValue } = useForm<ICharacterizationValues>({
-        resolver: yupResolver(characterizationSchema),
+        resolver,
     });
 
     const [form, setForm] = useState({ workspaceId: route.params.workspaceId } as CharacterizationFormProps);

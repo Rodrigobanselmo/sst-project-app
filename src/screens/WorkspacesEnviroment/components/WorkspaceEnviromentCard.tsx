@@ -6,7 +6,7 @@ import { characterizationMap } from '@constants/maps/characterization.map';
 import { useAuth } from '@hooks/useAuth';
 import { CompanyModel } from '@libs/watermelon/model/CompanyModel';
 import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
-import withObservables from '@nozbe/with-observables';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import { CompanyRepository } from '@repositories/companyRepository';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';

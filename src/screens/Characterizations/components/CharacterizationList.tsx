@@ -5,7 +5,7 @@ import PlaceholderImage from '@assets/placeholder-image.png';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Orientation } from 'expo-screen-orientation';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
-import withObservables from '@nozbe/with-observables';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { EnhancedCharacterizationPhoto } from './CharacterizationPhoto';
 import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
 import { characterizationMap } from '@constants/maps/characterization.map';

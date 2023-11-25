@@ -60,16 +60,14 @@ export function useQueryWorkspaces(page = 1, query = {} as IQueryWorkspaces, tak
         take: take || 20,
     };
 
-    const { data, ...rest } = useQuery(
-        [QueryEnum.WORKSPACE, companyId, page, { ...pagination, ...query }],
-        () =>
+    const { data, ...rest } = useQuery({
+        queryKey: [QueryEnum.WORKSPACE, companyId, page, { ...pagination, ...query }],
+        queryFn: () =>
             companyId && !query.disabled
                 ? getWorkspaces(pagination, { ...query, companyId })
                 : <Promise<IPaginationReturn<IWorkspace>>>emptyMapReturn(),
-        {
-            staleTime: 1000 * 60 * 60, // 60 minute
-        },
-    );
+        staleTime: 1000 * 60 * 60, // 60 minute
+    });
 
     const response = {
         data: data?.data || ([] as IWorkspace[]),

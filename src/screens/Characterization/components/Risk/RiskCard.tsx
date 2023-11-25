@@ -3,7 +3,7 @@ import { SRowCard } from '@components/modelucules/SRowCard';
 import { STagRisk } from '@components/modelucules/STagRisk/STagRisk';
 import { riskMap } from '@constants/maps/risk.map';
 import { RiskModel } from '@libs/watermelon/model/RiskModel';
-import withObservables from '@nozbe/with-observables';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
 import { useState } from 'react';

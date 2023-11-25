@@ -12,8 +12,9 @@ import LogoTextSvg from '@assets/brand/logoTextFull.svg';
 import LogoSvg from '@assets/brand/logoSimple.svg';
 import { AuthNavigatorRoutesProps } from '@routes/auth/AuthRoutesProps';
 import { SButton, SInput } from '@components/index';
-import { SHStack, SHeading, SToast, SVStack, SCenter, useSToast, SBox } from '@components/core';
+import { SHStack, SHeading, SToast, SVStack, SCenter, useSToast, SBox, SImage } from '@components/core';
 import { ScrollView } from 'react-native';
+import { LogoTextFull } from '@assets/brand/logoTextFull';
 
 type FormDataProps = {
     email: string;
@@ -83,7 +84,7 @@ export function SignIn() {
 
                 <SHStack my={24} alignItems={'center'}>
                     <SCenter flex={4}>
-                        <LogoTextSvg width={'100%'} />
+                        <LogoTextFull size={450} />
                     </SCenter>
                     <SCenter flex={1}>
                         <LogoSvg width={'100%'} />

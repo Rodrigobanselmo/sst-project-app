@@ -2,7 +2,7 @@ import { formatCPF } from '@brazilian-utils/brazilian-utils';
 import { SHStack, SText, SVStack } from '@components/core';
 import { SRowCard } from '@components/modelucules/SRowCard';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
-import withObservables from '@nozbe/with-observables';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { useState } from 'react';
 
 type Props = {

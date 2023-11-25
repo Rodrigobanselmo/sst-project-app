@@ -60,16 +60,14 @@ export function useQueryCompanies(page = 1, query = {} as IQueryCompanies, take 
         take: take || 20,
     };
 
-    const { data, ...rest } = useQuery(
-        [QueryEnum.COMPANIES, companyId, page, { ...pagination, ...query }],
-        () =>
+    const { data, ...rest } = useQuery({
+        staleTime: 1000 * 60 * 60, // 60 minute
+        queryKey: [QueryEnum.COMPANIES, companyId, page, { ...pagination, ...query }],
+        queryFn: () =>
             companyId && !query.disabled
                 ? getCompanies(pagination, { ...query, companyId }, '')
                 : <Promise<IPaginationReturn<ICompany>>>emptyMapReturn(),
-        {
-            staleTime: 1000 * 60 * 60, // 60 minute
-        },
-    );
+    });
 
     const response = {
         data: data?.data || ([] as ICompany[]),

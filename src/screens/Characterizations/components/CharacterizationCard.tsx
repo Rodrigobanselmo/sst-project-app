@@ -4,7 +4,7 @@ import { SRowCard } from '@components/modelucules/SRowCard';
 import { characterizationMap } from '@constants/maps/characterization.map';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
 import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
-import withObservables from '@nozbe/with-observables';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
 import { EnhancedCharacterizationPhoto } from './CharacterizationPhoto';

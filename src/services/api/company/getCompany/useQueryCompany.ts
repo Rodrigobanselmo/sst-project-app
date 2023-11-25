@@ -10,13 +10,11 @@ export function useQueryCompany(getCompanyId?: string | null): IReactQuery<IComp
     const { user } = useAuth();
     const companyID = getCompanyId || user?.companyId;
 
-    const { data, ...query } = useQuery(
-        [QueryEnum.COMPANY, companyID],
-        () => (companyID ? getCompany(companyID) : <Promise<ICompany>>emptyMapReturn()),
-        {
-            staleTime: 1000 * 60 * 60, // 60 minute
-        },
-    );
+    const { data, ...query } = useQuery({
+        queryKey: [QueryEnum.COMPANY, companyID],
+        queryFn: () => (companyID ? getCompany(companyID) : <Promise<ICompany>>emptyMapReturn()),
+        staleTime: 1000 * 60 * 60, // 60 minute
+    });
 
     return { ...query, data: data || ({} as unknown as ICompany) };
 }

@@ -7,7 +7,7 @@ import { characterizationOptionsList } from '@constants/maps/characterization-op
 import { characterizationMap } from '@constants/maps/characterization.map';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTableSearch } from '@hooks/useTableSearch';
-import withObservables from '@nozbe/with-observables';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
 import { useMemo, useState } from 'react';

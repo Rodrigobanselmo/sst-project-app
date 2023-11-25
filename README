@@ -1,0 +1,82 @@
+# config andorid 
+
+## Inital
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+
+## Install
+npx expo install @expo-google-fonts/roboto expo-av expo-camera expo-file-system expo-font expo-image-manipulator expo-image-picker expo-media-library expo-navigation-bar expo-screen-orientation expo-sensors
+npm install -D @babel/plugin-proposal-decorators babel-plugin-module-resolver @types/react @types/react-native-dotenv @types/sort-array @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint eslint-config-prettier eslint-plugin-import-helpers eslint-plugin-prettier eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-react-native eslint-plugin-simple-import-sort prettier react-native-dotenv react-native-svg-transformer react-native-web typescript
+npm install @baronha/react-native-photo-editor @brazilian-utils/brazilian-utils @expo-google-fonts/roboto @hookform/resolvers @nozbe/watermelondb @react-native-async-storage/async-storage @react-native-community/netinfo @react-navigation/bottom-tabs @react-navigation/native @react-navigation/native-stack @tanstack/react-query axios babel-plugin-inline-dotenv dayjs react-native-reanimated
+npm install fuse.js native-base query-string react-hook-form react-native-gesture-handler react-native-gradle-plugin react-native-image-crop-picker react-native-pager-view react-native-safe-area-context react-native-screens react-native-static-safe-area-insets react-native-svg react-native-tab-view react-native-uuid react-native-vision-camera react-native-web sort-array use-debounce yup
+
+AFTER ALL
+RCT_NEW_ARCH_ENABLED=1 pod install
+
+## Config
+- expo-camera
+- expo-media-library
+- @nozbe/watermelondb
+- @baronha/react-native-photo-editor
+- react-native-image-crop-picker (android)
+
+### Final config
+
+##### IOS
+podfile {
+    pod 'SDWebImage', :modular_headers => true
+    pod 'SDWebImageWebPCoder', :modular_headers => true
+    pod 'simdjson', path: '../node_modules/@nozbe/simdjson', modular_headers: true
+}
+info.plist {
+    <key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Dar permissão ao SimpleSST para salvar fotos em seu album.</string>
+    ...
+    <key>NSCameraUsageDescription</key>
+	<string>Dar permissão ao SimpleSST para acessar sua camera</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Dar permissão ao SimpleSST para acessar o audio do seu despositivo</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Dar permissão ao SimpleSST para ter acesso as fotos em seu album</string>
+	<key>UILaunchStoryboardName</key>
+	<string>SplashScreen</string>
+}
+
+##### ANDROID
+/metro.config.js
+/babel.config
+/app.json
+
+/android/build.gradle {
+    maven {
+        // expo-camera bundles a custom com.google.android:cameraview
+        url "$rootDir/../node_modules/expo-camera/android/maven"
+    }
+
+    maven { url 'https://maven.google.com' }
+}
+
+/android/app/src/main/AndroidManifest.xml {
+    <!-- New Added Permissions -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+    
+    edited -> <application android:requestLegacyExternalStorage="true" android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="false" android:theme="@style/AppTheme">
+}
+
+
+
+
+## Run on Device
+
+### Android
+react-native run-android --deviceId=RX8T7044WZT
+yarn android --deviceId=RX8T7044WZT
+
+### IOS
+yarn ios --device "dev"

@@ -132,7 +132,7 @@ const VideoItem = ({
             if (video.current) {
                 const videoAsset = await getAssetInfo(videoUri);
                 setAsset(videoAsset);
-                if (videoAsset.localUri) video.current.loadAsync({ uri: videoAsset.localUri });
+                if (videoAsset?.localUri) video.current.loadAsync({ uri: videoAsset.localUri });
             }
         };
 

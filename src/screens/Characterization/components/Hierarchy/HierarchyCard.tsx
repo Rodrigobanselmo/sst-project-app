@@ -5,7 +5,7 @@ import { STagRisk } from '@components/modelucules/STagRisk/STagRisk';
 import { hierarchyConstant } from '@constants/maps/hierarchy.map';
 import { riskMap } from '@constants/maps/risk.map';
 import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
-import withObservables from '@nozbe/with-observables';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
 import { HierarchyListParents } from '@utils/helpers/hierarchyListParents';

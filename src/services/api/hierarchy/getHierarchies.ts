@@ -39,13 +39,11 @@ export function useQueryHierarchies(query = {} as IQueryHierarchies) {
     const { user } = useAuth();
     const companyId = query.companyId || user?.companyId;
 
-    const { data, ...rest } = useQuery(
-        [QueryEnum.HIERARCHY, companyId],
-        () => (companyId ? queryHierarchies(query) : <Promise<IHierarchyMap>>emptyMapReturn()),
-        {
-            staleTime: 1000 * 60 * 60, // 1 hour
-        },
-    );
+    const { data, ...rest } = useQuery({
+        queryKey: [QueryEnum.HIERARCHY, companyId],
+        queryFn: () => (companyId ? queryHierarchies(query) : <Promise<IHierarchyMap>>emptyMapReturn()),
+        staleTime: 1000 * 60 * 60, // 60 minute
+    });
 
     return { ...rest, data: data || ({} as IHierarchyMap) };
 }
