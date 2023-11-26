@@ -86,7 +86,7 @@ export function SScreenHeader({
                         style={{
                             paddingHorizontal: 16,
                             paddingTop: paddingTop,
-                            paddingBottom: 16,
+                            paddingBottom: 30,
                         }}
                         onPress={handleGoBack}
                     >

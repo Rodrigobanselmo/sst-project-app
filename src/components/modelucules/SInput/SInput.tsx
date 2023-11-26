@@ -1,4 +1,4 @@
-import { ISInputProps, SBox, SCenter, SFormControl, Input as SI, SIcon, SText } from '@components/core';
+import { ISInputProps, SBox, SCenter, SFormControl, Input as SI, SIcon, SSpinner, SText } from '@components/core';
 import React from 'react';
 import { useRef } from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -8,6 +8,7 @@ export interface SInputProps extends ISInputProps {
     errorMessage?: string | null;
     endAdornmentText?: React.ReactNode;
     startAdornmentText?: React.ReactNode;
+    isLoading?: boolean;
     inputProps?: ISInputProps & {
         variant?: 'normal' | 'filled';
         clearButton?: boolean;
@@ -17,7 +18,16 @@ export interface SInputProps extends ISInputProps {
 
 export const SInput = React.forwardRef<any, SInputProps>(
     (
-        { isDisabled, startAdornmentText, errorMessage = null, isInvalid, endAdornmentText, inputProps, ...props },
+        {
+            isLoading,
+            isDisabled,
+            startAdornmentText,
+            errorMessage = null,
+            isInvalid,
+            endAdornmentText,
+            inputProps,
+            ...props
+        },
         refPass,
     ) => {
         const refValue = useRef(null);
@@ -37,22 +47,28 @@ export const SInput = React.forwardRef<any, SInputProps>(
                     {...(inputProps?.clearButton &&
                         (ref as any)?.current && {
                             InputRightElement: (
-                                <TouchableOpacity
-                                    style={{ paddingHorizontal: 10 }}
-                                    onPress={() => {
-                                        (ref as any)?.current?.clear();
-                                        inputProps?.clearButtonAction?.();
-                                    }}
-                                >
-                                    <SIcon as={MaterialIcons} name="close" color="text.light" size={5} />
-                                </TouchableOpacity>
+                                <>
+                                    {isLoading && <SSpinner color={'primary.main'} size={22} />}
+                                    <TouchableOpacity
+                                        style={{ paddingHorizontal: 10 }}
+                                        onPress={() => {
+                                            (ref as any)?.current?.clear();
+                                            inputProps?.clearButtonAction?.();
+                                        }}
+                                    >
+                                        <SIcon as={MaterialIcons} name="close" color="text.light" size={5} />
+                                    </TouchableOpacity>
+                                </>
                             ),
                         })}
                     {...(endAdornmentText && {
                         InputRightElement: (
-                            <SText color={'text.light'} mr={3}>
-                                {endAdornmentText}
-                            </SText>
+                            <>
+                                {isLoading && <SSpinner color={'primary.main'} size={22} />}
+                                <SText color={'text.light'} mr={3}>
+                                    {endAdornmentText}
+                                </SText>
+                            </>
                         ),
                     })}
                     {...(startAdornmentText && {

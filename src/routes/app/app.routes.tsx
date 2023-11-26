@@ -1,22 +1,16 @@
 import HistorySvg from '@assets/history.svg';
-import HomeSvg from '@assets/home.svg';
 import ProfileSvg from '@assets/profile.svg';
+import { useSync } from '@hooks/useSync';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Characterization } from '@screens/Characterization';
-import { Home } from '@screens/Home';
-import { Profile } from '@screens/Profile';
-import { WorkspacesEnviroment } from '@screens/WorkspacesEnviroment';
-import { AppRoutesProps } from './AppRoutesProps';
-import { THEME } from '../../theme/theme';
 import { Characterizations } from '@screens/Characterizations';
-import { synchronize } from '@nozbe/watermelondb/sync';
-import { database } from '@libs/watermelon';
-import { api } from '@services/api';
-import { getSyncChanges } from '@services/api/sync/getSyncChanges';
-import { useNetInfo } from '@react-native-community/netinfo';
-import { useEffect, useRef } from 'react';
-import { useSync } from '@hooks/useSync';
+import { Profile } from '@screens/Profile';
+import { Test } from '@screens/Test';
+import { WorkspacesEnviroment } from '@screens/WorkspacesEnviroment';
+import { useEffect } from 'react';
+import { THEME } from '../../theme/theme';
+import { AppRoutesProps } from './AppRoutesProps';
 
 const Stack = createNativeStackNavigator<AppRoutesProps>();
 const Bottom = createBottomTabNavigator<AppRoutesProps>();
@@ -84,6 +78,7 @@ export const AppRoutes = () => {
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
+            <Stack.Screen name={'test' as unknown as any} component={Test} />
             <Stack.Screen name="main" component={BottomRoutes} />
             <Stack.Screen name="characterizations" component={Characterizations} />
             <Stack.Screen name="characterization" component={Characterization} />

@@ -4,15 +4,16 @@ import { TouchableOpacity } from 'react-native';
 import { SIcon } from '@components/core';
 import { MaterialIcons } from '@expo/vector-icons';
 
-interface SInputSearchProps extends SInputProps {
+export interface SInputSearchProps extends SInputProps {
     search?: string;
     onSearchChange: (search: string) => void;
     autoFocus?: boolean;
+    isLoading?: boolean;
     clearButtonAction?: () => void;
 }
 
 export const SInputSearch = React.forwardRef<any, SInputSearchProps>(
-    ({ search, autoFocus, clearButtonAction, onSearchChange, ...props }, ref) => {
+    ({ search, autoFocus, isLoading, clearButtonAction, onSearchChange, ...props }, ref) => {
         return (
             <SInput
                 inputProps={{
@@ -28,6 +29,7 @@ export const SInputSearch = React.forwardRef<any, SInputSearchProps>(
                     ...(search && { value: search }),
                 }}
                 ref={ref}
+                isLoading={isLoading}
                 {...props}
             />
         );

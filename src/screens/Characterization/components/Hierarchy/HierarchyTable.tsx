@@ -9,7 +9,7 @@ import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
 import { HierarchyEnum } from '@constants/enums/hierarchy.enum';
 import { riskOptionsList } from '@constants/maps/risk-options.map';
 import { useGetHierarchyDatabase } from '@hooks/database/useGetHierarchyDatabase';
-import { useTableSearch } from '@hooks/useTableSearch';
+import { useTableSearch } from '@hooks/useTableSearchOld';
 import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
 import { RiskModel } from '@libs/watermelon/model/RiskModel';
 import sortArray from 'sort-array';

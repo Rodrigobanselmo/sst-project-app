@@ -50,10 +50,12 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
     const { user } = useAuth();
 
     const characterizationId = useMemo(() => form.id, [form.id]);
+
     const principalProfileId = useMemo(
         () => form.profileParentId || characterizationId,
         [characterizationId, form.profileParentId],
     );
+
     const isPrincipalProfile = useMemo(
         () => principalProfileId == characterizationId,
         [characterizationId, principalProfileId],
@@ -179,7 +181,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         navigation.navigate('characterizations', { workspaceId: route.params.workspaceId });
     }, [navigation, route.params.workspaceId]);
 
-    const openCamera = async () => {
+    const openCamera = useCallback(async () => {
         try {
             const permissionResult = await Camera.requestCameraPermission();
 
@@ -193,7 +195,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         } catch (error) {
             console.error(error);
         }
-    };
+    }, [navigation]);
 
     const onCameraSave = useCallback(({ photos }: { photos: IImageGallery[] }) => {
         setForm((prev) => ({ ...prev, photos: [...(prev.photos || []), ...photos] }));
@@ -228,7 +230,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                 console.error(error);
             }
         },
-        [characterizationId],
+        [characterizationId, user.id],
     );
 
     const onRiskDataDelete = useCallback(
@@ -252,105 +254,114 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         [characterizationId],
     );
 
-    const onClickRisk = async (risk: RiskModel) => {
-        const riskData = form.riskData?.find((rd) => rd.riskId === risk.id);
+    const onClickRisk = useCallback(
+        async (risk: RiskModel) => {
+            const riskData = form.riskData?.find((rd) => rd.riskId === risk.id);
 
-        let params: RiskDataFormProps = {
-            riskId: risk.id,
-        };
+            let params: RiskDataFormProps = {
+                riskId: risk.id,
+            };
 
-        if (riskData) {
-            params = { ...params, ...riskData };
-        }
-
-        navigation.navigate('formRiskData', params);
-    };
-
-    const onClickHierarchy = async (hierarchy: IHierarchy) => {
-        const hierarchies = [...(form?.hierarchies || [])];
-        const hierarchyIndex = hierarchies.findIndex((rd) => rd.id === hierarchy.id);
-
-        if (hierarchyIndex >= 0) {
-            Alert.alert('Atenção', 'Você tem certeza que deseja remover permnentemente. Deseja continuar?', [
-                {
-                    text: 'Não',
-                    style: 'cancel',
-                },
-                {
-                    text: 'Sim, apagar',
-                    onPress: async () => {
-                        hierarchies.splice(hierarchyIndex, 1);
-                        if (characterizationId) {
-                            const characterizationRepository = new CharacterizationRepository();
-                            await characterizationRepository.deleteMMHierarchy(hierarchy.id, characterizationId);
-                        }
-                        setForm((prev) => {
-                            return { ...prev, hierarchies };
-                        });
-                    },
-                },
-            ]);
-        } else {
-            if (characterizationId) {
-                const characterizationRepository = new CharacterizationRepository();
-                await database.write(async () => {
-                    await characterizationRepository.createMMHierarchy(
-                        [hierarchy.id],
-                        characterizationId as string,
-                        user.id,
-                    );
-                });
+            if (riskData) {
+                params = { ...params, ...riskData };
             }
 
-            setForm((prev) => {
-                hierarchies.push(hierarchy);
-                return { ...prev, hierarchies };
-            });
-        }
-    };
+            navigation.navigate('formRiskData', params);
+        },
+        [form.riskData, navigation],
+    );
 
-    const onClickEmployee = async (employee: EmployeeModel) => {
-        const employees = [...(form?.employees || [])];
-        const employeeIndex = employees.findIndex((_e) => _e.id === employee.id);
+    const onClickHierarchy = useCallback(
+        async (hierarchy: IHierarchy) => {
+            const hierarchies = [...(form?.hierarchies || [])];
+            const hierarchyIndex = hierarchies.findIndex((rd) => rd.id === hierarchy.id);
 
-        if (employeeIndex >= 0) {
-            Alert.alert('Atenção', 'Você tem certeza que deseja remover permnentemente. Deseja continuar?', [
-                {
-                    text: 'Não',
-                    style: 'cancel',
-                },
-                {
-                    text: 'Sim, apagar',
-                    onPress: async () => {
-                        employees.splice(employeeIndex, 1);
-                        if (characterizationId) {
-                            const characterizationRepository = new CharacterizationRepository();
-                            await characterizationRepository.deleteMMEmployee(employee.id, characterizationId);
-                        }
-                        setForm((prev) => {
-                            return { ...prev, employees };
-                        });
+            if (hierarchyIndex >= 0) {
+                Alert.alert('Atenção', 'Você tem certeza que deseja remover permnentemente. Deseja continuar?', [
+                    {
+                        text: 'Não',
+                        style: 'cancel',
                     },
-                },
-            ]);
-        } else {
-            if (characterizationId) {
-                const characterizationRepository = new CharacterizationRepository();
-                await database.write(async () => {
-                    await characterizationRepository.createMMEmployee(
-                        [employee.id],
-                        characterizationId as string,
-                        user.id,
-                    );
+                    {
+                        text: 'Sim, apagar',
+                        onPress: async () => {
+                            hierarchies.splice(hierarchyIndex, 1);
+                            if (characterizationId) {
+                                const characterizationRepository = new CharacterizationRepository();
+                                await characterizationRepository.deleteMMHierarchy(hierarchy.id, characterizationId);
+                            }
+                            setForm((prev) => {
+                                return { ...prev, hierarchies };
+                            });
+                        },
+                    },
+                ]);
+            } else {
+                if (characterizationId) {
+                    const characterizationRepository = new CharacterizationRepository();
+                    await database.write(async () => {
+                        await characterizationRepository.createMMHierarchy(
+                            [hierarchy.id],
+                            characterizationId as string,
+                            user.id,
+                        );
+                    });
+                }
+
+                setForm((prev) => {
+                    hierarchies.push(hierarchy);
+                    return { ...prev, hierarchies };
                 });
             }
+        },
+        [characterizationId, form?.hierarchies, user.id],
+    );
 
-            setForm((prev) => {
-                employees.push(employee);
-                return { ...prev, employees };
-            });
-        }
-    };
+    const onClickEmployee = useCallback(
+        async (employee: EmployeeModel) => {
+            const employees = [...(form?.employees || [])];
+            const employeeIndex = employees.findIndex((_e) => _e.id === employee.id);
+
+            if (employeeIndex >= 0) {
+                Alert.alert('Atenção', 'Você tem certeza que deseja remover permnentemente. Deseja continuar?', [
+                    {
+                        text: 'Não',
+                        style: 'cancel',
+                    },
+                    {
+                        text: 'Sim, apagar',
+                        onPress: async () => {
+                            employees.splice(employeeIndex, 1);
+                            if (characterizationId) {
+                                const characterizationRepository = new CharacterizationRepository();
+                                await characterizationRepository.deleteMMEmployee(employee.id, characterizationId);
+                            }
+                            setForm((prev) => {
+                                return { ...prev, employees };
+                            });
+                        },
+                    },
+                ]);
+            } else {
+                if (characterizationId) {
+                    const characterizationRepository = new CharacterizationRepository();
+                    await database.write(async () => {
+                        await characterizationRepository.createMMEmployee(
+                            [employee.id],
+                            characterizationId as string,
+                            user.id,
+                        );
+                    });
+                }
+
+                setForm((prev) => {
+                    employees.push(employee);
+                    return { ...prev, employees };
+                });
+            }
+        },
+        [characterizationId, form?.employees, user.id],
+    );
 
     const getCharacterization = useCallback(
         async (options?: { characterizationId?: string; principalProfileId?: string }) => {

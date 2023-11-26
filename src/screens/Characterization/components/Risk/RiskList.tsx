@@ -6,7 +6,7 @@ import { SAFE_AREA_PADDING, pagePaddingPx } from '@constants/constants';
 import { characterizationOptionsList } from '@constants/maps/characterization-options.map';
 import { characterizationMap } from '@constants/maps/characterization.map';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useTableSearch } from '@hooks/useTableSearch';
+import { useTableSearch } from '@hooks/useTableSearchOld';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';

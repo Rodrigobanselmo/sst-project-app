@@ -7,7 +7,7 @@ import { SButton, SInputSearch } from '@components/index';
 import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
 import { HierarchyEnum } from '@constants/enums/hierarchy.enum';
 import { useGetEmployee } from '@hooks/database/useGetEmployee';
-import { useTableSearch } from '@hooks/useTableSearch';
+import { useTableSearch } from '@hooks/useTableSearchOld';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 import sortArray from 'sort-array';
 import { EmployeeList } from './EmployeeList';

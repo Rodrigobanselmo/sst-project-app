@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useMemo, useState } from 'react';
 
-import Fuse from 'fuse.js';
+import Fuse, { FuseOptionKey } from 'fuse.js';
 import sortArray from 'sort-array';
 import { useDebouncedCallback } from 'use-debounce';
 import { normalizeString } from '@utils/helpers/normalizeString';
 
 interface IUseTableSearch<T> {
     data: T[];
-    keys: Fuse.FuseOptionKey<any>[];
+    keys: FuseOptionKey<any>[];
     rowsPerPage?: number;
     setSearchValue?: (value: string) => void;
     searchValue?: string;
@@ -89,10 +89,10 @@ export const useTableSearch = <T>({
         const resultSearch = searchValue
             ? fuseResults.map((result) => result.item)
             : sortFunction
-            ? Array.isArray(data)
-                ? sortFunction(data)
-                : []
-            : data;
+              ? Array.isArray(data)
+                  ? sortFunction(data)
+                  : []
+              : data;
 
         if (rowsPerPage) return resultSearch.slice((page - 1) * rowsPerPage, page * rowsPerPage);
         return resultSearch;

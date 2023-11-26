@@ -15,7 +15,7 @@ import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
 import EnhancedCharacterizationCard from './CharacterizationCard';
 import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
 import { SNoContent } from '@components/modelucules';
-import { useTableSearch } from '@hooks/useTableSearch';
+import { useTableSearch } from '@hooks/useTableSearchOld';
 import { SInputSearch } from '@components/modelucules';
 import { SAFE_AREA_PADDING, pagePaddingPx } from '@constants/constants';
 import sortArray from 'sort-array';

@@ -58,6 +58,10 @@ export function CharacterizationTabView(props: PageProps) {
         setIndex(0);
     }, [props]);
 
+    const riskIds = React.useMemo(() => {
+        return props.form.riskData?.map((risk) => risk.riskId) || [];
+    }, [props.form]);
+
     const renderScene = React.useCallback(
         ({ route }: any) => {
             switch (route.key) {
@@ -67,7 +71,9 @@ export function CharacterizationTabView(props: PageProps) {
                     return (
                         <>
                             <RiskTable
-                                {...props}
+                                riskIds={riskIds}
+                                isEdit={props.isEdit}
+                                onClickRisk={props.onClickRisk}
                                 onSaveForm={onSave}
                                 renderRightElement={(risk, selected) => {
                                     if (selected) return <></>;
@@ -95,7 +101,7 @@ export function CharacterizationTabView(props: PageProps) {
                     return null as any;
             }
         },
-        [onSave, props],
+        [onSave, props, riskIds],
     );
 
     return (
