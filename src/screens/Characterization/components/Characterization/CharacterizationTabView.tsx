@@ -66,7 +66,19 @@ export function CharacterizationTabView(props: PageProps) {
         ({ route }: any) => {
             switch (route.key) {
                 case '1':
-                    return <CharacterizationForm {...props} />;
+                    return (
+                        <CharacterizationForm
+                            profilesProps={props.profilesProps}
+                            onSaveForm={props.onSaveForm}
+                            onEditForm={props.onEditForm}
+                            control={props.control}
+                            openCamera={props.openCamera}
+                            audios={props.form.audios}
+                            videos={props.form.videos}
+                            photos={props.form.photos}
+                            selectedId={props.form.id}
+                        />
+                    );
                 case '2':
                     return (
                         <>

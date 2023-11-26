@@ -88,12 +88,14 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
                         />
 
                         {isLoading && <SSpinner color={'primary.main'} size={32} />}
-                        <RiskList
-                            renderRightElement={renderRightElement}
-                            onClickRisk={handleClickRisk}
-                            risks={results}
-                            selectedIds={risksSelected.map((risk) => risk.id)}
-                        />
+                        {!isLoading && (
+                            <RiskList
+                                renderRightElement={renderRightElement}
+                                onClickRisk={handleClickRisk}
+                                risks={results}
+                                selectedIds={risksSelected.map((risk) => risk.id)}
+                            />
+                        )}
                     </SVStack>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>

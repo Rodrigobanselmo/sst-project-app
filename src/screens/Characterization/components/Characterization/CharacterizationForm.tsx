@@ -24,13 +24,13 @@ import SVideoRecorder from '@components/modelucules/SVideoRecorder/SVideoRecorde
 
 type PageProps = {
     openCamera: () => void;
-    form: CharacterizationFormProps;
+    selectedId?: string;
+    photos?: CharacterizationFormProps['photos'];
+    audios?: CharacterizationFormProps['audios'];
+    videos?: CharacterizationFormProps['videos'];
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
     onSaveForm: () => Promise<void>;
-    onGoBack: () => void;
-    onDeleteForm?: () => Promise<void>;
     control: Control<ICharacterizationValues, any>;
-    isEdit?: boolean;
     profilesProps: {
         characterizationsProfiles?: CharacterizationModel[];
         isLoadingProfiles?: boolean;
@@ -49,9 +49,11 @@ export function CharacterizationForm({
     openCamera,
     onEditForm,
     onSaveForm,
-    form,
+    photos,
+    audios,
+    videos,
     control,
-    isEdit,
+    selectedId,
     profilesProps: {
         principalProfileId,
         characterizationsProfiles,
@@ -61,8 +63,6 @@ export function CharacterizationForm({
         isPrincipalProfile,
     },
 }: PageProps): React.ReactElement {
-    const { photos, isEdited } = form;
-
     const handlePickImage = async () => {
         try {
             const permissionResult = await ImagePickerExpo.requestMediaLibraryPermissionsAsync();
@@ -183,7 +183,7 @@ export function CharacterizationForm({
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
-            behavior="padding"
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
         >
             <SVStack flex={1}>
@@ -281,7 +281,7 @@ export function CharacterizationForm({
                                 ]}
                                 getKeyExtractor={(item) => item.value}
                                 getLabel={(item) => item.name}
-                                getIsActive={(item) => item.value === form.id}
+                                getIsActive={(item) => item.value === selectedId}
                             />
                         )}
 
@@ -477,11 +477,11 @@ export function CharacterizationForm({
                     </SVStack>
 
                     <SAudioRecorder
-                        audios={form.audios?.map((audio) => audio.uri) || []}
+                        audios={audios?.map((audio) => audio.uri) || []}
                         setAudios={(audios) => onEditForm({ audios: audios.map((audio) => ({ uri: audio })) })}
                     />
                     <SVideoRecorder
-                        videos={form.videos?.map((video) => video.uri) || []}
+                        videos={videos?.map((video) => video.uri) || []}
                         setVideos={(videos) => onEditForm({ videos: videos.map((video) => ({ uri: video })) })}
                     />
 
