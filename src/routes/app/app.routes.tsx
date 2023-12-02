@@ -78,10 +78,10 @@ export const AppRoutes = () => {
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
-            <Stack.Screen name={'test' as unknown as any} component={Test} />
             <Stack.Screen name="main" component={BottomRoutes} />
             <Stack.Screen name="characterizations" component={Characterizations} />
             <Stack.Screen name="characterization" component={Characterization} />
+            <Stack.Screen name={'test' as unknown as any} component={Test} />
         </Stack.Navigator>
     );
 };

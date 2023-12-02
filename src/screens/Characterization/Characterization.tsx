@@ -24,12 +24,15 @@ import { RiskDataRepository } from '@repositories/riskDataRepository';
 import { CameraPage } from '@screens/Camera';
 import { IImageGallery } from '@screens/Camera/types';
 import { useForm } from 'react-hook-form';
-import { Alert, Linking, StyleSheet } from 'react-native';
+import { Alert, Linking, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Camera } from 'react-native-vision-camera';
 import { CharacterizationTabView } from './components/Characterization/CharacterizationTabView';
 import { RiskDataPage } from './components/RiskData/RiskDataPage';
 import { ICharacterizationValues, characterizationSchema } from './schemas';
+import { CharacterizationForm } from './components/Characterization/CharacterizationForm';
+import { SLoadingPagePubSub } from '@components/organisms/SLoadingPage/SLoadingPagePubSub';
+import { PubSubEventsEnum, pubSub } from '@utils/helpers/pubSub';
 
 const Stack = createNativeStackNavigator<FormCharacterizationRoutesProps>();
 
@@ -51,15 +54,9 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
 
     const characterizationId = useMemo(() => form.id, [form.id]);
 
-    const principalProfileId = useMemo(
-        () => form.profileParentId || characterizationId,
-        [characterizationId, form.profileParentId],
-    );
+    const principalProfileId = useMemo(() => form.profileParentId || form.id, [form.id, form.profileParentId]);
 
-    const isPrincipalProfile = useMemo(
-        () => principalProfileId == characterizationId,
-        [characterizationId, principalProfileId],
-    );
+    const isPrincipalProfile = useMemo(() => principalProfileId == form.id, [form.id, principalProfileId]);
 
     const {
         characterizations: characterizationsProfiles,
@@ -75,7 +72,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
 
             const isValid = await trigger(['name', 'type']);
             let characterization: CharacterizationModel | undefined;
-            setIsLoading(true);
+            pubSub.publish(PubSubEventsEnum.LOADING_PAGE, true);
             saveRef.current = true;
 
             try {
@@ -144,7 +141,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
             }
 
             saveRef.current = false;
-            setIsLoading(false);
+            pubSub.publish(PubSubEventsEnum.LOADING_PAGE, false);
             return characterization;
         },
         [
@@ -366,7 +363,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
     const getCharacterization = useCallback(
         async (options?: { characterizationId?: string; principalProfileId?: string }) => {
             const id = options?.characterizationId || route.params.id;
-            setIsLoading(true);
+            pubSub.publish(PubSubEventsEnum.LOADING_PAGE, true);
 
             try {
                 if (id) {
@@ -433,14 +430,14 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
             } catch (error) {
                 console.error(error);
             } finally {
-                setIsLoading(false);
+                pubSub.publish(PubSubEventsEnum.LOADING_PAGE, false);
             }
         },
         [route.params.id, route.params.type, setValue],
     );
 
     useEffect(() => {
-        getCharacterization();
+        getCharacterization().finally(() => setIsLoading(false));
     }, [getCharacterization]);
 
     const onChangeProfile = useCallback(
@@ -490,9 +487,12 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         }
     }, [form.riskData, getCharacterization, onSaveForm, refetchProfiles, route.params.workspaceId, user.id]);
 
-    if (characterizationId && !form.id) {
+    const isLoadingPage = (characterizationId && !form.id) || isLoadingProfiles || isLoading;
+    if (isLoadingPage) {
         return <SLoading />;
     }
+
+    console.log('char');
 
     return (
         <>
@@ -511,7 +511,6 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                                 onClickEmployee={onClickEmployee}
                                 onAddRisk={onRiskDataSave}
                                 form={form}
-                                isLoading={isLoading}
                                 profilesProps={{
                                     characterizationsProfiles,
                                     isLoadingProfiles,
@@ -551,7 +550,6 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                     </Stack.Screen>
                 </Stack.Navigator>
             </GestureHandlerRootView>
-            <SLoadingPage isLoading={isLoading} />
         </>
     );
 }

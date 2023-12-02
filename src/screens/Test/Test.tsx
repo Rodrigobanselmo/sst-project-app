@@ -4,37 +4,32 @@ import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
 import { SVStack, useSToast } from '@components/core';
 import { useState } from 'react';
 import { RiskTable } from '@screens/Characterization/components/Risk/RiskTable';
+import { CharacterizationForm } from '@screens/Characterization/components/Characterization/CharacterizationForm';
+import { useYupValidationResolver } from '@hooks/useYupValidationResolver';
+import { ICharacterizationValues, characterizationSchema } from '@screens/Characterization/schemas';
+import { useForm } from 'react-hook-form';
 
 export const Test = () => {
-    const [isLoading, setIsLoading] = useState(true);
-
-    const { navigate } = useNavigation<AppNavigatorRoutesProps>();
-    const toast = useSToast();
-
-    // const handleOpenExerciseDetail = (id: number) => {
-    //   navigate('exercise', { id });
-    // };
+    const resolver = useYupValidationResolver(characterizationSchema);
+    const { control, trigger, getValues, setValue } = useForm<ICharacterizationValues>({
+        resolver,
+    });
 
     return (
         <SVStack flex={1}>
             <SHomeHeader />
-            <RiskTable
-                riskIds={[]}
-                isEdit={false}
-                renderRightElement={(risk, selected) => {
-                    if (selected) return <></>;
-                    return (
-                        <SButton
-                            title={'adicionar'}
-                            fontSize={13}
-                            variant="outline"
-                            autoWidth
-                            height={6}
-                            p={0}
-                            px={3}
-                        />
-                    );
+            <CharacterizationForm
+                profilesProps={{
+                    isPrincipalProfile: true,
                 }}
+                onSaveForm={async () => {}}
+                onEditForm={async () => {}}
+                control={control}
+                openCamera={async () => null}
+                audios={[]}
+                videos={[]}
+                photos={[]}
+                selectedId={''}
             />
         </SVStack>
     );

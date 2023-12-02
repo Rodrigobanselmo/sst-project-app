@@ -13,21 +13,21 @@ export function useGetDatabase<T>({ onFetchFunction }: IUseGetRiskDatabase<T>) {
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
 
-    const fetch = useCallback(async () => {
-        try {
-            const fetchData = await onFetchFunction();
-
-            setData(fetchData);
-            setIsError(false);
-        } catch (error) {
-            console.error(error);
-            setIsError(true);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [onFetchFunction]);
-
     useEffect(() => {
+        const fetch = async () => {
+            try {
+                const fetchData = await onFetchFunction();
+
+                setData(fetchData);
+                setIsError(false);
+            } catch (error) {
+                console.error(error);
+                setIsError(true);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
         let isMounted = true;
 
         if (isMounted) {
@@ -37,7 +37,7 @@ export function useGetDatabase<T>({ onFetchFunction }: IUseGetRiskDatabase<T>) {
         return () => {
             isMounted = false;
         };
-    }, [fetch]);
+    }, [onFetchFunction]);
 
     return { data, isError, setIsLoading, isLoading, refetch: fetch };
 }

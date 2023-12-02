@@ -29,7 +29,7 @@ type PageProps = {
     audios?: CharacterizationFormProps['audios'];
     videos?: CharacterizationFormProps['videos'];
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
-    onSaveForm: () => Promise<void>;
+    onSaveForm: () => Promise<any>;
     control: Control<ICharacterizationValues, any>;
     profilesProps: {
         characterizationsProfiles?: CharacterizationModel[];

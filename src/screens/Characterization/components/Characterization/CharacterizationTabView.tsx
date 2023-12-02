@@ -1,7 +1,7 @@
 import { STabView } from '@components/organisms/STabView';
 import * as React from 'react';
 import { View, useWindowDimensions } from 'react-native';
-import { TabView, SceneMap } from 'react-native-tab-view';
+import { TabView, SceneMap, SceneRendererProps } from 'react-native-tab-view';
 import { CharacterizationFormProps, RiskDataFormProps } from '../../types';
 import { ICharacterizationValues } from '../../schemas';
 import { Control } from 'react-hook-form';
@@ -19,9 +19,6 @@ import { EmployeesTable } from '../Employees/EmployeesTable';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 
 type PageProps = {
-    // onIndexChange: (index: number) => void;
-    // index: number;
-    isLoading?: boolean;
     openCamera: () => void;
     form: CharacterizationFormProps;
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
@@ -44,44 +41,52 @@ type PageProps = {
     };
 };
 
-export function CharacterizationTabView(props: PageProps) {
-    const [index, setIndex] = React.useState(0);
-    const [routes] = React.useState([
-        { key: '1', title: 'Principal' },
-        { key: '2', title: 'Riscos' },
-        { key: '3', title: 'Cargos' },
-        { key: '4', title: 'Funcionários' },
-    ]);
-
+export function CharacterizationTabView({ onSaveForm, ...props }: PageProps) {
+    const tabRef = React.useRef<any>(null);
     const onSave = React.useCallback(async () => {
-        props.onSaveForm();
-        setIndex(0);
-    }, [props]);
+        onSaveForm();
+        tabRef.current?.setIndex(0);
+    }, [onSaveForm]);
 
     const riskIds = React.useMemo(() => {
         return props.form.riskData?.map((risk) => risk.riskId) || [];
     }, [props.form]);
 
-    const renderScene = React.useCallback(
-        ({ route }: any) => {
-            switch (route.key) {
-                case '1':
-                    return (
-                        <CharacterizationForm
-                            profilesProps={props.profilesProps}
-                            onSaveForm={props.onSaveForm}
-                            onEditForm={props.onEditForm}
-                            control={props.control}
-                            openCamera={props.openCamera}
-                            audios={props.form.audios}
-                            videos={props.form.videos}
-                            photos={props.form.photos}
-                            selectedId={props.form.id}
-                        />
-                    );
-                case '2':
-                    return (
-                        <>
+    return (
+        <>
+            <SScreenHeader
+                isAlert={true}
+                title={
+                    (!props.isEdit ? 'Adicionar' : 'Editar') +
+                    (props.form.profileName ? ` (${props.form.profileName})` : '')
+                }
+                onDelete={props.onDeleteForm}
+                backButton
+                navidateFn={props.onGoBack}
+                mb={-2}
+            />
+            <STabView
+                tabsRef={tabRef}
+                routes={[
+                    {
+                        label: 'Principal',
+                        component: (
+                            <CharacterizationForm
+                                profilesProps={props.profilesProps}
+                                onSaveForm={onSaveForm}
+                                onEditForm={props.onEditForm}
+                                control={props.control}
+                                openCamera={props.openCamera}
+                                audios={props.form.audios}
+                                videos={props.form.videos}
+                                photos={props.form.photos}
+                                selectedId={props.form.id}
+                            />
+                        ),
+                    },
+                    {
+                        label: 'Riscos',
+                        component: (
                             <RiskTable
                                 riskIds={riskIds}
                                 isEdit={props.isEdit}
@@ -103,33 +108,18 @@ export function CharacterizationTabView(props: PageProps) {
                                     );
                                 }}
                             />
-                        </>
-                    );
-                case '3':
-                    return <HierarchyTable {...props} onClick={props?.onClickHierarchy} onSaveForm={onSave} />;
-                case '4':
-                    return <EmployeesTable {...props} onClick={props?.onClickEmployee} onSaveForm={onSave} />;
-                default:
-                    return null as any;
-            }
-        },
-        [onSave, props, riskIds],
-    );
-
-    return (
-        <>
-            <SScreenHeader
-                isAlert={true}
-                title={
-                    (!props.isEdit ? 'Adicionar' : 'Editar') +
-                    (props.form.profileName ? ` (${props.form.profileName})` : '')
-                }
-                onDelete={props.onDeleteForm}
-                backButton
-                navidateFn={props.onGoBack}
-                mb={-2}
+                        ),
+                    },
+                    {
+                        label: 'Cargos',
+                        component: <HierarchyTable {...props} onClick={props?.onClickHierarchy} onSaveForm={onSave} />,
+                    },
+                    {
+                        label: 'Funcionários',
+                        component: <EmployeesTable {...props} onClick={props?.onClickEmployee} onSaveForm={onSave} />,
+                    },
+                ]}
             />
-            <STabView renderScene={renderScene} onIndexChange={(i) => setIndex(i)} index={index} routes={routes} />
         </>
     );
 }

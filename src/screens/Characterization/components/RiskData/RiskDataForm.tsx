@@ -166,7 +166,6 @@ export function RiskDataForm({
                 uniqueItems[item.name] = item;
             }
         });
-        console.log(uniqueItems);
         const uniqueItemsArray = Object.values(uniqueItems);
         return uniqueItemsArray;
     }, []);

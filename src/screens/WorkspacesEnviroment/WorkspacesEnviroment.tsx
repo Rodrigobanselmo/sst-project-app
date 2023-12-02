@@ -22,7 +22,7 @@ import { useSync } from '@hooks/useSync';
 import getSyncChanges from '@nozbe/watermelondb/Schema/migrations/getSyncChanges';
 import { getHierarchySync, usePersistedStateHierarchy } from '@services/api/sync/getHierarchySync';
 import { usePersistedState } from '@hooks/usePersistState';
-import { HIERARCHY_STORAGE } from '@libs/storage/config';
+import { HIERARCHY_STORAGE } from '@libs/storage/disk/config';
 import { IHierarchy, IHierarchyMap } from '@interfaces/IHierarchy';
 import { queryHierarchies } from '@services/api/hierarchy/getHierarchies';
 import {

@@ -24,7 +24,10 @@ interface IUseGetDatabase {
 }
 
 export function useGetCharacterization({ profileId, userId, ids }: IUseGetDatabase) {
-    const onFetchFunction = useCallback(async () => {
+    const [data, setData] = useState<CharacterizationModel[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const onFetchFunction = async () => {
         const characterizationRepository = new CharacterizationRepository();
         const characterizationsData: CharacterizationModel[] = [];
 
@@ -40,11 +43,24 @@ export function useGetCharacterization({ profileId, userId, ids }: IUseGetDataba
         }
 
         return characterizationsData;
+    };
+
+    const fetch = async () => {
+        try {
+            const fetchData = await onFetchFunction();
+
+            setData(fetchData);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [profileId, userId, ids]);
 
-    const { data, isError, isLoading, setIsLoading, refetch } = useGetDatabase({
-        onFetchFunction,
-    });
-
-    return { characterizations: data, isError, setIsLoading, isLoading, refetch };
+    return { characterizations: data, setIsLoading, isLoading, refetch: fetch };
 }

@@ -15,7 +15,7 @@ import { IHierarchy } from '@interfaces/IHierarchy';
 import { setMapHierarchies } from '../hierarchy/getHierarchies';
 import { HierarchyListWithTypes, hierarchyListParents } from '@utils/helpers/hierarchyListParents';
 import { usePersistedState } from '@hooks/usePersistState';
-import { HIERARCHY_STORAGE } from '@libs/storage/config';
+import { HIERARCHY_STORAGE } from '@libs/storage/disk/config';
 import { useEffect } from 'react';
 import { queryClient } from '@services/queryClient';
 

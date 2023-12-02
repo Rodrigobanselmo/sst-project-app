@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { USER_TOKEN } from '../config';
+import { USER_TOKEN } from '../disk/config';
 
 interface StorageAuthTokenProps {
     token: string;
