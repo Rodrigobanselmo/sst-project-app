@@ -1,7 +1,7 @@
 /* eslint-disable no-async-promise-executor */
 import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
 import { API_URL } from '@env';
-import { storageAuthTokenGet, storageAuthTokenSave } from '@libs/storage/token';
+import { storageAuthTokenGet, storageAuthTokenSave } from '@libs/storage/disk/token';
 import { AppError } from '@utils/errors';
 import axios, { AxiosError, AxiosInstance } from 'axios';
 

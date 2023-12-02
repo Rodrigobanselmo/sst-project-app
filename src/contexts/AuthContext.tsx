@@ -1,7 +1,7 @@
 import { IUser } from '@interfaces/IUser';
 import { api } from '@services/api';
-import { storageAuthTokenGet, storageAuthTokenRemove, storageAuthTokenSave } from '@libs/storage/token';
-import { storageUserGet, storageUserRemove, storageUserSave } from '@libs/storage/user';
+import { storageAuthTokenGet, storageAuthTokenRemove, storageAuthTokenSave } from '@libs/storage/disk/token';
+import { storageUserGet, storageUserRemove, storageUserSave } from '@libs/storage/disk/user';
 import { createContext, useCallback, useEffect, useState, ReactNode } from 'react';
 import { ISession } from '@interfaces/ISession';
 import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';

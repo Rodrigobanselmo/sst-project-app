@@ -108,7 +108,7 @@ export function CharacterizationForm({
 
             onEditForm({ photos: results });
         } catch (error) {
-            console.error(error);
+            console.log('Error', error);
         }
     };
 
@@ -179,6 +179,8 @@ export function CharacterizationForm({
             value: CharacterizationTypeEnum.EQUIPMENT,
         },
     ];
+
+    console.log(2, 'c');
 
     return (
         <KeyboardAvoidingView

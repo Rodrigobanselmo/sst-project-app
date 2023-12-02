@@ -1,7 +1,7 @@
 import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
 import { ProfessionalTypeEnum } from '@constants/enums/professional-type.enum';
 import { IUser } from '@interfaces/IUser';
-import { storageAuthTokenGet, storageAuthTokenSave } from '@libs/storage/token';
+import { storageAuthTokenGet, storageAuthTokenSave } from '@libs/storage/disk/token';
 import { api } from '@services/api';
 
 export interface IUpdateUser {

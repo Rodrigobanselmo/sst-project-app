@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { USER_STORAGE } from '../disk/config';
+import { USER_STORAGE } from '../config';
 import { IUser } from '@interfaces/IUser';
 
 export const storageUserSave = async (user: IUser) => {
