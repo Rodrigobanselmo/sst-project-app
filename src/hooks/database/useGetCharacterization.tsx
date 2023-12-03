@@ -13,9 +13,10 @@ import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
 import { useSync } from '@hooks/useSync';
 import { getHierarchySync } from '@services/api/sync/getHierarchySync';
 import { WorkspaceHierarchyModel } from '@libs/watermelon/model/_MMModel/WorkspaceHierarchyModel';
-import { useGetDatabase } from './useGetDatabase';
 import { CharacterizationRepository } from '@repositories/characterizationRepository';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
+import { unstable_batchedUpdates } from 'react-native';
+import { useGetDatabase } from './useGetDatabaseTest';
 
 interface IUseGetDatabase {
     profileId?: string;
@@ -23,44 +24,29 @@ interface IUseGetDatabase {
     ids?: string[];
 }
 
-export function useGetCharacterization({ profileId, userId, ids }: IUseGetDatabase) {
-    const [data, setData] = useState<CharacterizationModel[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+const onGetCharacterization = async ({ ids, profileId, userId }: IUseGetDatabase) => {
+    const characterizationRepository = new CharacterizationRepository();
+    const characterizationsData: CharacterizationModel[] = [];
 
-    const onFetchFunction = async () => {
-        const characterizationRepository = new CharacterizationRepository();
-        const characterizationsData: CharacterizationModel[] = [];
+    if (profileId) {
+        const { characterizations } = await characterizationRepository.findByProfileId({ profileId });
+        characterizationsData.push(...characterizations);
+    } else if (ids) {
+        const { characterizations } = await characterizationRepository.findByIds({ ids });
+        characterizationsData.push(...characterizations);
+    } else if (userId) {
+        const { characterizations } = await characterizationRepository.findMany({ userId });
+        characterizationsData.push(...characterizations);
+    }
 
-        if (profileId) {
-            const { characterizations } = await characterizationRepository.findByProfileId({ profileId });
-            characterizationsData.push(...characterizations);
-        } else if (ids) {
-            const { characterizations } = await characterizationRepository.findByIds({ ids });
-            characterizationsData.push(...characterizations);
-        } else if (userId) {
-            const { characterizations } = await characterizationRepository.findMany({ userId });
-            characterizationsData.push(...characterizations);
-        }
+    return characterizationsData;
+};
 
-        return characterizationsData;
-    };
-
-    const fetch = async () => {
-        try {
-            const fetchData = await onFetchFunction();
-
-            setData(fetchData);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [profileId, userId, ids]);
+export function useGetCharacterization(props: IUseGetDatabase) {
+    const { data, fetch, isLoading, setIsLoading } = useGetDatabase({
+        params: props,
+        onFetchFunction: (props) => onGetCharacterization(props),
+    });
 
     return { characterizations: data, setIsLoading, isLoading, refetch: fetch };
 }
