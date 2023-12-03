@@ -1,5 +1,5 @@
 import { SSpinner, SVStack } from '@components/core';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback } from 'react-native';
 import { CharacterizationFormProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
@@ -17,56 +17,56 @@ import { HierarchyList } from './HierarchyList';
 import { hierarchyList } from '@constants/maps/hierarchy.map';
 import { HierarchyListParents, hierarchyListParents } from '@utils/helpers/hierarchyListParents';
 import { usePersistedStateHierarchy } from '@services/api/sync/getHierarchySync';
+import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
+import { SInputLoadingSearch } from '@components/modelucules/SInputSearch/SInputLoadingSearch';
+import { useResultSearch } from '@hooks/useResultSearch';
 
 type PageProps = {
-    form: CharacterizationFormProps;
-    onEditForm: (form: Partial<CharacterizationFormProps>) => void;
-    onSaveForm: () => Promise<void>;
-    isEdit?: boolean;
+    onSave: () => Promise<void>;
     onClick?: (risk: HierarchyListParents) => Promise<void>;
     renderRightElement?: (risk: HierarchyListParents, selected: boolean) => React.ReactElement;
 };
 
-export function HierarchyTable({ onClick, renderRightElement, form, onSaveForm }: PageProps): React.ReactElement {
+export function HierarchyTable({ onClick, renderRightElement, onSave }: PageProps): React.ReactElement {
     const [search, setSearch] = React.useState<string>('');
-    const inputRef = React.useRef<any>(null);
-    const hierarchyIds = React.useMemo(() => {
-        return form.hierarchies?.map((h) => h.id) || [];
-    }, [form]);
-
-    const { isLoading: isL1, hierarchies, setIsLoading } = useGetHierarchyDatabase({ workspaceId: form.workspaceId });
-
-    const hierarchiesParents = React.useMemo(() => {
-        const data = hierarchyListParents(hierarchies);
-
-        return data;
-    }, [hierarchies]);
-
-    const hierarchySelected = React.useMemo(
-        () => hierarchiesParents.hierarchies.filter((h) => hierarchyIds.includes(h.id)),
-        [hierarchiesParents, hierarchyIds],
-    );
-    const isLoading = isL1;
-
     const [activeType, setActiveType] = React.useState<HierarchyEnum | null>(null);
+    const inputRef = React.useRef<any>(null);
 
-    const filteredData = React.useMemo(() => {
-        const hierarchyData = search ? hierarchiesParents.hierarchies : hierarchySelected;
+    const hierarchyIds = useCharacterizationFormStore((state) => state.form?.hierarchies?.map((h) => h.id));
+    const workspaceId = useCharacterizationFormStore((state) => state.form.workspaceId);
 
-        if (!hierarchyData) return [];
-        if (!activeType) return hierarchyData;
+    const { isLoading, hierarchies } = useGetHierarchyDatabase({ workspaceId });
 
-        return hierarchyData?.filter((h) => h.type === activeType);
-    }, [search, hierarchiesParents, hierarchySelected, activeType]);
+    const filterActiveType = (data: HierarchyListParents[], activeType: HierarchyEnum | null) => {
+        if (!data) return [];
+        if (!activeType) return data;
 
-    const { handleSearchChange, results } = useTableSearch({
-        data: filteredData,
-        searchValue: search,
-        setSearchValue: setSearch,
-        onLoadingSearchFn: setIsLoading,
+        return data?.filter((item) => item.type === activeType);
+    };
+
+    const data = React.useMemo(() => {
+        const hierarchiesData = hierarchyListParents(hierarchies || []);
+        let hierarchiesList = hierarchiesData.hierarchies;
+
+        if (!search) {
+            hierarchiesList = hierarchiesList.filter((h) => hierarchyIds?.includes(h.id));
+        }
+
+        const hierarchyFiltered = filterActiveType(hierarchiesList || [], activeType);
+
+        return {
+            hierarchyFiltered,
+            typeOptions: hierarchyList.filter((h) => hierarchiesData.types.includes(h.value)),
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hierarchies, search, activeType]);
+
+    const { results } = useResultSearch({
+        data: data.hierarchyFiltered,
+        search,
         keys: ['name'],
         threshold: 0.7,
-        rowsPerPage: 30,
+        rowsPerPage: 15,
         sortFunction: (array) =>
             sortArray(array, {
                 by: ['name'],
@@ -74,10 +74,14 @@ export function HierarchyTable({ onClick, renderRightElement, form, onSaveForm }
             }),
     });
 
-    const handleClick = async (hierarchy: HierarchyListParents) => {
-        if (onClick) await onClick(hierarchy);
-    };
+    const handleClick = useCallback(
+        async (hierarchy: HierarchyListParents) => {
+            if (onClick) await onClick(hierarchy);
+        },
+        [onClick],
+    );
 
+    console.log('hierarchy form');
     return (
         <>
             <KeyboardAvoidingView
@@ -87,27 +91,18 @@ export function HierarchyTable({ onClick, renderRightElement, form, onSaveForm }
             >
                 <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                     <SVStack flex={1} mt={4}>
-                        <SInputSearch
-                            clearButtonAction={() => setSearch('')}
-                            ref={inputRef}
-                            mb={-1}
-                            mx={'pagePaddingPx'}
-                            onSearchChange={handleSearchChange}
-                        />
+                        <SInputLoadingSearch ref={inputRef} mb={-1} mx={'pagePaddingPx'} onSearchChange={setSearch} />
                         <SHorizontalMenu
                             mb={4}
                             onChange={(value) => setActiveType(value.value)}
-                            options={[
-                                { value: null as any, name: 'Todos' },
-                                ...hierarchyList.filter((h) => hierarchiesParents.types.includes(h.value)),
-                            ]}
+                            options={[{ value: null as any, name: 'Todos' }, ...data.typeOptions]}
                             getKeyExtractor={(item) => item.value}
                             getLabel={(item) => item.name}
                             getIsActive={(item) => item.value === activeType}
                         />
 
                         {isLoading && <SSpinner color={'primary.main'} size={32} />}
-                        {!isLoading && results.length > 0 && (
+                        {!isLoading && (
                             <HierarchyList
                                 renderRightElement={renderRightElement}
                                 onClick={handleClick}
@@ -119,7 +114,7 @@ export function HierarchyTable({ onClick, renderRightElement, form, onSaveForm }
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
             <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={5} mx={pagePadding}>
-                <SButton size={'sm'} title="Salvar" onPress={onSaveForm} />
+                <SButton size={'sm'} title="Salvar" onPress={onSave} />
             </SVStack>
         </>
     );

@@ -75,6 +75,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
     const companyName = companyDB?.fantasy || companyDB?.name || '';
     const workspaceName = workspaceDB?.name || '';
 
+    console.log(9);
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <SVStack flex={1}>

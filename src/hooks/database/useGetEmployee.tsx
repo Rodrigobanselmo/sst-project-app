@@ -1,21 +1,8 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import { AuthContext } from '@contexts/AuthContext';
-import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
-import { UserAuthRepository } from '@repositories/userAuthRepository';
-import { useAuth } from '../useAuth';
-import { database } from '@libs/watermelon';
-import { DBTablesEnum } from '@constants/enums/db-tables';
-import { RiskModel } from '@libs/watermelon/model/RiskModel';
-import { RiskRepository } from '@repositories/riskRepository';
-import { HierarchyRepository } from '@repositories/hierarchyRepository';
-import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
-import { useSync } from '@hooks/useSync';
-import { getHierarchySync } from '@services/api/sync/getHierarchySync';
-import { WorkspaceHierarchyModel } from '@libs/watermelon/model/_MMModel/WorkspaceHierarchyModel';
-import { useGetDatabase } from './useGetDatabase';
-import { EmployeeRepository } from '@repositories/employeeRepository';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
+import { EmployeeRepository } from '@repositories/employeeRepository';
+import { useGetDatabase } from './useGetDatabase';
 
 interface IUseGetDatabase {
     companyId?: string;
@@ -24,28 +11,39 @@ interface IUseGetDatabase {
     ids?: string[];
 }
 
-export function useGetEmployee({ companyId, workspaceId, ids }: IUseGetDatabase) {
-    const onFetchFunction = useCallback(async () => {
-        const employeeRepository = new EmployeeRepository();
-        const employeesData: EmployeeModel[] = [];
+const onFetchEmployee = async ({ companyId, ids, workspaceId }: IUseGetDatabase) => {
+    const employeeRepository = new EmployeeRepository();
+    const employeesData: EmployeeModel[] = [];
 
-        if (companyId) {
-            const { employees } = await employeeRepository.findManyByCompanyId({ companyId });
-            employeesData.push(...employees);
-        } else if (ids) {
-            const { employees } = await employeeRepository.findByIds({ ids });
-            employeesData.push(...employees);
-        } else if (workspaceId) {
-            const { employees } = await employeeRepository.findManyByWorkspaceId({ workspaceId });
-            employeesData.push(...employees);
-        }
+    if (companyId) {
+        const { employees } = await employeeRepository.findManyByCompanyId({ companyId });
+        employeesData.push(...employees);
+    } else if (ids) {
+        const { employees } = await employeeRepository.findByIds({ ids });
+        employeesData.push(...employees);
+    } else if (workspaceId) {
+        const { employees } = await employeeRepository.findManyByWorkspaceId({ workspaceId });
+        employeesData.push(...employees);
+    }
 
-        return employeesData;
-    }, [companyId, ids, workspaceId]);
+    return employeesData;
+};
 
-    const { data, isError, isLoading, setIsLoading, refetch } = useGetDatabase({
-        onFetchFunction,
+export function useGetEmployee(props: IUseGetDatabase) {
+    const { data, fetch, isLoading, setIsLoading } = useGetDatabase({
+        onFetchFunction: () =>
+            onFetchEmployee({
+                companyId: props.companyId,
+                ids: props.ids,
+                userId: props.userId,
+                workspaceId: props.workspaceId,
+            }),
     });
 
-    return { employees: data, isError, setIsLoading, isLoading, refetch };
+    useEffect(() => {
+        fetch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.companyId, props.ids, props.userId, props.workspaceId]);
+
+    return { employees: data, setIsLoading, isLoading, refetch: fetch };
 }

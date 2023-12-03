@@ -17,54 +17,50 @@ import { IHierarchy } from '@interfaces/IHierarchy';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
 import { EmployeesTable } from '../Employees/EmployeesTable';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
+import { RiskTab } from './tabs/RiskTab/RiskTab';
+import { HeaderTab } from './tabs/HeaderTab/HeaderTab';
 
 type PageProps = {
     openCamera: () => void;
-    form: CharacterizationFormProps;
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
     onSaveForm: () => Promise<any>;
     onGoBack: () => void;
     onDeleteForm?: () => Promise<void>;
     control: Control<ICharacterizationValues, any>;
-    isEdit?: boolean;
     onClickRisk?: (risk: RiskModel, options?: { cb: () => void }) => Promise<void>;
     onClickHierarchy?: (hierarchy: IHierarchy, options?: { cb: () => void }) => Promise<void>;
     onClickEmployee?: (employee: EmployeeModel, options?: { cb: () => void }) => Promise<void>;
     onAddRisk: (formValues: RiskDataFormProps) => void;
     profilesProps: {
         characterizationsProfiles?: CharacterizationModel[];
-        isLoadingProfiles?: boolean;
         principalProfileId?: string;
-        isPrincipalProfile?: boolean;
         onChangeProfile?: (characterzationId: string) => Promise<void>;
         onAddProfile?: () => Promise<void>;
     };
 };
 
-export function CharacterizationTabView({ onSaveForm, ...props }: PageProps) {
+export function CharacterizationTabView({
+    onSaveForm,
+    onAddRisk,
+    onClickEmployee,
+    onClickHierarchy,
+    onDeleteForm,
+    onGoBack,
+    openCamera,
+    profilesProps,
+    onEditForm,
+    control,
+    onClickRisk,
+}: PageProps) {
     const tabRef = React.useRef<any>(null);
     const onSave = React.useCallback(async () => {
         onSaveForm();
         tabRef.current?.setIndex(0);
     }, [onSaveForm]);
 
-    const riskIds = React.useMemo(() => {
-        return props.form.riskData?.map((risk) => risk.riskId) || [];
-    }, [props.form]);
-
     return (
         <>
-            <SScreenHeader
-                isAlert={true}
-                title={
-                    (!props.isEdit ? 'Adicionar' : 'Editar') +
-                    (props.form.profileName ? ` (${props.form.profileName})` : '')
-                }
-                onDelete={props.onDeleteForm}
-                backButton
-                navidateFn={props.onGoBack}
-                mb={-2}
-            />
+            <HeaderTab onDelete={onDeleteForm} navidateFn={onGoBack} />
             <STabView
                 tabsRef={tabRef}
                 routes={[
@@ -72,51 +68,25 @@ export function CharacterizationTabView({ onSaveForm, ...props }: PageProps) {
                         label: 'Principal',
                         component: (
                             <CharacterizationForm
-                                profilesProps={props.profilesProps}
+                                profilesProps={profilesProps}
                                 onSaveForm={onSaveForm}
-                                onEditForm={props.onEditForm}
-                                control={props.control}
-                                openCamera={props.openCamera}
-                                audios={props.form.audios}
-                                videos={props.form.videos}
-                                photos={props.form.photos}
-                                selectedId={props.form.id}
+                                onEditForm={onEditForm}
+                                control={control}
+                                openCamera={openCamera}
                             />
                         ),
                     },
                     {
                         label: 'Riscos',
-                        component: (
-                            <RiskTable
-                                riskIds={riskIds}
-                                isEdit={props.isEdit}
-                                onClickRisk={props.onClickRisk}
-                                onSaveForm={onSave}
-                                renderRightElement={(risk, selected) => {
-                                    if (selected) return <></>;
-                                    return (
-                                        <SButton
-                                            title={'adicionar'}
-                                            fontSize={13}
-                                            variant="outline"
-                                            autoWidth
-                                            height={6}
-                                            p={0}
-                                            px={3}
-                                            onPress={() => props.onAddRisk({ riskId: risk.id })}
-                                        />
-                                    );
-                                }}
-                            />
-                        ),
+                        component: <RiskTab onClickRisk={onClickRisk} onSave={onSave} onAddRisk={onAddRisk} />,
                     },
                     {
                         label: 'Cargos',
-                        component: <HierarchyTable {...props} onClick={props?.onClickHierarchy} onSaveForm={onSave} />,
+                        component: <HierarchyTable onClick={onClickHierarchy} onSave={onSave} />,
                     },
                     {
                         label: 'Funcionários',
-                        component: <EmployeesTable {...props} onClick={props?.onClickEmployee} onSaveForm={onSave} />,
+                        component: <EmployeesTable onClick={onClickEmployee} onSave={onSave} />,
                     },
                 ]}
             />

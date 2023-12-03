@@ -1,5 +1,5 @@
 import { SSpinner, SVStack } from '@components/core';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback } from 'react-native';
 import { CharacterizationFormProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
@@ -17,9 +17,8 @@ import { SInputLoadingSearch } from '@components/modelucules/SInputSearch/SInput
 import { useResultSearch } from '@hooks/useResultSearch';
 
 type PageProps = {
-    riskIds: string[];
+    riskIds?: string[];
     onSaveForm?: () => Promise<void>;
-    isEdit?: boolean;
     onClickRisk?: (risk: RiskModel) => Promise<void>;
     renderRightElement?: (risk: RiskModel, selected: boolean) => React.ReactElement;
 };
@@ -28,11 +27,7 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
     const [search, setSearch] = React.useState<string>('');
     const inputRef = React.useRef<any>(null);
 
-    const { isLoading: isL1, risks: risksAll } = useGetRisksDatabase({});
-    const { isLoading: isL2, risks: risksSelected } = useGetRisksDatabase({ riskIds });
-
-    const isLoading = isL1 || isL2;
-
+    const { isLoading, risks: risksAll } = useGetRisksDatabase({});
     const [activeType, setActiveType] = React.useState<RiskEnum | null>(null);
 
     const filterRisks = (risks: RiskModel[], activeType: RiskEnum | null) => {
@@ -42,21 +37,20 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
         return risks?.filter((characterization) => characterization.type === activeType);
     };
 
-    const risksAllFiltered = React.useMemo(() => {
-        return filterRisks(risksAll, activeType);
-    }, [risksAll, activeType]);
-
-    const risksSelectedFiltered = React.useMemo(() => {
-        return filterRisks(risksSelected, activeType);
-    }, [risksSelected, activeType]);
-
-    const risks = search ? risksAllFiltered : risksSelectedFiltered;
+    const risks = React.useMemo(() => {
+        let risks = risksAll || [];
+        if (!search) {
+            risks = risks?.filter((risk) => riskIds?.includes(risk.id));
+        }
+        return filterRisks(risks || [], activeType);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [risksAll, search, activeType]);
 
     const { results } = useResultSearch({
         data: risks,
         search,
         keys: ['name'],
-        rowsPerPage: 6,
+        rowsPerPage: 10,
         sortFunction: (array) =>
             sortArray(array, {
                 by: ['name'],
@@ -64,10 +58,14 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
             }),
     });
 
-    const handleClickRisk = async (risk: RiskModel) => {
-        if (onClickRisk) await onClickRisk(risk);
-    };
+    const handleClickRisk = useCallback(
+        async (risk: RiskModel) => {
+            if (onClickRisk) await onClickRisk(risk);
+        },
+        [onClickRisk],
+    );
 
+    console.log('risk form');
     return (
         <>
             <KeyboardAvoidingView
@@ -93,7 +91,6 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
                                 renderRightElement={renderRightElement}
                                 onClickRisk={handleClickRisk}
                                 risks={results}
-                                selectedIds={risksSelected.map((risk) => risk.id)}
                             />
                         )}
                     </SVStack>

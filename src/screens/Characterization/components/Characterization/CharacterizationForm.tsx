@@ -1,33 +1,25 @@
-import { SBox, SCenter, SFlatList, SHStack, SScrollView, SSpinner, SText, SVStack } from '@components/core';
+import { SBox, SHStack, SScrollView, SSpinner, SVStack } from '@components/core';
 import React from 'react';
-import { Alert, KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity } from 'react-native';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { CharacterizationFormProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
-import PhotoEditor from '@baronha/react-native-photo-editor';
 import { SButton, SInput, SInputArea } from '@components/index';
 import { SHorizontalMenuScroll } from '@components/modelucules/SHorizontalMenuScroll';
 import { SLabel } from '@components/modelucules/SLabel';
 import { SRadio } from '@components/modelucules/SRadio';
-import { SAFE_AREA_PADDING, SCREEN_WIDTH, pagePadding, pagePaddingPx } from '@constants/constants';
+import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
 import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { characterizationMap } from '@constants/maps/characterization.map';
+import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
-import { deleteImageOrVideoFromGallery } from '@utils/helpers/saveAsset';
-import * as ImagePickerExpo from 'expo-image-picker';
-import { Orientation } from 'expo-screen-orientation';
 import { Control, Controller } from 'react-hook-form';
-import ImagePicker from 'react-native-image-crop-picker';
 import { ICharacterizationValues } from '../../schemas';
-import { PhotoComponent } from './PhotoComponent';
-import SAudioRecorder from '@components/modelucules/SAudioRecording/SAudioRecording';
-import SVideoRecorder from '@components/modelucules/SVideoRecorder/SVideoRecorder';
+import { AudioForm } from './forms/AudioForm';
+import { PhotoForm } from './forms/PhotoForm';
+import { VideoForm } from './forms/VideoForm';
 
 type PageProps = {
     openCamera: () => void;
-    selectedId?: string;
-    photos?: CharacterizationFormProps['photos'];
-    audios?: CharacterizationFormProps['audios'];
-    videos?: CharacterizationFormProps['videos'];
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
     onSaveForm: () => Promise<any>;
     control: Control<ICharacterizationValues, any>;
@@ -37,108 +29,18 @@ type PageProps = {
         principalProfileId?: string;
         onChangeProfile?: (characterzationId: string) => Promise<void>;
         onAddProfile?: () => Promise<void>;
-        isPrincipalProfile?: boolean;
     };
 };
-
-export const GALLERY_IMAGE_Width = 300;
-export const GALLERY_IMAGE_PORTRAIT_WIDTH = (((GALLERY_IMAGE_Width * 9) / 16) * 9) / 16;
-export const GALLERY_IMAGE_HEIGHT = (GALLERY_IMAGE_Width * 9) / 16;
 
 export function CharacterizationForm({
     openCamera,
     onEditForm,
     onSaveForm,
-    photos,
-    audios,
-    videos,
     control,
-    selectedId,
-    profilesProps: {
-        principalProfileId,
-        characterizationsProfiles,
-        isLoadingProfiles,
-        onChangeProfile,
-        onAddProfile,
-        isPrincipalProfile,
-    },
+    profilesProps: { principalProfileId, characterizationsProfiles, isLoadingProfiles, onChangeProfile, onAddProfile },
 }: PageProps): React.ReactElement {
-    const handlePickImage = async () => {
-        try {
-            const permissionResult = await ImagePickerExpo.requestMediaLibraryPermissionsAsync();
-
-            if (permissionResult.granted === false) {
-                alert(
-                    'Você recusou acesso a sua galeria de fotos! Para abilitar acesse as configurações -> Simplesst --> Fotos',
-                );
-                return;
-            }
-
-            const images = await ImagePicker.openPicker({
-                cropping: false,
-                mediaType: 'photo',
-                multiple: true,
-            });
-
-            const results: CharacterizationFormProps['photos'] = photos || [];
-            for await (const image of images) {
-                const img = await ImagePicker.openCropper({
-                    mediaType: 'photo',
-                    cropping: true,
-                    path: image.path,
-                    compressImageQuality: 0.6,
-                    ...(image.height > image.width
-                        ? {
-                              width: (1200 * 9) / 16,
-                              height: 1200,
-                              compressImageMaxWidth: 900,
-                          }
-                        : {
-                              width: 1200,
-                              height: (1200 * 9) / 16,
-                              compressImageMaxWidth: 1200,
-                          }),
-                });
-
-                results.push({
-                    uri: img.path,
-                    orientation: image.height > image.width ? Orientation.PORTRAIT_UP : Orientation.LANDSCAPE_LEFT,
-                });
-            }
-
-            onEditForm({ photos: results });
-        } catch (error) {
-            console.log('Error', error);
-        }
-    };
-
-    const handleEditImage = async (uri: string) => {
-        const resultEdit = await PhotoEditor.open({ path: uri, stickers: [] });
-
-        if (!resultEdit) return;
-
-        const updatedImages = [...(photos || [])];
-        const index = updatedImages.findIndex((image) => image.uri === uri);
-        updatedImages[index] = { ...updatedImages[index], uri: resultEdit as string };
-
-        onEditForm({ photos: updatedImages });
-    };
-
-    const handleDeleteImage = (index: number) => {
-        const deleteImage = () => {
-            const updatedImages = [...(photos || [])];
-            const image = updatedImages.splice(index, 1);
-
-            if (image[0].uri) deleteImageOrVideoFromGallery(image[0].uri);
-
-            onEditForm({ photos: updatedImages });
-        };
-
-        Alert.alert('Deletar imagem', 'Tem certeza que deseja deletar essa imagem?', [
-            { text: 'Voltar', style: 'cancel' },
-            { text: 'Deletar', onPress: deleteImage, style: 'destructive' },
-        ]);
-    };
+    const isPrincipalProfile = useCharacterizationFormStore((state) => state.isPrincipalProfile);
+    const characterizationId = useCharacterizationFormStore((state) => state.characterizationId);
 
     const handleSave = () => {
         onSaveForm();
@@ -148,7 +50,6 @@ export function CharacterizationForm({
         {
             label: 'Amb. ' + characterizationMap[CharacterizationTypeEnum.GENERAL].name,
             value: CharacterizationTypeEnum.GENERAL,
-            // tooltip: characterizationMap[CharacterizationTypeEnum.GENERAL].description,
         },
         {
             label: 'Amb. ' + characterizationMap[CharacterizationTypeEnum.ADMINISTRATIVE].name,
@@ -180,7 +81,7 @@ export function CharacterizationForm({
         },
     ];
 
-    console.log(2, 'c');
+    console.log('char form');
 
     return (
         <KeyboardAvoidingView
@@ -283,7 +184,7 @@ export function CharacterizationForm({
                                 ]}
                                 getKeyExtractor={(item) => item.value}
                                 getLabel={(item) => item.name}
-                                getIsActive={(item) => item.value === selectedId}
+                                getIsActive={(item) => item.value === characterizationId}
                             />
                         )}
 
@@ -309,71 +210,7 @@ export function CharacterizationForm({
                     </SVStack>
 
                     {/* PHOTO */}
-                    <>
-                        <SHStack mb={3} mt={2}>
-                            <SLabel mb={0} mr={2} ml={pagePadding}>
-                                Fotos
-                            </SLabel>
-
-                            {photos && photos.length > 1 && (
-                                <SCenter px={2} borderRadius={10} bg="#00000044">
-                                    <SText fontSize={12} color="white">
-                                        {photos.length}
-                                    </SText>
-                                </SCenter>
-                            )}
-                        </SHStack>
-
-                        <SCenter style={styles.galleryContainer}>
-                            {!photos?.length && (
-                                <TouchableOpacity onPress={openCamera}>
-                                    <PhotoComponent
-                                        width={SCREEN_WIDTH - pagePaddingPx * 2}
-                                        orientation={Orientation.LANDSCAPE_LEFT}
-                                        uri={''}
-                                    />
-                                </TouchableOpacity>
-                            )}
-
-                            {!!photos?.length && (
-                                <SFlatList
-                                    // keyboardShouldPersistTaps={'handled'}
-                                    data={photos || []}
-                                    ItemSeparatorComponent={() => <SBox style={{ height: 10 }} />}
-                                    contentContainerStyle={{
-                                        paddingHorizontal: 10,
-                                        gap: 10,
-                                    }}
-                                    renderItem={({ item, index }) => (
-                                        <PhotoComponent
-                                            maxHeight={null}
-                                            key={item.uri}
-                                            handleEditImage={() => handleEditImage(item.uri)}
-                                            handleDeleteImage={() => handleDeleteImage(index)}
-                                            orientation={item.orientation || Orientation.LANDSCAPE_LEFT}
-                                            uri={item.uri}
-                                        />
-                                    )}
-                                    horizontal
-                                    keyExtractor={(item, index) => index.toString()}
-                                    showsVerticalScrollIndicator={false}
-                                    showsHorizontalScrollIndicator={false}
-                                />
-                            )}
-                        </SCenter>
-
-                        <SHStack justifyContent="center" mt={3}>
-                            <SButton
-                                mr={2}
-                                variant="outline"
-                                w="30%"
-                                title="Galeria"
-                                onPress={handlePickImage}
-                                addColor
-                            />
-                            <SButton w="30%" title="Tirar Foto" onPress={openCamera} addColor />
-                        </SHStack>
-                    </>
+                    <PhotoForm onEdit={onEditForm} openCamera={openCamera} />
 
                     {/* PARAMETHERS */}
                     <SVStack mx={pagePadding} mt={5}>
@@ -478,14 +315,8 @@ export function CharacterizationForm({
                         />
                     </SVStack>
 
-                    <SAudioRecorder
-                        audios={audios?.map((audio) => audio.uri) || []}
-                        setAudios={(audios) => onEditForm({ audios: audios.map((audio) => ({ uri: audio })) })}
-                    />
-                    <SVideoRecorder
-                        videos={videos?.map((video) => video.uri) || []}
-                        setVideos={(videos) => onEditForm({ videos: videos.map((video) => ({ uri: video })) })}
-                    />
+                    <VideoForm onEdit={onEditForm} />
+                    <AudioForm onEdit={onEditForm} />
 
                     <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={5} mx={pagePadding}>
                         <SButton size={'sm'} title="Salvar" onPress={handleSave} />
@@ -495,9 +326,3 @@ export function CharacterizationForm({
         </KeyboardAvoidingView>
     );
 }
-
-const styles = StyleSheet.create({
-    galleryContainer: {
-        width: '100%',
-    },
-});

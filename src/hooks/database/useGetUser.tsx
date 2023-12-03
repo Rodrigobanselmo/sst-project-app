@@ -1,42 +1,29 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import { AuthContext } from '@contexts/AuthContext';
-import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
 import { UserAuthRepository } from '@repositories/userAuthRepository';
 import { useAuth } from '../useAuth';
-import { database } from '@libs/watermelon';
-import { DBTablesEnum } from '@constants/enums/db-tables';
-import { RiskModel } from '@libs/watermelon/model/RiskModel';
+import { useGetDatabase } from './useGetDatabase';
+
+const fetchWorkspaces = async ({ userId }: { userId: number }) => {
+    const userRepository = new UserAuthRepository();
+    const { user: userDB } = await userRepository.findOne(userId);
+
+    return userDB;
+};
 
 export function useGetUser() {
-    const [userDatabase, setUserDB] = useState<UserAuthModel>();
     const { user } = useAuth();
-    const [isLoading, setIsLoading] = useState(true);
-
-    const fetchWorkspaces = useCallback(async () => {
-        try {
-            const userRepository = new UserAuthRepository();
-            const { user: userDB } = await userRepository.findOne(user.id);
-
-            setUserDB(userDB);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [user.id]);
+    const { data, fetch, isLoading, setIsLoading } = useGetDatabase({
+        onFetchFunction: () =>
+            fetchWorkspaces({
+                userId: user.id,
+            }),
+    });
 
     useEffect(() => {
-        let isMounted = true;
+        fetch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user.id]);
 
-        if (isMounted) {
-            fetchWorkspaces();
-        }
-
-        return () => {
-            isMounted = false;
-        };
-    }, [fetchWorkspaces]);
-
-    return { user, userDatabase, setIsLoading, isLoading };
+    return { user, userDatabase: data, setIsLoading, isLoading };
 }

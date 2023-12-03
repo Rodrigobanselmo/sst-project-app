@@ -33,6 +33,7 @@ import { ICharacterizationValues, characterizationSchema } from './schemas';
 import { CharacterizationForm } from './components/Characterization/CharacterizationForm';
 import { SLoadingPagePubSub } from '@components/organisms/SLoadingPage/SLoadingPagePubSub';
 import { PubSubEventsEnum, pubSub } from '@utils/helpers/pubSub';
+import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
 
 const Stack = createNativeStackNavigator<FormCharacterizationRoutesProps>();
 
@@ -49,14 +50,12 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         resolver,
     });
 
-    const [form, setForm] = useState({ workspaceId: route.params.workspaceId } as CharacterizationFormProps);
     const { user } = useAuth();
+    const setForm = useCharacterizationFormStore((state) => state.setForm);
+    const setWorkspaceId = useCharacterizationFormStore((state) => state.setWorkspaceId);
 
-    const characterizationId = useMemo(() => form.id, [form.id]);
-
-    const principalProfileId = useMemo(() => form.profileParentId || form.id, [form.id, form.profileParentId]);
-
-    const isPrincipalProfile = useMemo(() => principalProfileId == form.id, [form.id, principalProfileId]);
+    const characterizationId = useCharacterizationFormStore((state) => state.characterizationId);
+    const principalProfileId = useCharacterizationFormStore((state) => state.principalProfileId);
 
     const {
         characterizations: characterizationsProfiles,
@@ -66,6 +65,10 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         profileId: principalProfileId,
     });
 
+    useEffect(() => {
+        setWorkspaceId(route.params.workspaceId);
+    }, [route.params.workspaceId, setWorkspaceId]);
+
     const onSaveForm = useCallback(
         async (options?: { skipGoBack?: boolean }) => {
             if (saveRef.current) return;
@@ -74,6 +77,9 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
             let characterization: CharacterizationModel | undefined;
             pubSub.publish(PubSubEventsEnum.LOADING_PAGE, true);
             saveRef.current = true;
+
+            const form = useCharacterizationFormStore.getState().form;
+            const isPrincipalProfile = useCharacterizationFormStore.getState().isPrincipalProfile;
 
             try {
                 if (isValid) {
@@ -144,27 +150,15 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
             pubSub.publish(PubSubEventsEnum.LOADING_PAGE, false);
             return characterization;
         },
-        [
-            trigger,
-            getValues,
-            characterizationId,
-            navigation,
-            route.params.workspaceId,
-            form.audios,
-            form.videos,
-            form.photos,
-            form.riskData,
-            form.hierarchies,
-            form.employees,
-            isPrincipalProfile,
-            principalProfileId,
-            user.id,
-        ],
+        [trigger, getValues, characterizationId, navigation, route.params.workspaceId, principalProfileId, user.id],
     );
 
-    const onEditForm = useCallback((formValues: Partial<CharacterizationFormProps>) => {
-        setForm((prev) => ({ ...prev, ...formValues }));
-    }, []);
+    const onEditForm = useCallback(
+        (formValues: Partial<CharacterizationFormProps>) => {
+            setForm((prev) => ({ ...prev, ...formValues }));
+        },
+        [setForm],
+    );
 
     const onDeleteForm = useCallback(async () => {
         if (characterizationId) {
@@ -194,9 +188,12 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         }
     }, [navigation]);
 
-    const onCameraSave = useCallback(({ photos }: { photos: IImageGallery[] }) => {
-        setForm((prev) => ({ ...prev, photos: [...(prev.photos || []), ...photos] }));
-    }, []);
+    const onCameraSave = useCallback(
+        ({ photos }: { photos: IImageGallery[] }) => {
+            setForm((prev) => ({ ...prev, photos: [...(prev.photos || []), ...photos] }));
+        },
+        [setForm],
+    );
 
     const onRiskDataSave = useCallback(
         async (formValues: RiskDataFormProps) => {
@@ -227,7 +224,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                 console.error(error);
             }
         },
-        [characterizationId, user.id],
+        [characterizationId, setForm, user.id],
     );
 
     const onRiskDataDelete = useCallback(
@@ -248,11 +245,12 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                 return { ...prev, riskData };
             });
         },
-        [characterizationId],
+        [characterizationId, setForm],
     );
 
     const onClickRisk = useCallback(
         async (risk: RiskModel) => {
+            const form = useCharacterizationFormStore.getState().form;
             const riskData = form.riskData?.find((rd) => rd.riskId === risk.id);
 
             let params: RiskDataFormProps = {
@@ -265,11 +263,12 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
 
             navigation.navigate('formRiskData', params);
         },
-        [form.riskData, navigation],
+        [navigation],
     );
 
     const onClickHierarchy = useCallback(
         async (hierarchy: IHierarchy) => {
+            const form = useCharacterizationFormStore.getState().form;
             const hierarchies = [...(form?.hierarchies || [])];
             const hierarchyIndex = hierarchies.findIndex((rd) => rd.id === hierarchy.id);
 
@@ -311,11 +310,12 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                 });
             }
         },
-        [characterizationId, form?.hierarchies, user.id],
+        [characterizationId, setForm, user.id],
     );
 
     const onClickEmployee = useCallback(
         async (employee: EmployeeModel) => {
+            const form = useCharacterizationFormStore.getState().form;
             const employees = [...(form?.employees || [])];
             const employeeIndex = employees.findIndex((_e) => _e.id === employee.id);
 
@@ -357,7 +357,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                 });
             }
         },
-        [characterizationId, form?.employees, user.id],
+        [characterizationId, setForm, user.id],
     );
 
     const getCharacterization = useCallback(
@@ -433,12 +433,8 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                 pubSub.publish(PubSubEventsEnum.LOADING_PAGE, false);
             }
         },
-        [route.params.id, route.params.type, setValue],
+        [route.params.id, route.params.type, setForm, setValue],
     );
-
-    useEffect(() => {
-        getCharacterization().finally(() => setIsLoading(false));
-    }, [getCharacterization]);
 
     const onChangeProfile = useCallback(
         async (characterzationId: string) => {
@@ -449,6 +445,8 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
     );
 
     const onAddProfile = useCallback(async () => {
+        const form = useCharacterizationFormStore.getState().form;
+
         try {
             const characterization = await onSaveForm({ skipGoBack: true });
             if (characterization) {
@@ -485,9 +483,13 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         } catch (e) {
             console.error(e);
         }
-    }, [form.riskData, getCharacterization, onSaveForm, refetchProfiles, route.params.workspaceId, user.id]);
+    }, [getCharacterization, onSaveForm, refetchProfiles, route.params.workspaceId, user.id]);
 
-    const isLoadingPage = (characterizationId && !form.id) || isLoadingProfiles || isLoading;
+    useEffect(() => {
+        getCharacterization().finally(() => setIsLoading(false));
+    }, [getCharacterization]);
+
+    const isLoadingPage = isLoadingProfiles || isLoading;
     if (isLoadingPage) {
         return <SLoading />;
     }
@@ -510,19 +512,13 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                                 onClickHierarchy={onClickHierarchy}
                                 onClickEmployee={onClickEmployee}
                                 onAddRisk={onRiskDataSave}
-                                form={form}
+                                onDeleteForm={onDeleteForm}
                                 profilesProps={{
                                     characterizationsProfiles,
-                                    isLoadingProfiles,
                                     principalProfileId,
                                     onChangeProfile,
-                                    isPrincipalProfile,
                                     onAddProfile,
                                 }}
-                                isEdit={!!characterizationId}
-                                {...(characterizationId && {
-                                    onDeleteForm: onDeleteForm,
-                                })}
                             />
                         )}
                     </Stack.Screen>

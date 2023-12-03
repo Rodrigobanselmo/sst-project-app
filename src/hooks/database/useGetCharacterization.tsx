@@ -1,22 +1,8 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import { AuthContext } from '@contexts/AuthContext';
-import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
-import { UserAuthRepository } from '@repositories/userAuthRepository';
-import { useAuth } from '../useAuth';
-import { database } from '@libs/watermelon';
-import { DBTablesEnum } from '@constants/enums/db-tables';
-import { RiskModel } from '@libs/watermelon/model/RiskModel';
-import { RiskRepository } from '@repositories/riskRepository';
-import { HierarchyRepository } from '@repositories/hierarchyRepository';
-import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
-import { useSync } from '@hooks/useSync';
-import { getHierarchySync } from '@services/api/sync/getHierarchySync';
-import { WorkspaceHierarchyModel } from '@libs/watermelon/model/_MMModel/WorkspaceHierarchyModel';
-import { CharacterizationRepository } from '@repositories/characterizationRepository';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
-import { unstable_batchedUpdates } from 'react-native';
-import { useGetDatabase } from './useGetDatabaseTest';
+import { CharacterizationRepository } from '@repositories/characterizationRepository';
+import { useGetDatabase } from './useGetDatabase';
 
 interface IUseGetDatabase {
     profileId?: string;
@@ -42,11 +28,20 @@ const onGetCharacterization = async ({ ids, profileId, userId }: IUseGetDatabase
     return characterizationsData;
 };
 
-export function useGetCharacterization(props: IUseGetDatabase) {
+export function useGetCharacterization({ profileId, userId, ids }: IUseGetDatabase) {
     const { data, fetch, isLoading, setIsLoading } = useGetDatabase({
-        params: props,
-        onFetchFunction: (props) => onGetCharacterization(props),
+        onFetchFunction: () =>
+            onGetCharacterization({
+                profileId,
+                userId,
+                ids,
+            }),
     });
+
+    useEffect(() => {
+        fetch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [profileId, userId, ids]);
 
     return { characterizations: data, setIsLoading, isLoading, refetch: fetch };
 }

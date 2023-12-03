@@ -6,7 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppRoutesProps } from '@routes/app/AppRoutesProps';
 import { Orientation } from 'expo-screen-orientation';
 
-export interface ICharImageGallery {
+export interface CharacterizationImageGalleryProps {
     uri: string;
     orientation?: Orientation;
     name?: string;
@@ -19,7 +19,7 @@ export interface CharacterizationFormProps {
     profileName?: string;
     isEdited?: boolean;
     type?: CharacterizationTypeEnum;
-    photos?: ICharImageGallery[];
+    photos?: CharacterizationImageGalleryProps[];
     riskData?: RiskDataFormProps[];
     hierarchies?: { id: string }[];
     employees?: { id: string }[];

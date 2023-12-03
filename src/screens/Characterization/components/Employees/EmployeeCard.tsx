@@ -3,7 +3,7 @@ import { SHStack, SText, SVStack } from '@components/core';
 import { SRowCard } from '@components/modelucules/SRowCard';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 import { withObservables } from '@nozbe/watermelondb/react';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 type Props = {
     employee: EmployeeModel & { selected?: boolean };
@@ -12,33 +12,40 @@ type Props = {
     renderRightElement?: (risk: EmployeeModel, selected: boolean) => React.ReactElement;
 };
 
-export function EmployeeCard({ employee, selected, onClick, renderRightElement }: Props): React.ReactElement {
-    const [isLoading, setIsLoading] = useState(false);
+export const EmployeeCard = memo(
+    ({ employee, selected, onClick, renderRightElement }: Props) => {
+        const [isLoading, setIsLoading] = useState(false);
 
-    const handleClick = () => {
-        if (onClick) {
-            setIsLoading(true);
-            onClick(employee).finally(() => setIsLoading(false));
-        }
-    };
+        const handleClick = () => {
+            if (onClick) {
+                setIsLoading(true);
+                onClick(employee).finally(() => setIsLoading(false));
+            }
+        };
 
-    return (
-        <SRowCard loading={isLoading} selected={selected} onPress={handleClick}>
-            <SVStack flex={1}>
-                <SText flex={1} fontSize={13}>
-                    {employee.socialName || employee.name}
-                </SText>
-                <SHStack flex={1} mt={1}>
-                    <SText fontSize={11} mr={3}>
-                        CPF: {formatCPF(employee.cpf)}
+        return (
+            <SRowCard loading={isLoading} selected={selected} onPress={handleClick}>
+                <SVStack flex={1}>
+                    <SText flex={1} fontSize={13}>
+                        {employee.socialName || employee.name}
                     </SText>
-                    <SText fontSize={11}>RG: {employee.rg}</SText>
-                </SHStack>
-            </SVStack>
-            {renderRightElement?.(employee, !!selected)}
-        </SRowCard>
-    );
-}
+                    <SHStack flex={1} mt={1}>
+                        <SText fontSize={11} mr={3}>
+                            CPF: {formatCPF(employee.cpf)}
+                        </SText>
+                        <SText fontSize={11}>RG: {employee.rg}</SText>
+                    </SHStack>
+                </SVStack>
+                {renderRightElement?.(employee, !!selected)}
+            </SRowCard>
+        );
+    },
+    (prevProps, nextProps) => {
+        if (prevProps.selected != nextProps.selected) return false;
+        if (prevProps.employee.id != nextProps.employee.id) return false;
+        return true;
+    },
+);
 
 const enhance = withObservables(['employee'], ({ employee }) => {
     return { employee };

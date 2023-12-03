@@ -3,41 +3,29 @@ import { useCallback, useEffect, useState } from 'react';
 import { RiskModel } from '@libs/watermelon/model/RiskModel';
 import { RiskRepository } from '@repositories/riskRepository';
 import { Model } from '@nozbe/watermelondb';
+import { unstable_batchedUpdates } from 'react-native';
 
 interface IUseGetRiskDatabase<T> {
-    onFetchFunction: () => Promise<T[]>;
+    onFetchFunction: () => Promise<T>;
 }
 
 export function useGetDatabase<T>({ onFetchFunction }: IUseGetRiskDatabase<T>) {
-    const [data, setData] = useState<T[]>([]);
+    const [data, setData] = useState<T>();
     const [isLoading, setIsLoading] = useState(true);
-    const [isError, setIsError] = useState(false);
 
-    useEffect(() => {
-        const fetch = async () => {
-            try {
-                const fetchData = await onFetchFunction();
+    const fetch = async () => {
+        try {
+            const fetchData = await onFetchFunction();
 
-                setData(fetchData);
-                setIsError(false);
-            } catch (error) {
-                console.error(error);
-                setIsError(true);
-            } finally {
+            unstable_batchedUpdates(() => {
                 setIsLoading(false);
-            }
-        };
-
-        let isMounted = true;
-
-        if (isMounted) {
-            fetch();
+                setData(fetchData);
+            });
+        } catch (error) {
+            setIsLoading(false);
+            console.error(error);
         }
+    };
 
-        return () => {
-            isMounted = false;
-        };
-    }, [onFetchFunction]);
-
-    return { data, isError, setIsLoading, isLoading, refetch: fetch };
+    return { data, setIsLoading, isLoading, fetch };
 }

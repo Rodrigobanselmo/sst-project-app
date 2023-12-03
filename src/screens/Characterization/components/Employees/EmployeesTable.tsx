@@ -1,5 +1,5 @@
 import { SSpinner, SVStack } from '@components/core';
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback } from 'react-native';
 import { CharacterizationFormProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
@@ -11,44 +11,42 @@ import { useTableSearch } from '@hooks/useTableSearchOld';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 import sortArray from 'sort-array';
 import { EmployeeList } from './EmployeeList';
+import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
+import { useResultSearch } from '@hooks/useResultSearch';
+import { SInputLoadingSearch } from '@components/modelucules/SInputSearch/SInputLoadingSearch';
 
 type PageProps = {
-    form: CharacterizationFormProps;
-    onEditForm: (form: Partial<CharacterizationFormProps>) => void;
-    onSaveForm: () => Promise<void>;
-    isEdit?: boolean;
+    onSave: () => Promise<void>;
     onClick?: (employee: EmployeeModel) => Promise<void>;
     renderRightElement?: (employee: EmployeeModel, selected: boolean) => React.ReactElement;
 };
 
-export function EmployeesTable({ onClick, renderRightElement, form, onSaveForm }: PageProps): React.ReactElement {
+export function EmployeesTable({ onClick, renderRightElement, onSave }: PageProps): React.ReactElement {
     const [search, setSearch] = React.useState<string>('');
     const inputRef = React.useRef<any>(null);
 
-    const employeeIds = React.useMemo(() => {
-        return form.employees?.map((h) => h.id) || [];
-    }, [form]);
+    const employeeIds = useCharacterizationFormStore((state) => state.form?.employees?.map((e) => e.id));
+    const workspaceId = useCharacterizationFormStore((state) => state.form.workspaceId);
 
-    const { isLoading: isL1, employees, setIsLoading } = useGetEmployee({ workspaceId: form.workspaceId });
-    const { isLoading: isL2, employees: employeesSelected } = useGetEmployee({ ids: employeeIds });
+    const { isLoading, employees } = useGetEmployee({ workspaceId: workspaceId });
 
-    const isLoading = isL1 || isL2;
+    const data = React.useMemo(() => {
+        let employeesList = employees || [];
 
-    const filteredData = React.useMemo(() => {
-        const hierarchyData = search ? employees : employeesSelected;
+        if (!search) {
+            employeesList = employeesList.filter((h) => employeeIds?.includes(h.id));
+        }
 
-        if (!hierarchyData) return [];
-        return hierarchyData;
-    }, [search, employees, employeesSelected]);
+        return employeesList;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [employees, search]);
 
-    const { handleSearchChange, results } = useTableSearch({
-        data: filteredData,
-        searchValue: search,
-        setSearchValue: setSearch,
-        onLoadingSearchFn: setIsLoading,
+    const { results } = useResultSearch({
+        data,
+        search,
         keys: ['name', 'cpf', 'rg', 'socialName'],
         threshold: 0.8,
-        rowsPerPage: 30,
+        rowsPerPage: 20,
         sortFunction: (array) =>
             sortArray(array, {
                 by: ['name'],
@@ -56,10 +54,14 @@ export function EmployeesTable({ onClick, renderRightElement, form, onSaveForm }
             }),
     });
 
-    const handleClick = async (employee: EmployeeModel) => {
-        if (onClick) await onClick(employee);
-    };
+    const handleClick = useCallback(
+        async (employee: EmployeeModel) => {
+            if (onClick) await onClick(employee);
+        },
+        [onClick],
+    );
 
+    console.log('employee form');
     return (
         <>
             <KeyboardAvoidingView
@@ -69,16 +71,9 @@ export function EmployeesTable({ onClick, renderRightElement, form, onSaveForm }
             >
                 <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                     <SVStack flex={1} mt={4}>
-                        <SInputSearch
-                            clearButtonAction={() => setSearch('')}
-                            ref={inputRef}
-                            mb={-1}
-                            mx={'pagePaddingPx'}
-                            onSearchChange={handleSearchChange}
-                        />
-
+                        <SInputLoadingSearch ref={inputRef} mb={-1} mx={'pagePaddingPx'} onSearchChange={setSearch} />
                         {isLoading && <SSpinner color={'primary.main'} size={32} />}
-                        {!isLoading && results.length > 0 && (
+                        {!isLoading && (
                             <EmployeeList
                                 renderRightElement={renderRightElement}
                                 onClick={handleClick}
@@ -90,7 +85,7 @@ export function EmployeesTable({ onClick, renderRightElement, form, onSaveForm }
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
             <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={5} mx={pagePadding}>
-                <SButton size={'sm'} title="Salvar" onPress={onSaveForm} />
+                <SButton size={'sm'} title="Salvar" onPress={onSave} />
             </SVStack>
         </>
     );
