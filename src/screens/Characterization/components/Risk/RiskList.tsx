@@ -23,43 +23,26 @@ import { checkArrayEqual } from '@utils/helpers/checkArrayEqual';
 
 type Props = {
     risks?: RiskModel[];
+    selectedIds?: string[];
     onClickRisk?: (risk: RiskModel) => Promise<void>;
     renderRightElement?: (risk: RiskModel, selected: boolean) => React.ReactElement;
 };
-
-type PropsCard = {
-    risk: RiskModel;
-    onClickRisk?: (risk: RiskModel) => Promise<void>;
-    renderRightElement?: (risk: RiskModel, selected: boolean) => React.ReactElement;
-};
-
-export const RiskCardChar = memo(({ risk, onClickRisk, renderRightElement }: PropsCard) => {
-    const selected = useCharacterizationFormStore((state) => state.getIsRiskSelected(risk.id));
-
-    return (
-        <RiskCard
-            renderRightElement={renderRightElement}
-            handleClickRisk={onClickRisk}
-            risk={risk}
-            selected={selected}
-        />
-    );
-});
 
 export const RiskList = memo(
-    ({ risks, onClickRisk, renderRightElement }: Props) => {
+    ({ risks, onClickRisk, selectedIds, renderRightElement }: Props) => {
         return (
             <>
                 {!!risks?.length && (
                     <SFlatList
-                        data={risks.slice(0, 10) || []}
+                        data={risks || []}
                         keyExtractor={(item) => item.id}
                         keyboardShouldPersistTaps={'handled'}
                         renderItem={({ item }) => (
-                            <RiskCardChar
+                            <RiskCard
                                 renderRightElement={renderRightElement}
-                                onClickRisk={onClickRisk}
+                                handleClickRisk={onClickRisk}
                                 risk={item}
+                                selected={selectedIds?.includes(item.id)}
                             />
                         )}
                         showsVerticalScrollIndicator={false}
@@ -77,6 +60,14 @@ export const RiskList = memo(
                 arr1: prevProps.risks || [],
                 arr2: nextProps.risks || [],
                 getProperty: (r) => r.id,
+            })
+        )
+            return false;
+        if (
+            !checkArrayEqual({
+                arr1: prevProps.selectedIds || [],
+                arr2: nextProps.selectedIds || [],
+                getProperty: (id) => id,
             })
         )
             return false;

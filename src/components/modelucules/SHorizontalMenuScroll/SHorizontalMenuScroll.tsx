@@ -48,7 +48,7 @@ export function SHorizontalMenuScroll<T>({
     return (
         <SBox mb={mb}>
             <ScrollView
-                contentContainerStyle={{ paddingHorizontal: paddingHorizontal ?? pagePaddingPx }}
+                contentContainerStyle={{ paddingHorizontal: (paddingHorizontal as any) ?? pagePaddingPx }}
                 showsHorizontalScrollIndicator={false}
                 horizontal
             >

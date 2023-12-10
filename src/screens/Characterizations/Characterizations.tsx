@@ -75,7 +75,6 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
     const companyName = companyDB?.fantasy || companyDB?.name || '';
     const workspaceName = workspaceDB?.name || '';
 
-    console.log(9);
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <SVStack flex={1}>
@@ -93,25 +92,28 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                         </SBox>
                     }
                 />
-                {loading && <SSpinner color={'primary.main'} size={32} />}
-                {!loading && <RenderEnhancedCharacterizationList workspace={workspaceDB} />}
-
-                <SFloatingButton
-                    renderInPortal={false}
-                    shadow={2}
-                    placement="bottom-right"
-                    size="md"
-                    mr={130}
-                    bg="transparent"
-                    borderColor={'primary.main'}
-                    borderWidth={1}
-                    _text={{ color: 'primary.main' }}
-                    _pressed={{ bg: 'amber.100' }}
-                    icon={<SIcon color="primary.main" as={Ionicons} name="cloud-upload-outline" size="4" />}
-                    label="Enviar"
-                    bottom={SAFE_AREA_PADDING.paddingBottom}
-                    onPress={handleSendApi}
-                />
+                {loading && <SSpinner color={'primary.main'} size={32} mt={29} />}
+                {!loading && (
+                    <>
+                        <RenderEnhancedCharacterizationList workspace={workspaceDB} />
+                        <SFloatingButton
+                            renderInPortal={false}
+                            shadow={2}
+                            placement="bottom-right"
+                            size="md"
+                            mr={130}
+                            bg="background.default"
+                            borderColor={'primary.main'}
+                            borderWidth={1}
+                            _text={{ color: 'primary.main' }}
+                            _pressed={{ bg: 'amber.100' }}
+                            icon={<SIcon color="primary.main" as={Ionicons} name="cloud-upload-outline" size="4" />}
+                            label="Enviar"
+                            bottom={SAFE_AREA_PADDING.paddingBottom}
+                            onPress={handleSendApi}
+                        />
+                    </>
+                )}
             </SVStack>
         </TouchableWithoutFeedback>
     );

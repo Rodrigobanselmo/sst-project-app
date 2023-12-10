@@ -6,7 +6,7 @@ import { RiskModel } from '@libs/watermelon/model/RiskModel';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 type Props = {
     risk: RiskModel & { selected?: boolean };
@@ -15,23 +15,30 @@ type Props = {
     renderRightElement?: (risk: RiskModel, selected: boolean) => React.ReactElement;
 };
 
-export function RiskCard({ risk, selected, handleClickRisk, renderRightElement }: Props): React.ReactElement {
-    const [isLoading, setIsLoading] = useState(false);
+export const RiskCard = memo(
+    ({ risk, selected, handleClickRisk, renderRightElement }: Props) => {
+        const [isLoading, setIsLoading] = useState(false);
 
-    const handleClick = () => {
-        if (handleClickRisk) {
-            setIsLoading(true);
-            handleClickRisk(risk).finally(() => setIsLoading(false));
-        }
-    };
+        const handleClick = () => {
+            if (handleClickRisk) {
+                setIsLoading(true);
+                handleClickRisk(risk).finally(() => setIsLoading(false));
+            }
+        };
 
-    return (
-        <SRowCard loading={isLoading} selected={selected} onPress={handleClick}>
-            <STagRisk risk={risk} />
-            {renderRightElement?.(risk, !!selected)}
-        </SRowCard>
-    );
-}
+        return (
+            <SRowCard loading={isLoading} selected={selected} onPress={handleClick}>
+                <STagRisk risk={risk} />
+                {renderRightElement?.(risk, !!selected)}
+            </SRowCard>
+        );
+    },
+    (prevProps, nextProps) => {
+        if (prevProps.selected != nextProps.selected) return false;
+        if (prevProps.risk.id != nextProps.risk.id) return false;
+        return true;
+    },
+);
 
 const enhance = withObservables(['risk'], ({ risk }) => {
     return { risk };

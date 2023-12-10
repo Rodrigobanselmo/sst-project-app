@@ -1,4 +1,4 @@
-import { CharacterizationFormProps } from '@screens/Characterization/types';
+import { CharacterizationFormProps, RiskDataFormProps } from '@screens/Characterization/types';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
@@ -8,21 +8,22 @@ type formDataProps =
 
 interface CharacterizationFormState {
     form: CharacterizationFormProps;
-    characterizationId: string | undefined;
-    principalProfileId: string | undefined;
-    isPrincipalProfile: boolean;
+    getCharacterizationId: () => string | undefined;
+    getPrincipalProfileId: () => string | undefined;
+    getIsPrincipalProfile: () => boolean;
     setWorkspaceId: (id: string) => void;
     setForm: (prop: formDataProps) => void;
     setDeleteRiskData: (riskId: string) => void;
+    addFormRiskData: (data: RiskDataFormProps) => void;
     getIsRiskSelected: (riskId: string) => boolean;
 }
 
 export const useCharacterizationFormStore = create<CharacterizationFormState>()(
     immer((set, get) => ({
         form: { workspaceId: '' },
-        characterizationId: get()?.form.id,
-        principalProfileId: get()?.form.profileParentId || get()?.form.id,
-        isPrincipalProfile: get()?.principalProfileId == get()?.form.id,
+        getCharacterizationId: () => get()?.form?.id,
+        getPrincipalProfileId: () => get()?.form.profileParentId || get()?.form.id,
+        getIsPrincipalProfile: () => get()?.getPrincipalProfileId() == get()?.form.id,
         getIsRiskSelected: (riskId: string) => {
             return !!get()?.form?.riskData?.some((rd) => rd.riskId === riskId);
         },
@@ -40,6 +41,19 @@ export const useCharacterizationFormStore = create<CharacterizationFormState>()(
                     state.form = data(state.form);
                 });
         },
+        addFormRiskData: (data: RiskDataFormProps) =>
+            set((state) => {
+                state.form.riskData = state.form?.riskData || [];
+
+                const riskData = state.form.riskData;
+                const riskIndex = riskData.findIndex((rd) => rd.riskId === data.riskId);
+                console.log('riskIndex', riskIndex, riskData);
+                if (riskIndex >= 0) {
+                    riskData[riskIndex] = data;
+                } else {
+                    riskData.push(data);
+                }
+            }),
         setDeleteRiskData: (riskId: string) =>
             set((state) => {
                 const riskIndex = state.form?.riskData?.findIndex((rd) => rd.riskId === riskId);

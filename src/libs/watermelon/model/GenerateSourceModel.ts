@@ -23,6 +23,7 @@ class GenerateSourceModel extends Model {
     @field('riskId') riskId!: string;
 
     @field('user_id') userId!: string;
+    @field('status') status?: StatusEnum;
     @date('created_at') created_at?: Date;
     @date('updated_at') updated_at?: Date;
     @date('deleted_at') deleted_at?: Date;

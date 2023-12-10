@@ -31,6 +31,7 @@ export function PhotoComponent({
             borderWidth={1}
             borderColor={'gray.200'}
             borderRadius={10}
+            overflow={'hidden'}
             flex={1}
             maxHeight={maxHeightValue || undefined}
         >
@@ -44,7 +45,6 @@ export function PhotoComponent({
                     width: orientation === Orientation.PORTRAIT_UP ? GALLERY_IMAGE_PORTRAIT_WIDTH : GALLERY_IMAGE_Width,
                     resizeMode: 'contain',
                 }}
-                rounded="lg"
             />
             {handleEditImage && (
                 <TouchableOpacity style={styles.editButton} onPress={() => handleEditImage()}>

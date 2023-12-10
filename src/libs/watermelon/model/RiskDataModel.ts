@@ -1,21 +1,14 @@
-import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { DBTablesEnum } from '@constants/enums/db-tables';
-import { StatusEnum } from '@constants/enums/status.enum';
 import { Model, Q } from '@nozbe/watermelondb';
-import { field, date, children, readonly, relation, lazy } from '@nozbe/watermelondb/decorators';
-import { CharacterizationPhotoModel } from './CharacterizationPhotoModel';
+import { children, date, field, lazy, relation } from '@nozbe/watermelondb/decorators';
 import { CharacterizationModel } from './CharacterizationModel';
-import { CompanyModel } from './CompanyModel';
-import { UserAuthModel } from './UserAuthModel';
-import { MeasuresTypeEnum, RecTypeEnum } from '@constants/enums/risk.enum';
-import { EngsRiskDataModel } from './_MMModel/EngsRiskDataModel';
 import { RiskModel } from './RiskModel';
-import { RecMedModel } from './RecMedModel';
-import { GenerateSourceModel } from './GenerateSourceModel';
+import { UserAuthModel } from './UserAuthModel';
 import { AdmsRiskDataModel } from './_MMModel/AdmsRiskDataModel';
+import { EngsRiskDataModel } from './_MMModel/EngsRiskDataModel';
+import { EpisRiskDataModel } from './_MMModel/EpisRiskDataModel';
 import { GenerateRiskDataModel } from './_MMModel/GenerateRiskDataModel';
 import { RecsRiskDataModel } from './_MMModel/RecsRiskDataModel';
-import { EpisRiskDataModel } from './_MMModel/EpisRiskDataModel';
 
 class RiskDataModel extends Model {
     static table = DBTablesEnum.RISK_DATA;

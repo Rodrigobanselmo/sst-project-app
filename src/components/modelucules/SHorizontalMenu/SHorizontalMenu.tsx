@@ -44,7 +44,6 @@ export function SHorizontalMenu<T>({
 
     return (
         <SBox mb={mb}>
-            {/* <SHStack> */}
             <SFlatList
                 horizontal
                 data={options}
@@ -75,10 +74,8 @@ export function SHorizontalMenu<T>({
                 showsVerticalScrollIndicator={false}
                 ItemSeparatorComponent={() => <SBox style={{ width: 10, height: 1 }} />}
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: paddingHorizontal ?? pagePaddingPx }}
+                contentContainerStyle={{ paddingHorizontal: (paddingHorizontal as any) ?? pagePaddingPx }}
             />
-            {/* <SButton title=" d" bg="gray.300" autoWidth variant={'outline'} height={7} py={0} /> */}
-            {/* </SHStack> */}
         </SBox>
     );
 }

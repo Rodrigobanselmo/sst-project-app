@@ -1,0 +1,1 @@
+export { SProptModal } from './SProptModal';

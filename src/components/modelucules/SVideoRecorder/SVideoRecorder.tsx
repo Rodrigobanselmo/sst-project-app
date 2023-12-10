@@ -38,6 +38,7 @@ export default function VideoRecorder({ videos, setVideos }: { setVideos: (arg: 
         ImagePicker.openCamera({
             mediaType: 'video',
             compressVideoPreset: 'MediumQuality',
+            useFrontCamera: true,
         }).then(async (image) => {
             const asset = await saveImageOrVideoToGallery(image.path);
             if (asset) {
@@ -132,7 +133,8 @@ const VideoItem = ({
             if (video.current) {
                 const videoAsset = await getAssetInfo(videoUri);
                 setAsset(videoAsset);
-                if (videoAsset?.localUri) video.current.loadAsync({ uri: videoAsset.localUri });
+                const uri = videoAsset?.localUri || videoUri;
+                if (uri) video.current.loadAsync({ uri });
             }
         };
 
@@ -140,10 +142,12 @@ const VideoItem = ({
     }, [videoUri]);
 
     const { height, width } = calculateActualDimensions({
-        aspectRatio: `${asset?.width || 16}:${asset?.height || 9}`,
+        aspectRatio: `${asset?.width || 9}:${asset?.height || 16}`,
         maxWidth: SCREEN_WIDTH - 100,
         maxHeight: 400,
     });
+
+    console.log(videoUri);
 
     return (
         <View

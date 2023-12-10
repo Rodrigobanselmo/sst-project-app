@@ -67,7 +67,7 @@ export function EmployeesTable({ onClick, renderRightElement, onSave }: PageProp
             <KeyboardAvoidingView
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
                 style={{ flex: 1, paddingBottom: 10 }}
-                behavior="padding"
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             >
                 <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                     <SVStack flex={1} mt={4}>
@@ -84,7 +84,7 @@ export function EmployeesTable({ onClick, renderRightElement, onSave }: PageProp
                     </SVStack>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
-            <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={5} mx={pagePadding}>
+            <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={0} mx={pagePadding}>
                 <SButton size={'sm'} title="Salvar" onPress={onSave} />
             </SVStack>
         </>

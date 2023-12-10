@@ -1,10 +1,9 @@
-import { SBox, SHStack, SScrollView, SSpinner, SVStack } from '@components/core';
+import { SBox, SHStack, SScrollView, SVStack } from '@components/core';
 import React from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { CharacterizationFormProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
 import { SButton, SInput, SInputArea } from '@components/index';
-import { SHorizontalMenuScroll } from '@components/modelucules/SHorizontalMenuScroll';
 import { SLabel } from '@components/modelucules/SLabel';
 import { SRadio } from '@components/modelucules/SRadio';
 import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
@@ -16,6 +15,7 @@ import { Control, Controller } from 'react-hook-form';
 import { ICharacterizationValues } from '../../schemas';
 import { AudioForm } from './forms/AudioForm';
 import { PhotoForm } from './forms/PhotoForm';
+import { ProfileForm } from './forms/ProfileForm';
 import { VideoForm } from './forms/VideoForm';
 
 type PageProps = {
@@ -23,13 +23,10 @@ type PageProps = {
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
     onSaveForm: () => Promise<any>;
     control: Control<ICharacterizationValues, any>;
-    profilesProps: {
-        characterizationsProfiles?: CharacterizationModel[];
-        isLoadingProfiles?: boolean;
-        principalProfileId?: string;
-        onChangeProfile?: (characterzationId: string) => Promise<void>;
-        onAddProfile?: () => Promise<void>;
-    };
+    characterizationsProfiles?: CharacterizationModel[];
+    principalProfileId?: string;
+    onChangeProfile: (characterzationId: string) => Promise<void>;
+    onAddProfile: (options: { refetchProfiles: () => void }) => Promise<void>;
 };
 
 export function CharacterizationForm({
@@ -37,10 +34,12 @@ export function CharacterizationForm({
     onEditForm,
     onSaveForm,
     control,
-    profilesProps: { principalProfileId, characterizationsProfiles, isLoadingProfiles, onChangeProfile, onAddProfile },
+    principalProfileId,
+    characterizationsProfiles,
+    onChangeProfile,
+    onAddProfile,
 }: PageProps): React.ReactElement {
-    const isPrincipalProfile = useCharacterizationFormStore((state) => state.isPrincipalProfile);
-    const characterizationId = useCharacterizationFormStore((state) => state.characterizationId);
+    const isPrincipalProfile = useCharacterizationFormStore((state) => state.getIsPrincipalProfile());
 
     const handleSave = () => {
         onSaveForm();
@@ -81,6 +80,14 @@ export function CharacterizationForm({
         },
     ];
 
+    const profileOptions = [
+        { value: principalProfileId || '', name: 'Principal' },
+        ...(characterizationsProfiles || []).map((profile) => ({
+            value: profile.id,
+            name: profile.profileName || 'Novo Perfil',
+        })),
+    ];
+
     console.log('char form');
 
     return (
@@ -92,7 +99,7 @@ export function CharacterizationForm({
             <SVStack flex={1}>
                 <SScrollView
                     style={{ paddingTop: 15 }}
-                    contentContainerStyle={{ paddingBottom: 80 }}
+                    contentContainerStyle={{ paddingBottom: 10 }}
                     keyboardShouldPersistTaps="handled"
                 >
                     {/* NAME & TYPE */}
@@ -106,12 +113,10 @@ export function CharacterizationForm({
                                     inputProps={{
                                         placeholder: '',
                                         keyboardType: 'default',
-                                        autoCapitalize: 'none',
+                                        autoCapitalize: 'sentences',
                                         value,
                                         onChangeText: onChange,
-                                        // ...(!isEdit && {
-                                        //     autoFocus: true,
-                                        // }),
+                                        autoFocus: true,
                                     }}
                                     isDisabled={!isPrincipalProfile}
                                     startAdornmentText="Nome"
@@ -164,29 +169,7 @@ export function CharacterizationForm({
 
                     {/* PROFILE */}
                     <SVStack mx={pagePadding} mt={0}>
-                        <SLabel mb={2}>Perfil</SLabel>
-
-                        {isLoadingProfiles ? (
-                            <SSpinner color="primary.main" size={32} />
-                        ) : (
-                            <SHorizontalMenuScroll
-                                activeColor="gray.300"
-                                mb={4}
-                                paddingHorizontal={0}
-                                onAddButtonChange={onAddProfile}
-                                onChange={(value) => value.value && onChangeProfile?.(value.value)}
-                                options={[
-                                    { value: principalProfileId || '', name: 'Principal' },
-                                    ...(characterizationsProfiles || []).map((profile) => ({
-                                        value: profile.id,
-                                        name: profile.profileName || 'Novo Perfil',
-                                    })),
-                                ]}
-                                getKeyExtractor={(item) => item.value}
-                                getLabel={(item) => item.name}
-                                getIsActive={(item) => item.value === characterizationId}
-                            />
-                        )}
+                        <ProfileForm onAddProfile={onAddProfile} onChangeProfile={onChangeProfile} />
 
                         {!isPrincipalProfile && (
                             <Controller

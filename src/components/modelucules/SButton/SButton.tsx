@@ -1,7 +1,9 @@
-import { Button as SB, ISButtonProps, SText } from '@components/core';
+import { Button as SB, ISButtonProps, SText, ISTextProps } from '@components/core';
 import { ColorType } from 'native-base/lib/typescript/components/types';
 
-interface ButtonProps extends ISButtonProps {}
+interface ButtonProps extends ISButtonProps {
+    textProps?: Partial<ISTextProps>;
+}
 
 export function SButton({
     title,
@@ -12,6 +14,7 @@ export function SButton({
     color = 'white',
     fontSize = 'sm',
     autoWidth,
+    textProps,
     ...props
 }: ButtonProps) {
     if (addColor) {
@@ -58,6 +61,7 @@ export function SButton({
                 p={0}
                 fontFamily="heading"
                 fontSize={fontSize}
+                {...textProps}
             >
                 {title}
             </SText>

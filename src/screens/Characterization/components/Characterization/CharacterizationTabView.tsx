@@ -19,6 +19,7 @@ import { EmployeesTable } from '../Employees/EmployeesTable';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 import { RiskTab } from './tabs/RiskTab/RiskTab';
 import { HeaderTab } from './tabs/HeaderTab/HeaderTab';
+import { STabNativeView } from '@components/organisms/STabView/STabNativeView';
 
 type PageProps = {
     openCamera: () => void;
@@ -31,12 +32,10 @@ type PageProps = {
     onClickHierarchy?: (hierarchy: IHierarchy, options?: { cb: () => void }) => Promise<void>;
     onClickEmployee?: (employee: EmployeeModel, options?: { cb: () => void }) => Promise<void>;
     onAddRisk: (formValues: RiskDataFormProps) => void;
-    profilesProps: {
-        characterizationsProfiles?: CharacterizationModel[];
-        principalProfileId?: string;
-        onChangeProfile?: (characterzationId: string) => Promise<void>;
-        onAddProfile?: () => Promise<void>;
-    };
+    characterizationsProfiles?: CharacterizationModel[];
+    principalProfileId?: string;
+    onChangeProfile: (characterzationId: string) => Promise<void>;
+    onAddProfile: (options: { refetchProfiles: () => void }) => Promise<void>;
 };
 
 export function CharacterizationTabView({
@@ -47,7 +46,10 @@ export function CharacterizationTabView({
     onDeleteForm,
     onGoBack,
     openCamera,
-    profilesProps,
+    characterizationsProfiles,
+    principalProfileId,
+    onChangeProfile,
+    onAddProfile,
     onEditForm,
     control,
     onClickRisk,
@@ -61,18 +63,21 @@ export function CharacterizationTabView({
     return (
         <>
             <HeaderTab onDelete={onDeleteForm} navidateFn={onGoBack} />
-            <STabView
+            <STabNativeView
                 tabsRef={tabRef}
                 routes={[
                     {
                         label: 'Principal',
                         component: (
                             <CharacterizationForm
-                                profilesProps={profilesProps}
                                 onSaveForm={onSaveForm}
                                 onEditForm={onEditForm}
                                 control={control}
                                 openCamera={openCamera}
+                                characterizationsProfiles={characterizationsProfiles}
+                                principalProfileId={principalProfileId}
+                                onChangeProfile={onChangeProfile}
+                                onAddProfile={onAddProfile}
                             />
                         ),
                     },

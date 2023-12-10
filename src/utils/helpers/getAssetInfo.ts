@@ -11,5 +11,6 @@ export async function getAssetInfo(assetUri: string) {
     }
 
     const asset = await MediaLibrary.getAssetInfoAsync(assetId);
+
     return asset;
 }

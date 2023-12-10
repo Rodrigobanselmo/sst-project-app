@@ -13,6 +13,7 @@ import { queryClient } from '@services/queryClient';
 import NetInfo from '@react-native-community/netinfo';
 import { onlineManager } from '@tanstack/react-query';
 import { SLoadingPagePubSub } from '@components/organisms/SLoadingPage/SLoadingPagePubSub';
+import { SModalProvider } from '@components/organisms/SModal/SModalProvider';
 
 LogBox.ignoreLogs([
     'In React 18, SSRProvider is not necessary and is a noop. You can remove it from your app.',
@@ -44,6 +45,7 @@ export default function App() {
                     <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
                     <AuthProvider>{fontsLoaded ? <Routes /> : <SLoading />}</AuthProvider>
                     <SLoadingPagePubSub />
+                    <SModalProvider />
                 </SafeAreaProvider>
             </NativeBaseProvider>
         </QueryClientProvider>

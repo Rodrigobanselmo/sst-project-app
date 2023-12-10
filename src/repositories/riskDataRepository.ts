@@ -13,6 +13,7 @@ import { EngsRiskDataModel } from '@libs/watermelon/model/_MMModel/EngsRiskDataM
 import { EpisRiskDataModel } from '@libs/watermelon/model/_MMModel/EpisRiskDataModel';
 import { GenerateRiskDataModel } from '@libs/watermelon/model/_MMModel/GenerateRiskDataModel';
 import { RecsRiskDataModel } from '@libs/watermelon/model/_MMModel/RecsRiskDataModel';
+import clone from 'clone';
 import { Q } from '@nozbe/watermelondb';
 import {
     RiskDataFormRelationsDeletionsProps,
@@ -283,7 +284,7 @@ export class RiskDataRepository {
     }
 
     async createRecMedGS<T>(
-        riskData: (T extends IRiskDataCreate ? IRiskDataCreate : Partial<IRiskDataCreate> & { riskId: string })[],
+        _riskData: (T extends IRiskDataCreate ? IRiskDataCreate : Partial<IRiskDataCreate> & { riskId: string })[],
         userId: number,
     ) {
         const generateSourceTable = database.get<GenerateSourceModel>(DBTablesEnum.GENERATE_SOURCE);
@@ -291,8 +292,10 @@ export class RiskDataRepository {
 
         const generateSourceMap: Record<string, IGenerateSourceCreate> = {};
         const recMedMap: Record<string, IRecMedCreate> = {};
+        const riskData = clone(_riskData) as IRiskDataCreate[];
 
-        riskData?.forEach((_riskData) => {
+        console.log(11, JSON.stringify(riskData, null, 2));
+        riskData?.forEach((_riskData, _index) => {
             _riskData?.generateSourcesToRiskData?.forEach((gs, index) => {
                 if (!gs?.id) {
                     const uuid = uuidGenerator.v4() as string;
@@ -301,7 +304,8 @@ export class RiskDataRepository {
                         name: gs.name,
                         riskId: _riskData.riskId,
                     };
-                    (_riskData as any).generateSourcesToRiskData[index].id = uuid;
+                    console.log(9);
+                    (riskData as any)[_index].generateSourcesToRiskData[index].id = uuid;
                 }
             });
 
@@ -355,6 +359,7 @@ export class RiskDataRepository {
                         newGs.userId = String(userId);
                         newGs.created_at = new Date();
                         newGs.updated_at = new Date();
+                        newGs.status = StatusEnum.ACTIVE;
                     });
                 });
 
@@ -369,6 +374,7 @@ export class RiskDataRepository {
                         newRecMed.userId = String(userId);
                         newRecMed.created_at = new Date();
                         newRecMed.updated_at = new Date();
+                        newRecMed.status = StatusEnum.ACTIVE;
                     });
                 });
 
@@ -377,6 +383,8 @@ export class RiskDataRepository {
         } catch (error) {
             console.error(error);
         }
+
+        console.log(22, JSON.stringify(riskData, null, 2));
 
         return riskData;
     }

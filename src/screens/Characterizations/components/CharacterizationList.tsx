@@ -1,28 +1,21 @@
-import { SBox, SFlatList, SFloatingButton, SHStack, SIcon, SImage, SText, useSToast } from '@components/core';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { SFlatList, SFloatingButton, SIcon } from '@components/core';
 // import * as ImagePicker from 'expo-image-picker';
-import PlaceholderImage from '@assets/placeholder-image.png';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Orientation } from 'expo-screen-orientation';
-import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
-import { withObservables } from '@nozbe/watermelondb/react';
-import { EnhancedCharacterizationPhoto } from './CharacterizationPhoto';
-import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
+import { SInputSearch, SNoContent } from '@components/modelucules';
+import { SHorizontalMenu } from '@components/modelucules/SHorizontalMenu';
+import { SAFE_AREA_PADDING, pagePaddingPx } from '@constants/constants';
+import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
+import { characterizationOptionsList } from '@constants/maps/characterization-options.map';
 import { characterizationMap } from '@constants/maps/characterization.map';
-import { Badge } from 'native-base';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useTableSearch } from '@hooks/useTableSearchOld';
+import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
+import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import EnhancedCharacterizationCard from './CharacterizationCard';
-import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
-import { SNoContent } from '@components/modelucules';
-import { useTableSearch } from '@hooks/useTableSearchOld';
-import { SInputSearch } from '@components/modelucules';
-import { SAFE_AREA_PADDING, pagePaddingPx } from '@constants/constants';
-import sortArray from 'sort-array';
-import { SHorizontalMenu } from '@components/modelucules/SHorizontalMenu';
-import { characterizationOptionsList } from '@constants/maps/characterization-options.map';
 import { useMemo, useState } from 'react';
-import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
+import sortArray from 'sort-array';
+import EnhancedCharacterizationCard from './CharacterizationCard';
 
 type Props = {
     characterizations?: CharacterizationModel[];
@@ -30,10 +23,8 @@ type Props = {
 };
 
 export function CharacterizationList({ characterizations, workspace }: Props): React.ReactElement {
-    const [activeType, setActiveType] = useState<CharacterizationTypeEnum | null>(null);
-
     const { navigate } = useNavigation<AppNavigatorRoutesProps>();
-    const toast = useSToast();
+    const [activeType, setActiveType] = useState<CharacterizationTypeEnum | null>(null);
 
     const handleCreateCharacterization = () => {
         navigate('characterization', { workspaceId: workspace.id, type: activeType || undefined });

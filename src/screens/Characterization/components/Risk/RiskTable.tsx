@@ -43,8 +43,7 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
             risks = risks?.filter((risk) => riskIds?.includes(risk.id));
         }
         return filterRisks(risks || [], activeType);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [risksAll, search, activeType]);
+    }, [risksAll, search, activeType, riskIds]);
 
     const { results } = useResultSearch({
         data: risks,
@@ -91,13 +90,14 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
                                 renderRightElement={renderRightElement}
                                 onClickRisk={handleClickRisk}
                                 risks={results}
+                                selectedIds={riskIds}
                             />
                         )}
                     </SVStack>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
             {onSaveForm && (
-                <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={5} mx={pagePadding}>
+                <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={0} mx={pagePadding}>
                     <SButton size={'sm'} title="Salvar" onPress={onSaveForm} />
                 </SVStack>
             )}

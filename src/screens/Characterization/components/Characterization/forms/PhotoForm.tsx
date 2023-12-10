@@ -39,7 +39,7 @@ export function PhotoForm({ openCamera, onEdit }: FormProps): React.ReactElement
                 multiple: true,
             });
 
-            const results: CharacterizationFormProps['photos'] = photos || [];
+            const results: CharacterizationFormProps['photos'] = [...(photos || [])];
             for await (const image of images) {
                 const img = await ImagePicker.openCropper({
                     mediaType: 'photo',
