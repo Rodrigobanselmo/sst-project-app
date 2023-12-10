@@ -132,8 +132,6 @@ export class CharacterizationRepository {
                 data.riskData = await riskDataRepository.createRecMedGS(data.riskData, data.userId);
             }
 
-            console.log(data.riskData);
-
             const newCharacterization = await characterizationTable.create((characterization) => {
                 characterization.apiId = data.apiId;
                 characterization.name = data.name;

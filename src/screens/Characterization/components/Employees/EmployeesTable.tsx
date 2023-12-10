@@ -61,7 +61,6 @@ export function EmployeesTable({ onClick, renderRightElement, onSave }: PageProp
         [onClick],
     );
 
-    console.log('employee form');
     return (
         <>
             <KeyboardAvoidingView

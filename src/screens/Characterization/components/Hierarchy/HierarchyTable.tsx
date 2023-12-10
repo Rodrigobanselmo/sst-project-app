@@ -75,11 +75,6 @@ export function HierarchyTable({ onClick, renderRightElement, onSave }: PageProp
         [onClick],
     );
 
-    useEffect(() => {
-        console.log(9);
-    }, [hierarchyIds]);
-
-    console.log('hierarchy form');
     return (
         <>
             <KeyboardAvoidingView

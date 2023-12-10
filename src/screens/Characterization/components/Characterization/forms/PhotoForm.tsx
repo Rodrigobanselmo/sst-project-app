@@ -67,7 +67,7 @@ export function PhotoForm({ openCamera, onEdit }: FormProps): React.ReactElement
 
             onEdit({ photos: results });
         } catch (error) {
-            console.log('Error', error);
+            console.info('Error', error);
         }
     };
 

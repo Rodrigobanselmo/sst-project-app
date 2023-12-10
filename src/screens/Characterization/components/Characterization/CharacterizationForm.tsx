@@ -88,8 +88,6 @@ export function CharacterizationForm({
         })),
     ];
 
-    console.log('char form');
-
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}

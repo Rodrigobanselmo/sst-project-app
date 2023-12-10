@@ -294,7 +294,6 @@ export class RiskDataRepository {
         const recMedMap: Record<string, IRecMedCreate> = {};
         const riskData = clone(_riskData) as IRiskDataCreate[];
 
-        console.log(11, JSON.stringify(riskData, null, 2));
         riskData?.forEach((_riskData, _index) => {
             _riskData?.generateSourcesToRiskData?.forEach((gs, index) => {
                 if (!gs?.id) {
@@ -304,7 +303,7 @@ export class RiskDataRepository {
                         name: gs.name,
                         riskId: _riskData.riskId,
                     };
-                    console.log(9);
+
                     (riskData as any)[_index].generateSourcesToRiskData[index].id = uuid;
                 }
             });
@@ -383,8 +382,6 @@ export class RiskDataRepository {
         } catch (error) {
             console.error(error);
         }
-
-        console.log(22, JSON.stringify(riskData, null, 2));
 
         return riskData;
     }

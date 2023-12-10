@@ -64,7 +64,6 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
         [onClickRisk],
     );
 
-    console.log('risk form');
     return (
         <>
             <KeyboardAvoidingView

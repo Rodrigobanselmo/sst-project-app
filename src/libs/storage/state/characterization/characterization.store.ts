@@ -47,7 +47,7 @@ export const useCharacterizationFormStore = create<CharacterizationFormState>()(
 
                 const riskData = state.form.riskData;
                 const riskIndex = riskData.findIndex((rd) => rd.riskId === data.riskId);
-                console.log('riskIndex', riskIndex, riskData);
+
                 if (riskIndex >= 0) {
                     riskData[riskIndex] = data;
                 } else {

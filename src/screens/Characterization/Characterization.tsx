@@ -88,9 +88,8 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                     } = getValues();
 
                     const characterizationRepo = new CharacterizationRepository();
-                    console.log(characterizationId);
 
-                    if (false) {
+                    if (characterizationId) {
                         characterization = await characterizationRepo.update(characterizationId, {
                             name: name as string,
                             type,
@@ -134,8 +133,8 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                         });
                     }
 
-                    // if (!options?.skipGoBack)
-                    //     navigation.navigate('characterizations', { workspaceId: route.params.workspaceId });
+                    if (!options?.skipGoBack)
+                        navigation.navigate('characterizations', { workspaceId: route.params.workspaceId });
                 }
             } catch (error) {
                 console.error(error);
@@ -192,7 +191,6 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
 
     const onRiskDataSave = useCallback(
         async (formValues: RiskDataFormProps) => {
-            console.log(999);
             try {
                 if (characterizationId && formValues.id) {
                     const riskDataRepository = new RiskDataRepository();
@@ -482,8 +480,6 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
     if (isLoadingPage) {
         return <SLoading />;
     }
-
-    console.log('char');
 
     return (
         <>

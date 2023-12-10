@@ -147,8 +147,6 @@ const VideoItem = ({
         maxHeight: 400,
     });
 
-    console.log(videoUri);
-
     return (
         <View
             style={{ ...styles.item, width: width + 20, height: 490, justifyContent: 'center', alignItems: 'center' }}
