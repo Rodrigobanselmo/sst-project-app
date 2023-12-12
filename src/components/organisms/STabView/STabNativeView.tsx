@@ -8,7 +8,7 @@ import { SButton } from '@components/modelucules';
 import { memo } from 'react';
 import { STab } from './components/STab';
 
-interface ISTabViewRefProps {
+export interface ISTabViewRefProps {
     setRouteIndex: React.Dispatch<React.SetStateAction<number>>;
     routeIndex: number;
 }
@@ -16,7 +16,7 @@ interface ISTabView {
     // renderScene: (props: SceneRendererProps & { route: any; setIndex: (index: number) => void }) => React.ReactNode;
     routes: { label: string; component: React.JSX.Element }[];
     renderTabBar?: (props: any) => React.ReactNode;
-    tabsRef?: React.RefObject<any>;
+    tabsRef?: React.RefObject<ISTabViewRefProps>;
 }
 
 // eslint-disable-next-line react/prop-types

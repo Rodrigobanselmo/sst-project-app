@@ -40,8 +40,13 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
     }, [route.params.workspaceId]);
 
     const handleSendApi = () => {
-        const action = () => {
-            //
+        const action = async () => {
+            if (workspaceDB?.id) {
+                const companyRepository = new CompanyRepository();
+                await companyRepository.updateWorkspaceDB(workspaceDB.id, {
+                    lastSendApiCharacterization_at: new Date(),
+                });
+            }
         };
 
         Alert.alert(

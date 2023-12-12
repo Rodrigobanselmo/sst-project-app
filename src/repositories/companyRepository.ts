@@ -23,6 +23,7 @@ export interface IWorkspaceCreate {
     number?: string;
     complement?: string;
     startChar_at?: Date;
+    lastSendApiCharacterization_at?: Date;
     userId: number;
 }
 
@@ -218,12 +219,20 @@ export class CompanyRepository {
         return newWorkspace;
     }
 
+    async updateWorkspaceDB(id: string, data: Partial<IWorkspaceCreate>) {
+        await database.write(async () => {
+            this.updateWorkspace(id, data);
+        });
+    }
+
     private async updateWorkspace(id: string, data: Partial<IWorkspaceCreate>) {
         const workspaceTable = database.get<WorkspaceModel>(DBTablesEnum.WORKSPACE);
 
         try {
             const workspace = await workspaceTable.find(id);
             const newWorkspace = await workspace.update((newWorkspace) => {
+                newWorkspace.updated_at = new Date();
+
                 if (data.apiId) newWorkspace.apiId = data.apiId;
                 if (data.name) newWorkspace.name = data.name;
                 if (data.abbreviation) newWorkspace.abbreviation = data.abbreviation;
@@ -235,12 +244,12 @@ export class CompanyRepository {
                 if (data.state) newWorkspace.state = data.state;
                 if (data.number) newWorkspace.number = data.number;
                 if (data.complement) newWorkspace.complement = data.complement;
+                if (data.userId) newWorkspace.userId = String(workspace.userId);
+                if (data.status) newWorkspace.status = data.status;
                 if (data.startChar_at && !workspace.startChar_at)
                     newWorkspace.startChar_at = new Date(data.startChar_at);
-                if (data.userId) newWorkspace.userId = String(workspace.userId);
-
-                if (data.status) newWorkspace.status = data.status;
-                newWorkspace.updated_at = new Date();
+                if (data.lastSendApiCharacterization_at)
+                    newWorkspace.lastSendApiCharacterization_at = data.lastSendApiCharacterization_at;
             });
 
             return newWorkspace;

@@ -25,13 +25,29 @@ export function WorkspaceEnviromentCard({ workspace, company }: Props): React.Re
         navigate('characterizations', { workspaceId: workspace.id });
     };
 
+    const getCardInfo = () => {
+        if (workspace.lastSendApiCharacterization_at) {
+            return {
+                text: `último envio em ${formatDateToDDMMYY(workspace.lastSendApiCharacterization_at)}`,
+                color: 'success.900',
+            };
+        }
+
+        return {
+            text: `iniciado em ${formatDateToDDMMYY(workspace.startChar_at)}`,
+            color: 'blue.900',
+        };
+    };
+
+    const infoCard = getCardInfo();
+
     return (
         <SRowCard onPress={handleEditWorkspaceEnviroment}>
             <SBox flex={1}>
                 <SHStack justifyContent={'space-between'} alignItems={'center'}>
                     <SText>{addDotsText({ text: company.fantasy || company.name, maxLength: 20 })}</SText>
-                    <SText fontSize={15} color={'blue.900'} opacity={0.5}>
-                        iniciado em {formatDateToDDMMYY(workspace.startChar_at)}
+                    <SText fontSize={15} color={infoCard.color} opacity={0.5}>
+                        {infoCard.text}
                     </SText>
                 </SHStack>
                 <SHStack justifyContent={'space-between'}>
