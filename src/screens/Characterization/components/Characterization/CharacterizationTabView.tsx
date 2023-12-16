@@ -19,7 +19,7 @@ import { EmployeesTable } from '../Employees/EmployeesTable';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 import { RiskTab } from './tabs/RiskTab/RiskTab';
 import { HeaderTab } from './tabs/HeaderTab/HeaderTab';
-import { STabNativeView } from '@components/organisms/STabView/STabNativeView';
+import { ISTabViewRefProps, STabNativeView } from '@components/organisms/STabView/STabNativeView';
 
 type PageProps = {
     openCamera: () => void;
@@ -54,10 +54,10 @@ export function CharacterizationTabView({
     control,
     onClickRisk,
 }: PageProps) {
-    const tabRef = React.useRef<any>(null);
+    const tabRef = React.useRef<ISTabViewRefProps>(null);
     const onSave = React.useCallback(async () => {
         onSaveForm();
-        tabRef.current?.setIndex(0);
+        tabRef.current?.setRouteIndex(0);
     }, [onSaveForm]);
 
     return (

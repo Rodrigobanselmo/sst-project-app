@@ -234,6 +234,10 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
             const form = useCharacterizationFormStore.getState().form;
             const riskData = form.riskData?.find((rd) => rd.riskId === risk.id);
 
+            const setSelectedRiskDataId = useCharacterizationFormStore.getState().setSelectedRiskDataId;
+            setSelectedRiskDataId(risk.id);
+            return;
+
             let params: RiskDataFormProps = {
                 riskId: risk.id,
             };
@@ -520,7 +524,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                             <RiskDataPage
                                 onSaveForm={onRiskDataSave}
                                 onGoBack={navigation.goBack}
-                                initFormData={riskRoute.params}
+                                // initFormData={riskRoute.params}
                                 isEdit={!!characterizationId}
                                 onDeleteForm={onRiskDataDelete}
                             />

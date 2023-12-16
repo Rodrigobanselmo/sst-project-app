@@ -1,7 +1,7 @@
 import { SText, SVStack } from '@components/core';
 import { SRowCard } from '@components/modelucules/SRowCard';
 import { SSearchModal } from '@components/organisms/SSearchModal';
-import { useGetDatabase } from '@hooks/database/useGetDatabaseOld';
+import { useGetDatabase } from '@hooks/database/useGetDatabase';
 import { addDotsText } from '@utils/helpers/addDotsText';
 import React, { useEffect } from 'react';
 import { useCallback, useState } from 'react';
@@ -18,6 +18,7 @@ export function SSearchSimpleModal<T>({
     onConfirm,
     onConfirmInput,
     placeholder,
+    disableNoInternetContent,
 }: {
     showModal: boolean;
     setShowModal: (open: boolean) => void;
@@ -29,6 +30,7 @@ export function SSearchSimpleModal<T>({
     onConfirm?: (value: string) => void;
     onConfirmInput?: (value: string) => void;
     onFetchFunction: (search: string) => Promise<(T & { id: any })[]>;
+    disableNoInternetContent?: boolean;
     placeholder?: string;
 }) {
     const [search, setSearch] = useState('');
@@ -38,9 +40,18 @@ export function SSearchSimpleModal<T>({
         return onFetchFunction(search);
     }, [onFetchFunction, search]);
 
-    const { data, isLoading, isError } = useGetDatabase({
+    const {
+        data,
+        isLoading,
+        fetch: fetchFunction,
+    } = useGetDatabase({
         onFetchFunction: fetch,
     });
+
+    useEffect(() => {
+        fetchFunction();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetch]);
 
     const handlePress = (data: T) => {
         setShowModal(false);
@@ -67,16 +78,16 @@ export function SSearchSimpleModal<T>({
 
     return (
         <SSearchModal
+            disableNoInternetContent={disableNoInternetContent}
             showModal={showModal}
             debounceTime={300}
             onShowModal={setShowModal}
-            isError={isError}
             placeholder={placeholder}
             title={title}
             searchRef={searchRef}
             onConfirm={onConfirm ? handleConfirm : undefined}
             onConfirmInput={onConfirmInput && search.trim().length > 1 ? handleConfirmInput : undefined}
-            data={data}
+            data={data || []}
             renderTopItem={renderTopItem}
             isLoading={isLoading || isLoadingComponent}
             onSearch={setSearch}

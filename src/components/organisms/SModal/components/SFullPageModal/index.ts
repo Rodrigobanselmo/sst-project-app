@@ -1,0 +1,1 @@
+export { SFullPageModal } from './SFullPageModal';

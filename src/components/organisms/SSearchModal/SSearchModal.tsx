@@ -14,6 +14,7 @@ import { SNoInternet } from '@components/modelucules/SNoInternet';
 import { SErrorBox } from '@components/modelucules/SErrorBox';
 import { Keyboard, KeyboardAvoidingView, Platform, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { ILoadingRef, SLoadContainer } from '@components/modelucules/SLoadContainer/SLoadContainer';
 
 type MyComponentProps<T> = {
     title: string;
@@ -21,6 +22,7 @@ type MyComponentProps<T> = {
     showModal: boolean;
     isError?: boolean;
     isLoading?: boolean;
+    disableNoInternetContent?: boolean;
     handleGoBack?: () => void;
     onShowModal: (open: boolean) => void;
     onSearch: (text: string) => void;
@@ -32,6 +34,7 @@ type MyComponentProps<T> = {
     searchRef?: any;
     debounceTime?: number;
     placeholder?: string;
+    loadingRef?: React.RefObject<ILoadingRef>;
 };
 
 export const SSearchModal = <T,>({
@@ -51,6 +54,8 @@ export const SSearchModal = <T,>({
     onConfirmInput,
     debounceTime = 600,
     placeholder = 'Pesquisar',
+    loadingRef,
+    disableNoInternetContent,
 }: MyComponentProps<T>) => {
     const handleSearchChange = useDebouncedCallback((value: string) => {
         onSearch(value);
@@ -104,20 +109,21 @@ export const SSearchModal = <T,>({
                                     })}
                                 />
                             </SFormControl>
-                            {isLoading && <SSpinner color={'primary.main'} size={32} />}
-                            <SErrorBox showError={isError}>
-                                <SNoInternet>
-                                    {!data.length && <SNoContent />}
-                                    <SFlatList
-                                        data={data}
-                                        keyboardShouldPersistTaps={'handled'}
-                                        keyExtractor={(item) => item.id}
-                                        renderItem={renderItem}
-                                        showsVerticalScrollIndicator={false}
-                                        contentContainerStyle={{ paddingHorizontal: 2 }}
-                                    />
-                                </SNoInternet>
-                            </SErrorBox>
+                            <SLoadContainer controledIsLoading={isLoading} loadingRef={loadingRef}>
+                                <SErrorBox showError={isError}>
+                                    <SNoInternet skipNetInfo={disableNoInternetContent}>
+                                        {!data.length && <SNoContent />}
+                                        <SFlatList
+                                            data={data}
+                                            keyboardShouldPersistTaps={'handled'}
+                                            keyExtractor={(item) => item.id}
+                                            renderItem={renderItem}
+                                            showsVerticalScrollIndicator={false}
+                                            contentContainerStyle={{ paddingHorizontal: 2 }}
+                                        />
+                                    </SNoInternet>
+                                </SErrorBox>
+                            </SLoadContainer>
                         </SBox>
                     </KeyboardAvoidingView>
                     <SModal.Footer>

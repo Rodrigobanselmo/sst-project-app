@@ -1,5 +1,5 @@
 export const normalizeString = (str?: string): string => {
-    if (!str) return str;
+    if (!str) return '';
 
     return str
         .normalize('NFD')

@@ -17,6 +17,8 @@ import { RiskRepository } from '@repositories/riskRepository';
 import { SSearchSimpleModal } from '@components/organisms/SSearchModal/components/SSearchSimpleModal';
 import { SLoadingPage } from '@components/organisms/SLoadingPage';
 import { useGetRiskDatabase } from '@hooks/database/useGetRiskDatabase';
+import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
+import { SLoading } from '@components/modelucules';
 
 type PageProps = {
     onSaveForm: (form: RiskDataFormProps) => void;
@@ -24,16 +26,17 @@ type PageProps = {
     onDeleteForm?: (form: RiskDataFormProps) => Promise<void>;
     isEdit?: boolean;
     onClickRisk?: (risk: any) => void;
-    initFormData: RiskDataFormProps;
     title?: string;
 };
 
-export function RiskDataPage({ initFormData, title, onSaveForm, onDeleteForm, onGoBack, ...props }: PageProps) {
-    const [form, setForm] = useState(initFormData || ({} as RiskDataFormProps));
-    const { control, trigger, getValues, setValue, watch } = useForm<IRiskDataValues>();
-    const [isLoadingPage, setIsLoading] = useState(false);
+export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...props }: PageProps) {
+    const [form, setForm] = useState({} as RiskDataFormProps);
+    const riskId = useCharacterizationFormStore((state) => state.selectedRiskId);
 
-    const { risk, isLoading: isLoadingRisk } = useGetRiskDatabase({ riskId: initFormData.riskId });
+    const { control, getValues, setValue } = useForm<IRiskDataValues>();
+    const [isLoadingPage, setIsLoading] = useState(true);
+
+    const { risk, isLoading: isLoadingRisk } = useGetRiskDatabase({ riskId });
 
     const isLoading = isLoadingPage || isLoadingRisk;
 
@@ -42,19 +45,17 @@ export function RiskDataPage({ initFormData, title, onSaveForm, onDeleteForm, on
     }, []);
 
     const onSave = useCallback(async () => {
-        const isValid = await trigger(['probability']);
+        const { probability, probabilityAfter } = getValues();
 
-        if (isValid) {
-            const { probability, probabilityAfter } = getValues();
+        onSaveForm({
+            ...form,
+            riskId,
+            probability,
+            probabilityAfter,
+        });
 
-            onSaveForm({
-                ...form,
-                probability,
-                probabilityAfter,
-            });
-            onGoBack();
-        }
-    }, [trigger, getValues, onSaveForm, form, onGoBack]);
+        onGoBack();
+    }, [getValues, onSaveForm, riskId, form, onGoBack]);
 
     const handleDelete = useCallback(async () => {
         try {
@@ -71,14 +72,13 @@ export function RiskDataPage({ initFormData, title, onSaveForm, onDeleteForm, on
 
     const getRiskData = useCallback(async () => {
         try {
-            if (initFormData) {
-                const id = initFormData?.id;
-                let data: RiskDataFormProps = {
-                    ...initFormData,
-                };
+            const riskData = useCharacterizationFormStore.getState().getSelectedRiskData();
+
+            if (riskData) {
+                const id = riskData?.id;
+                let data: RiskDataFormProps = { ...riskData };
 
                 if (id) {
-                    setIsLoading(true);
                     const riskDataRepository = new RiskDataRepository();
                     const { riskData } = await riskDataRepository.findOne(id);
 
@@ -87,7 +87,6 @@ export function RiskDataPage({ initFormData, title, onSaveForm, onDeleteForm, on
 
                     data.probability = riskData.probability;
                     data.probabilityAfter = riskData.probabilityAfter;
-                    setIsLoading(false);
                     setForm(data);
                 }
 
@@ -95,13 +94,21 @@ export function RiskDataPage({ initFormData, title, onSaveForm, onDeleteForm, on
                 if (data.probabilityAfter) setValue('probabilityAfter', data.probabilityAfter);
             }
         } catch (e) {
-            setIsLoading(false);
+            // empty
         }
-    }, [initFormData, setValue]);
+
+        setIsLoading(false);
+    }, [setValue]);
 
     React.useEffect(() => {
         getRiskData();
     }, [getRiskData]);
+
+    if (isLoading) {
+        return <SLoading />;
+    }
+
+    console.log('risk data page');
 
     return (
         <>
@@ -119,10 +126,8 @@ export function RiskDataPage({ initFormData, title, onSaveForm, onDeleteForm, on
                 onEditForm={onEditForm}
                 onSaveForm={onSave}
                 control={control}
-                watch={watch}
                 {...props}
             />
-            <SLoadingPage isLoading={isLoading} />
         </>
     );
 }

@@ -43,7 +43,6 @@ export const useResultSearch = <T>({
             keys,
             ignoreLocation: true,
             threshold: threshold,
-            isCaseSensitive: false,
             getFn,
         });
     }, [data, keys, threshold]);

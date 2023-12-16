@@ -9,6 +9,8 @@ interface IUseGetRiskDatabase {
 }
 
 const onFetchRisk = async ({ riskId }: IUseGetRiskDatabase) => {
+    if (!riskId) return null;
+
     const riskRepository = new RiskRepository();
     const { risk } = await riskRepository.findOne(riskId);
 

@@ -60,8 +60,8 @@ export function RiskDataSelectedItem<T>({
                                     {getLabel(item)}
                                 </SText>
                                 {onDelete && (
-                                    <TouchableOpacity onPress={() => onDelete(item)}>
-                                        <SIcon mt={'2px'} px={4} as={Feather} name="trash" color="red.600" size={4} />
+                                    <TouchableOpacity style={{ padding: 4 }} onPress={() => onDelete(item)}>
+                                        <SIcon mt={'2px'} as={Feather} name="trash" color="red.600" size={4} />
                                     </TouchableOpacity>
                                 )}
                             </SHStack>

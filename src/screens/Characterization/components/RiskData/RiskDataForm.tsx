@@ -20,69 +20,18 @@ import sortArray from 'sort-array';
 import { RiskDataSelectedItem } from './RiskDataSelectedList';
 import { RiskOcupacionalTag } from './RiskOcupacionalTag';
 import { IRiskDataValues } from './schemas';
+import { RiskDataModalSearch, RiskDataSearchModal } from './RiskDataModalSearch';
 
 type PageProps = {
     form: RiskDataFormProps;
     onEditForm: (form: Partial<RiskDataFormProps>) => void;
     onSaveForm: () => Promise<void>;
     control: Control<IRiskDataValues, any>;
-    isEdit?: boolean;
-    watch: UseFormWatch<IRiskDataValues>;
     risk?: RiskModel | null;
 };
 
-type DataProps = {
-    name: string;
-    id: string;
-};
-
-const sortFunctionRecMec = (array: any[]) =>
-    sortArray(array, {
-        by: ['typeOrder', 'name'],
-        order: ['desc', 'asc'],
-        computed: {
-            typeOrder: (row) => isNaRecMed(row.name),
-        },
-    });
-
-const sortFunctionGS = (array: any[]) =>
-    sortArray(array, {
-        by: ['name'],
-        order: ['asc'],
-    });
-
-export function RiskDataForm({
-    onEditForm,
-    onSaveForm,
-    form,
-    control,
-    isEdit,
-    watch,
-    risk,
-}: PageProps): React.ReactElement {
-    const [isOpen, setIsOpen] = useState<'gs' | 'epi' | 'eng' | 'adm' | 'rec' | false>(false);
-    const generateSourseSerach = useFuseFuncSearch<DataProps>({
-        keys: ['name'],
-        fuseOptions: { threshold: 0.6 },
-        sortFunction: sortFunctionGS,
-    });
-    const engsSearch = useFuseFuncSearch<DataProps>({
-        keys: ['medName'],
-        fuseOptions: { threshold: 0.6 },
-        sortFunction: sortFunctionRecMec,
-    });
-    const admsSearch = useFuseFuncSearch<DataProps>({
-        keys: ['medName'],
-        fuseOptions: { threshold: 0.6 },
-        sortFunction: sortFunctionRecMec,
-    });
-    const recsSearch = useFuseFuncSearch<DataProps>({
-        keys: ['recName'],
-        fuseOptions: { threshold: 0.6 },
-        sortFunction: sortFunctionRecMec,
-    });
-
-    const { fetchEpis } = useFetchQueryEpis();
+export function RiskDataForm({ onEditForm, onSaveForm, form, control, risk }: PageProps): React.ReactElement {
+    const modalRef = React.useRef<RiskDataSearchModal>(null);
 
     const handleEditSelect = async ({
         data,
@@ -158,133 +107,7 @@ export function RiskDataForm({
         onSaveForm();
     };
 
-    const removeDuplicatesAndOrder = useCallback((data: DataProps[]) => {
-        const uniqueItems: Record<string, DataProps> = {};
-
-        data.forEach((item) => {
-            if (!uniqueItems[item.name]) {
-                uniqueItems[item.name] = item;
-            }
-        });
-        const uniqueItemsArray = Object.values(uniqueItems);
-        return uniqueItemsArray;
-    }, []);
-
-    const onGetRiskRelations = useCallback(
-        async (search: string, options: { key: keyof RiskModel; fuseSearch: IReturnUseFuseSearch<DataProps> }) => {
-            let results: DataProps[] = [];
-
-            if (risk && risk[options.key]) {
-                try {
-                    const data: GenerateSourceModel[] | RecMedModel[] = await (risk[options.key] as any)?.fetch();
-                    if (data) {
-                        const isGenerateSource = options.key === 'allGenerateSources';
-                        const isRecName = options.key === 'allRec';
-
-                        const itemKey = isGenerateSource ? 'name' : isRecName ? 'recName' : 'medName';
-
-                        const resultData = data.map<DataProps>((item) => ({
-                            name: (item as any)?.[itemKey],
-                            id: item.id,
-                        }));
-
-                        results = options.fuseSearch.getResult({ data: removeDuplicatesAndOrder(resultData), search });
-                    }
-                } catch (e) {
-                    console.error(e);
-                    /* empty */
-                }
-            }
-
-            return results || [];
-        },
-        [risk, removeDuplicatesAndOrder],
-    );
-
-    const onGetEpis = useCallback(
-        async (search: string) => {
-            let results: DataProps[] = [];
-
-            if (risk) {
-                try {
-                    const result = await fetchEpis({ ca: search }, 5);
-                    const data = result?.data;
-                    if (data) {
-                        const resultData = data.map<DataProps>((item) => {
-                            const isNa = isNaEpi(item.ca);
-                            const equipment = item.equipment;
-                            // const equipment = addDotsText({ text: item.equipment, maxLength: 40 });
-
-                            const name = isNa ? equipment : `${item.ca}: ${equipment}`;
-
-                            return { name, id: String(item.ca) };
-                        });
-                        results = resultData;
-                    }
-                } catch (e) {
-                    console.error(e);
-                    /* empty */
-                }
-            }
-
-            return results || [];
-        },
-        [fetchEpis, risk],
-    );
-
-    const onGetData = useCallback(
-        async (search: string) => {
-            let results: DataProps[] = [];
-
-            if (isOpen === 'gs') {
-                results = await onGetRiskRelations(search, {
-                    key: 'allGenerateSources',
-                    fuseSearch: generateSourseSerach,
-                });
-            } else if (isOpen === 'eng') {
-                results = await onGetRiskRelations(search, { key: 'allEng', fuseSearch: engsSearch });
-            } else if (isOpen === 'adm') {
-                results = await onGetRiskRelations(search, { key: 'allAdm', fuseSearch: admsSearch });
-            } else if (isOpen === 'rec') {
-                results = await onGetRiskRelations(search, { key: 'allRec', fuseSearch: recsSearch });
-            } else if (isOpen === 'epi') {
-                results = await onGetEpis(search);
-            }
-
-            return results;
-        },
-        [admsSearch, engsSearch, generateSourseSerach, isOpen, onGetEpis, onGetRiskRelations, recsSearch],
-    );
-
-    const onGetTitle = () => {
-        if (isOpen === 'gs') return 'Fontes Geradoras';
-        if (isOpen === 'epi') return 'EPIs';
-        if (isOpen === 'eng') return 'Medidas de Engenharia';
-        if (isOpen === 'adm') return 'Medidas Administrativas';
-        if (isOpen === 'rec') return 'Recomendações';
-
-        return '';
-    };
-
-    const onGetKey = () => {
-        if (isOpen === 'epi') return 'episToRiskData';
-        if (isOpen === 'eng') return 'engsToRiskData';
-        if (isOpen === 'adm') return 'admsToRiskData';
-        if (isOpen === 'rec') return 'recsToRiskData';
-
-        return 'generateSourcesToRiskData';
-    };
-
-    const placeholder = () => {
-        if (isOpen === 'epi') return 'Número CA';
-        if (isOpen === 'eng') return 'Descrição medida de engenharia';
-        if (isOpen === 'adm') return 'Descrição medida administrativa';
-        if (isOpen === 'rec') return 'Descrição recomendação';
-
-        return 'Nome fonte geradora';
-    };
-
-    const key = onGetKey();
+    console.log('risk data form');
 
     return (
         <SVStack flex={1}>
@@ -296,29 +119,35 @@ export function RiskDataForm({
                             defaultValue={'' as any}
                             control={control}
                             name="probability"
-                            render={({ field, formState: { errors } }) => (
-                                <SHorizontalMenu
-                                    fontSizeButton={17}
-                                    mb={4}
-                                    onChange={(val) => field.onChange(val.value)}
-                                    paddingHorizontal={0}
-                                    options={[
-                                        { label: '1', value: 1 },
-                                        { label: '2', value: 2 },
-                                        { label: '3', value: 3 },
-                                        { label: '4', value: 4 },
-                                        { label: '5', value: 5 },
-                                        { label: '!', value: 6 },
-                                    ]}
-                                    activeColor="primary.light"
-                                    getKeyExtractor={(item) => item.value}
-                                    getLabel={(item) => item.label}
-                                    getIsActive={(item) => item.value === field.value}
-                                />
+                            render={({ field }) => (
+                                <SVStack>
+                                    <SHorizontalMenu
+                                        fontSizeButton={17}
+                                        mb={2}
+                                        onChange={(val) => field.onChange(val.value)}
+                                        paddingHorizontal={0}
+                                        options={[
+                                            { label: '1', value: 1 },
+                                            { label: '2', value: 2 },
+                                            { label: '3', value: 3 },
+                                            { label: '4', value: 4 },
+                                            { label: '5', value: 5 },
+                                            { label: '!', value: 6 },
+                                        ]}
+                                        activeColor="primary.light"
+                                        getKeyExtractor={(item) => item.value}
+                                        getLabel={(item) => item.label}
+                                        getIsActive={(item) => item.value === field.value}
+                                    />
+                                    <RiskOcupacionalTag
+                                        mb={8}
+                                        severity={risk?.severity || 0}
+                                        probability={field.value || 0}
+                                    />
+                                </SVStack>
                             )}
                         />
                     </SHStack>
-                    <RiskOcupacionalTag keyValue="probability" mb={8} severity={risk?.severity || 0} watch={watch} />
 
                     <RiskDataSelectedItem
                         mb={10}
@@ -326,7 +155,7 @@ export function RiskDataForm({
                         keyExtractor={(item) => item.name}
                         getLabel={(item) => item.name}
                         title="Fontes Geradoras"
-                        onAdd={() => setIsOpen('gs')}
+                        onAdd={() => modalRef.current?.setOpenModal('gs')}
                         onDelete={(data) => handleDelete({ data, key: 'generateSourcesToRiskData' })}
                     />
                     <RiskDataSelectedItem
@@ -335,7 +164,7 @@ export function RiskDataForm({
                         keyExtractor={(item) => item.name}
                         getLabel={(item) => convertCaToDescription(item.name)}
                         title="EPIs"
-                        onAdd={() => setIsOpen('epi')}
+                        onAdd={() => modalRef.current?.setOpenModal('epi')}
                         getCheck={(item) => !!item.efficientlyCheck}
                         onDelete={(data) => handleDelete({ data, key: 'episToRiskData' })}
                         hideCheck={(item) => !!item.id && isNaEpi(item.id)}
@@ -353,7 +182,7 @@ export function RiskDataForm({
                         keyExtractor={(item) => item.name}
                         getLabel={(item) => item.name}
                         title="Medidas de Engenharia"
-                        onAdd={() => setIsOpen('eng')}
+                        onAdd={() => modalRef.current?.setOpenModal('eng')}
                         getCheck={(item) => !!item.efficientlyCheck}
                         onDelete={(data) => handleDelete({ data, key: 'engsToRiskData' })}
                         hideCheck={(item) => !!item.name && isNaRecMed(item.name)}
@@ -371,7 +200,7 @@ export function RiskDataForm({
                         keyExtractor={(item) => item.name}
                         getLabel={(item) => item.name}
                         title="Medidas Administrativas"
-                        onAdd={() => setIsOpen('adm')}
+                        onAdd={() => modalRef.current?.setOpenModal('adm')}
                         onDelete={(data) => handleDelete({ data, key: 'admsToRiskData' })}
                     />
 
@@ -381,7 +210,7 @@ export function RiskDataForm({
                         keyExtractor={(item) => item.name}
                         getLabel={(item) => item.name}
                         title="Recomendações"
-                        onAdd={() => setIsOpen('rec')}
+                        onAdd={() => modalRef.current?.setOpenModal('rec')}
                         onDelete={(data) => handleDelete({ data, key: 'recsToRiskData' })}
                     />
 
@@ -392,50 +221,41 @@ export function RiskDataForm({
                             control={control}
                             name="probabilityAfter"
                             render={({ field, formState: { errors } }) => (
-                                <SHorizontalMenu
-                                    fontSizeButton={17}
-                                    mb={4}
-                                    onChange={(val) => field.onChange(val.value)}
-                                    paddingHorizontal={0}
-                                    options={[
-                                        { label: '1', value: 1 },
-                                        { label: '2', value: 2 },
-                                        { label: '3', value: 3 },
-                                        { label: '4', value: 4 },
-                                        { label: '5', value: 5 },
-                                        { label: '!', value: 6 },
-                                    ]}
-                                    activeColor="primary.light"
-                                    getKeyExtractor={(item) => item.value}
-                                    getLabel={(item) => item.label}
-                                    getIsActive={(item) => item.value === field.value}
-                                />
+                                <SVStack>
+                                    <SHorizontalMenu
+                                        fontSizeButton={17}
+                                        mb={2}
+                                        onChange={(val) => field.onChange(val.value)}
+                                        paddingHorizontal={0}
+                                        options={[
+                                            { label: '1', value: 1 },
+                                            { label: '2', value: 2 },
+                                            { label: '3', value: 3 },
+                                            { label: '4', value: 4 },
+                                            { label: '5', value: 5 },
+                                            { label: '!', value: 6 },
+                                        ]}
+                                        activeColor="primary.light"
+                                        getKeyExtractor={(item) => item.value}
+                                        getLabel={(item) => item.label}
+                                        getIsActive={(item) => item.value === field.value}
+                                    />
+                                    <RiskOcupacionalTag
+                                        mb={8}
+                                        severity={risk?.severity || 0}
+                                        probability={field.value || 0}
+                                    />
+                                </SVStack>
                             )}
                         />
                     </SHStack>
-                    <RiskOcupacionalTag
-                        keyValue="probabilityAfter"
-                        mb={8}
-                        severity={risk?.severity || 0}
-                        watch={watch}
-                    />
                 </SVStack>
             </SScrollView>
             <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mx={pagePadding}>
                 <SButton size={'sm'} title="Salvar" onPress={handleSave} />
             </SVStack>
 
-            <SSearchSimpleModal
-                onGetLabel={(item) => item.name}
-                setShowModal={() => setIsOpen(false)}
-                showModal={!!isOpen}
-                placeholder={placeholder()}
-                onFetchFunction={onGetData}
-                title={onGetTitle()}
-                onSelect={(item) => handleEditSelect({ data: item, key })}
-                onConfirm={(value) => handleEditSelect({ data: { name: value }, key })}
-                onConfirmInput={(value) => handleEditSelect({ data: { name: value }, key })}
-            />
+            <RiskDataModalSearch modalRef={modalRef} onEditForm={onEditForm} form={form} risk={risk} />
         </SVStack>
     );
 }

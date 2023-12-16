@@ -6,14 +6,12 @@ import { UseFormWatch } from 'react-hook-form';
 import { IRiskDataValues } from './schemas';
 
 type PageProps = {
-    watch: UseFormWatch<IRiskDataValues>;
     severity: number;
-    keyValue: 'probability' | 'probabilityAfter';
+    probability: number;
     mb?: number;
 };
 
-export function RiskOcupacionalTag({ watch, severity, mb, keyValue }: PageProps): React.ReactElement {
-    const probability = watch(keyValue);
+export function RiskOcupacionalTag({ severity, mb, probability }: PageProps): React.ReactElement {
     const actualMatrixLevel = getMatrizRisk(Number(probability || 0), severity);
 
     return (

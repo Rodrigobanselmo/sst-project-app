@@ -4,11 +4,13 @@ import { useNetInfo } from '@react-native-community/netinfo';
 type Props = {
     children?: any;
     showChildren?: boolean;
+    skipNetInfo?: boolean;
 };
 
-export function SNoInternet({ children, showChildren }: Props): React.ReactElement {
+export function SNoInternet({ children, skipNetInfo, showChildren }: Props): React.ReactElement {
     const netInfo = useNetInfo();
 
+    if (skipNetInfo) return <>{children}</>;
     if (netInfo.isConnected && !showChildren) return <>{children}</>;
 
     return (
