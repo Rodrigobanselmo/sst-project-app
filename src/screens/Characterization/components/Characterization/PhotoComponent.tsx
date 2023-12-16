@@ -1,5 +1,5 @@
 import { SBox, SIcon, SImage } from '@components/core';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
 // import * as ImagePicker from 'expo-image-picker';
 import PlaceholderImage from '@assets/placeholder-image.png';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -46,7 +46,7 @@ export function PhotoComponent({
                     resizeMode: 'contain',
                 }}
             />
-            {handleEditImage && (
+            {Platform.OS === 'android' && handleEditImage && (
                 <TouchableOpacity style={styles.editButton} onPress={() => handleEditImage()}>
                     <SIcon as={MaterialIcons} name="edit" size={'md'} color="white" />
                 </TouchableOpacity>

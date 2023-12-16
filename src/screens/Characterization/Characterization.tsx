@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     CharacterizationFormProps,
     CharacterizationPageProps,
@@ -8,11 +8,11 @@ import {
 } from './types';
 // import * as ImagePicker from 'expo-image-picker';
 import { SLoading } from '@components/modelucules';
-import { SLoadingPage } from '@components/organisms/SLoadingPage';
-import { useGetCharacterization } from '@hooks/database/useGetCharacterization';
 import { useAuth } from '@hooks/useAuth';
 import { useYupValidationResolver } from '@hooks/useYupValidationResolver';
 import { IHierarchy } from '@interfaces/IHierarchy';
+import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
+import { useModalStore } from '@libs/storage/state/modal/modal.store';
 import { database } from '@libs/watermelon';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
 import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
@@ -23,18 +23,14 @@ import { CharacterizationRepository } from '@repositories/characterizationReposi
 import { RiskDataRepository } from '@repositories/riskDataRepository';
 import { CameraPage } from '@screens/Camera';
 import { IImageGallery } from '@screens/Camera/types';
+import { PubSubEventsEnum, pubSub } from '@utils/helpers/pubSub';
 import { useForm } from 'react-hook-form';
-import { Alert, Linking, StyleSheet, View } from 'react-native';
+import { Alert, Linking, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Camera } from 'react-native-vision-camera';
 import { CharacterizationTabView } from './components/Characterization/CharacterizationTabView';
 import { RiskDataPage } from './components/RiskData/RiskDataPage';
 import { ICharacterizationValues, characterizationSchema } from './schemas';
-import { CharacterizationForm } from './components/Characterization/CharacterizationForm';
-import { SLoadingPagePubSub } from '@components/organisms/SLoadingPage/SLoadingPagePubSub';
-import { PubSubEventsEnum, pubSub } from '@utils/helpers/pubSub';
-import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
-import { useModalStore } from '@libs/storage/state/modal/modal.store';
 
 const Stack = createNativeStackNavigator<FormCharacterizationRoutesProps>();
 
@@ -208,48 +204,10 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
         [characterizationId, user.id],
     );
 
-    const onRiskDataDelete = useCallback(
-        async (formValues: RiskDataFormProps) => {
-            if (characterizationId && formValues.id) {
-                const riskDataRepository = new RiskDataRepository();
-                await riskDataRepository.delete(formValues.id);
-            }
-
-            setForm((prev) => {
-                const riskData = [...(prev.riskData || [])];
-                const riskIndex = riskData.findIndex((rd) => rd.riskId === formValues.riskId);
-
-                if (riskIndex >= 0) {
-                    riskData.splice(riskIndex, 1);
-                }
-
-                return { ...prev, riskData };
-            });
-        },
-        [characterizationId, setForm],
-    );
-
-    const onClickRisk = useCallback(
-        async (risk: RiskModel) => {
-            const form = useCharacterizationFormStore.getState().form;
-            const riskData = form.riskData?.find((rd) => rd.riskId === risk.id);
-
-            const setSelectedRiskDataId = useCharacterizationFormStore.getState().setSelectedRiskDataId;
-            setSelectedRiskDataId(risk.id);
-            return;
-
-            let params: RiskDataFormProps = {
-                riskId: risk.id,
-            };
-
-            if (riskData) {
-                params = { ...params, ...riskData };
-            }
-
-            navigation.navigate('formRiskData', params);
-        },
-        [navigation],
-    );
+    const onClickRisk = useCallback(async (risk: RiskModel) => {
+        const setSelectedRiskDataId = useCharacterizationFormStore.getState().setSelectedRiskDataId;
+        setSelectedRiskDataId(risk.id);
+    }, []);
 
     const onClickHierarchy = useCallback(
         async (hierarchy: IHierarchy) => {
@@ -509,24 +467,13 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                         )}
                     </Stack.Screen>
                     <Stack.Screen name="cameraCharacterization" options={{ headerShown: false }}>
-                        {({ route, navigation }: FormCharacterizationScreenProps) => (
+                        {({ navigation }: FormCharacterizationScreenProps) => (
                             <CameraPage
                                 onCancel={navigation.goBack}
                                 onSave={(props) => {
                                     onCameraSave(props);
                                     navigation.goBack();
                                 }}
-                            />
-                        )}
-                    </Stack.Screen>
-                    <Stack.Screen name="formRiskData" options={{ headerShown: false }}>
-                        {({ navigation, route: riskRoute }: FormCharacterizationScreenProps) => (
-                            <RiskDataPage
-                                onSaveForm={onRiskDataSave}
-                                onGoBack={navigation.goBack}
-                                // initFormData={riskRoute.params}
-                                isEdit={!!characterizationId}
-                                onDeleteForm={onRiskDataDelete}
                             />
                         )}
                     </Stack.Screen>

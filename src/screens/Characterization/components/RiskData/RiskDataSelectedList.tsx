@@ -1,12 +1,9 @@
-import { ISBoxProps, SBox, SCenter, SFlatList, SHStack, SIcon, SText, SVStack } from '@components/core';
+import { ISBoxProps, SBox, SHStack, SIcon, SText, SVStack } from '@components/core';
 import React from 'react';
 // import * as ImagePicker from 'expo-image-picker';
-import { getMatrizRisk } from '@utils/helpers/matriz';
-import { UseFormWatch } from 'react-hook-form';
-import { IRiskDataValues } from './schemas';
 import { SButton } from '@components/modelucules';
-import { TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { TouchableOpacity } from 'react-native';
 
 type CompProps<T> = {
     data?: T[];

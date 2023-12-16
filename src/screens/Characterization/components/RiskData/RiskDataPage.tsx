@@ -1,24 +1,15 @@
-import { STabView } from '@components/organisms/STabView';
-import * as React from 'react';
-import { View, useWindowDimensions } from 'react-native';
-import { TabView, SceneMap } from 'react-native-tab-view';
-import { CharacterizationFormProps, RiskDataFormProps } from '../../types';
-import { ICharacterizationValues } from '../../schemas';
-import { Control, useForm } from 'react-hook-form';
-import { CharacterizationForm } from '../Characterization/CharacterizationForm';
+import { SLoading } from '@components/modelucules';
 import { SScreenHeader } from '@components/organisms';
-import { SBox, SCenter, SSpinner } from '@components/core';
-import { RiskTable } from '../Risk/RiskTable';
-import { RiskDataForm } from './RiskDataForm';
-import { IRiskDataValues } from './schemas';
-import { useCallback, useState } from 'react';
-import { RiskDataRepository } from '@repositories/riskDataRepository';
-import { RiskRepository } from '@repositories/riskRepository';
-import { SSearchSimpleModal } from '@components/organisms/SSearchModal/components/SSearchSimpleModal';
-import { SLoadingPage } from '@components/organisms/SLoadingPage';
 import { useGetRiskDatabase } from '@hooks/database/useGetRiskDatabase';
 import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
-import { SLoading } from '@components/modelucules';
+import { RiskDataRepository } from '@repositories/riskDataRepository';
+import * as React from 'react';
+import { useCallback, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { RiskDataFormProps } from '../../types';
+import { RiskDataForm } from './RiskDataForm';
+import { IRiskDataValues } from './schemas';
+import { SHeader } from '@components/organisms/SScreenHeader/SHeader';
 
 type PageProps = {
     onSaveForm: (form: RiskDataFormProps) => void;
@@ -108,17 +99,16 @@ export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...pro
         return <SLoading />;
     }
 
-    console.log('risk data page');
-
     return (
         <>
-            <SScreenHeader
+            <SHeader
                 isAlert={true}
                 title={title || risk?.name || (!props.isEdit ? 'Adicionar' : 'Editar')}
                 onDelete={onDeleteForm ? () => handleDelete() : undefined}
                 backButton
                 navidateFn={onGoBack}
                 mb={-2}
+                pt={0}
             />
             <RiskDataForm
                 form={form}

@@ -1,26 +1,20 @@
 import { SHStack, SScrollView, SVStack } from '@components/core';
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { RiskDataFormProps, RiskDataFormRelationsProps, RiskDataFormSelectedProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
 import { SButton } from '@components/index';
 import { SHorizontalMenu } from '@components/modelucules/SHorizontalMenu';
 import { SLabel } from '@components/modelucules/SLabel';
-import { SSearchSimpleModal } from '@components/organisms/SSearchModal/components/SSearchSimpleModal';
 import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
 import { RecTypeEnum } from '@constants/enums/risk.enum';
-import { IReturnUseFuseSearch, useFuseFuncSearch } from '@hooks/useFuseFuncSearch';
-import { GenerateSourceModel } from '@libs/watermelon/model/GenerateSourceModel';
-import { RecMedModel } from '@libs/watermelon/model/RecMedModel';
 import { RiskModel } from '@libs/watermelon/model/RiskModel';
-import { useFetchQueryEpis } from '@services/api/epis/useQueryEpis';
 import { convertCaToDescription, isNaEpi, isNaRecMed } from '@utils/helpers/isNa';
-import { Control, Controller, UseFormWatch } from 'react-hook-form';
+import { Control, Controller } from 'react-hook-form';
 import { Alert } from 'react-native';
-import sortArray from 'sort-array';
+import { RiskDataModalSearch, RiskDataSearchModal } from './RiskDataModalSearch';
 import { RiskDataSelectedItem } from './RiskDataSelectedList';
 import { RiskOcupacionalTag } from './RiskOcupacionalTag';
 import { IRiskDataValues } from './schemas';
-import { RiskDataModalSearch, RiskDataSearchModal } from './RiskDataModalSearch';
 
 type PageProps = {
     form: RiskDataFormProps;
@@ -106,8 +100,6 @@ export function RiskDataForm({ onEditForm, onSaveForm, form, control, risk }: Pa
     const handleSave = () => {
         onSaveForm();
     };
-
-    console.log('risk data form');
 
     return (
         <SVStack flex={1}>

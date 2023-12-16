@@ -17,7 +17,7 @@ interface PromiseType {
 }
 
 const api = axios.create({
-    baseURL: 'http://172.20.10.2:3333',
+    baseURL: 'http://192.168.15.2:3333',
     // baseURL: API_URL,
 }) as APIInstanceProps;
 

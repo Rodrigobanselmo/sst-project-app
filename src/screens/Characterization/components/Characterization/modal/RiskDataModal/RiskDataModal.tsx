@@ -63,8 +63,6 @@ export const RiskDataModal = ({}: MyComponentProps) => {
 
     const open = !!riskId;
 
-    console.log('modal page');
-
     return (
         <SFullPageModal open={open} onClose={onClose}>
             <RiskDataPage
