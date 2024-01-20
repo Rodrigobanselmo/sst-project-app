@@ -56,12 +56,13 @@ export interface ICharacterizationCreate {
         id?: string;
         apiId?: string;
         photoUrl: string;
+        isUploaded?: boolean;
     }[];
     riskData?: IRiskDataCreate[];
     hierarchiesIds?: string[];
     employeeIds?: string[];
-    audios?: { uri: string }[];
-    videos?: { uri: string }[];
+    audios?: { uri: string; isUploaded?: boolean }[];
+    videos?: { uri: string; isUploaded?: boolean }[];
 }
 
 export class CharacterizationRepository {
@@ -133,6 +134,7 @@ export class CharacterizationRepository {
             }
 
             const newCharacterization = await characterizationTable.create((characterization) => {
+                characterization._raw.id = uuidGenerator.v4() as string;
                 characterization.apiId = data.apiId;
                 characterization.name = data.name;
                 characterization.userId = String(data.userId);

@@ -1,4 +1,4 @@
-import { SHStack, SScrollView, SVStack } from '@components/core';
+import { SHStack, SScrollView, SText, SVStack } from '@components/core';
 import React from 'react';
 import { RiskDataFormProps, RiskDataFormRelationsProps, RiskDataFormSelectedProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
@@ -140,7 +140,6 @@ export function RiskDataForm({ onEditForm, onSaveForm, form, control, risk }: Pa
                             )}
                         />
                     </SHStack>
-
                     <RiskDataSelectedItem
                         mb={10}
                         data={form.generateSourcesToRiskData}

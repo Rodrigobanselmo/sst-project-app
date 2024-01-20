@@ -1,12 +1,21 @@
 import { DBTablesEnum } from '@constants/enums/db-tables';
 import { StatusEnum } from '@constants/enums/status.enum';
 import { database } from '@libs/watermelon';
+import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
+import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
 import { CompanyModel } from '@libs/watermelon/model/CompanyModel';
+import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
+import { GenerateSourceModel } from '@libs/watermelon/model/GenerateSourceModel';
+import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
+import { RecMedModel } from '@libs/watermelon/model/RecMedModel';
+import { RiskDataModel } from '@libs/watermelon/model/RiskDataModel';
 import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
 import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
+import { EpisRiskDataModel } from '@libs/watermelon/model/_MMModel/EpisRiskDataModel';
 import { Q } from '@nozbe/watermelondb';
 import { asyncBatch } from '@utils/helpers/asyncBatch';
 import { asyncEach } from '@utils/helpers/asyncEach';
+import { RiskDataRepository } from './riskDataRepository';
 
 export interface IWorkspaceCreate {
     id?: string;
@@ -256,5 +265,45 @@ export class CompanyRepository {
         } catch (error) {
             console.error(error);
         }
+    }
+
+    async getAll(workspaceId: string) {
+        const riskDataRepository = new RiskDataRepository();
+        const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
+
+        const characterizationsModel = await characterizationCollection.query(Q.where('workspaceId', workspaceId));
+
+        const characterizations = await Promise.all(
+            characterizationsModel.map(async (characterization) => {
+                const [photosModel, riskDataModel, hierarchiesModel, employeesModel]: [
+                    CharacterizationPhotoModel[],
+                    RiskDataModel[],
+                    HierarchyModel[],
+                    EmployeeModel[],
+                ] = await Promise.all([
+                    (characterization?.photos as any)?.fetch(),
+                    (characterization?.riskData as any)?.fetch(),
+                    (characterization?.hierarchies as any)?.fetch(),
+                    (characterization?.employees as any)?.fetch(),
+                ]);
+
+                const riskData = await Promise.all(
+                    riskDataModel.map(async (riskDataModel) => {
+                        const m2mData = await riskDataRepository.getRiskDataInfo(riskDataModel);
+                        return { ...riskDataModel, ...m2mData };
+                    }),
+                );
+
+                return {
+                    characterization,
+                    riskData,
+                    photos: photosModel,
+                    hierarchies: hierarchiesModel,
+                    employees: employeesModel,
+                };
+            }),
+        );
+
+        return { characterizations };
     }
 }

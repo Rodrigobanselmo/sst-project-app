@@ -31,6 +31,7 @@ import { Camera } from 'react-native-vision-camera';
 import { CharacterizationTabView } from './components/Characterization/CharacterizationTabView';
 import { RiskDataPage } from './components/RiskData/RiskDataPage';
 import { ICharacterizationValues, characterizationSchema } from './schemas';
+import uuidGenerator from 'react-native-uuid';
 
 const Stack = createNativeStackNavigator<FormCharacterizationRoutesProps>();
 
@@ -50,13 +51,15 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
     const { user } = useAuth();
     const setForm = useCharacterizationFormStore((state) => state.setForm);
     const setWorkspaceId = useCharacterizationFormStore((state) => state.setWorkspaceId);
+    const setSelectedRiskDataId = useCharacterizationFormStore((state) => state.setSelectedRiskDataId);
 
     const characterizationId = useCharacterizationFormStore((state) => state.getCharacterizationId());
     const principalProfileId = useCharacterizationFormStore((state) => state.getPrincipalProfileId());
 
     useEffect(() => {
         setWorkspaceId(route.params.workspaceId);
-    }, [route.params.workspaceId, setWorkspaceId]);
+        setSelectedRiskDataId('');
+    }, [route.params.workspaceId, setSelectedRiskDataId, setWorkspaceId]);
 
     const onSaveForm = useCallback(
         async (options?: { skipGoBack?: boolean }) => {
@@ -192,6 +195,9 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                     const riskDataRepository = new RiskDataRepository();
                     await riskDataRepository.update(formValues.id, formValues);
                 } else if (characterizationId) {
+                    const uuid = uuidGenerator.v4();
+                    formValues.id = uuid as string;
+
                     const riskDataRepository = new RiskDataRepository();
                     await riskDataRepository.createRiskDataWithRecMedGs([formValues], characterizationId, user.id);
                 }
@@ -398,6 +404,41 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                 if (characterization) {
                     const action = async (v: string) => {
                         const characterizationRepo = new CharacterizationRepository();
+                        const riskDataRepository = new RiskDataRepository();
+
+                        const riskData = await Promise.all(
+                            form.riskData?.map(async ({ id, ...rd }) => {
+                                if (id) {
+                                    let data: RiskDataFormProps = { ...rd };
+                                    const { riskData } = await riskDataRepository.findOne(id);
+                                    const rest = await riskDataRepository.getRiskDataInfo(riskData);
+
+                                    data.probability = riskData.probability;
+                                    data.probabilityAfter = riskData.probabilityAfter;
+
+                                    const admsToRiskData = rest.admsToRiskData.map(({ m2mId, ...data }) => data as any);
+                                    const engsToRiskData = rest.engsToRiskData.map(({ m2mId, ...data }) => data as any);
+                                    const episToRiskData = rest.episToRiskData.map(({ m2mId, ...data }) => data as any);
+                                    const recsToRiskData = rest.recsToRiskData.map(({ m2mId, ...data }) => data as any);
+                                    const generateSourcesToRiskData = rest.generateSourcesToRiskData.map(
+                                        ({ m2mId, ...rd }) => rd,
+                                    );
+                                    data = {
+                                        ...data,
+                                        generateSourcesToRiskData,
+                                        admsToRiskData,
+                                        engsToRiskData,
+                                        episToRiskData,
+                                        recsToRiskData,
+                                    };
+
+                                    return data;
+                                }
+
+                                return rd;
+                            }) || [],
+                        );
+
                         const profile = await characterizationRepo.create({
                             name: characterization.name + `(${v})`,
                             type: characterization.type,
@@ -406,7 +447,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                             profileName: v,
                             workspaceId: route.params.workspaceId,
                             userId: user.id,
-                            riskData: form.riskData,
+                            riskData: riskData.length ? riskData : undefined,
                             // photos: form.photos?.map((photo) => ({ photoUrl: photo.uri, id: photo.id })),
                             // hierarchiesIds: form.hierarchies?.map((h) => h.id),
                         });
@@ -428,7 +469,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                     });
                 }
             } catch (e) {
-                console.error(e);
+                console.error('ADD PROFILEx', e);
             }
         },
         [getCharacterization, onSaveForm, route.params.workspaceId, user.id],

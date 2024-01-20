@@ -43,9 +43,69 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
         const action = async () => {
             if (workspaceDB?.id) {
                 const companyRepository = new CompanyRepository();
-                await companyRepository.updateWorkspaceDB(workspaceDB.id, {
-                    lastSendApiCharacterization_at: new Date(),
-                });
+
+                const data = await companyRepository.getAll(workspaceDB.id);
+
+                const characterizations = data.characterizations.map(
+                    ({ photos, employees, hierarchies, characterization, riskData }) => {
+                        return {
+                            id: characterization.id,
+                            apiId: characterization.apiId,
+                            name: characterization.name,
+                            type: characterization.type,
+                            profileParentId: characterization.profileParentId,
+                            profileName: characterization.profileName,
+                            description: characterization.description,
+                            status: characterization.status,
+                            noiseValue: characterization.noiseValue,
+                            temperature: characterization.temperature,
+                            luminosity: characterization.luminosity,
+                            moisturePercentage: characterization.moisturePercentage,
+                            audios: characterization.audios,
+                            videos: characterization.videos,
+                            workspaceId: characterization.workspaceId,
+                            companyId: characterization.companyId,
+                            photos: photos.map((photo) => {
+                                return {
+                                    apiId: photo.apiId,
+                                    name: photo.name,
+                                    photoUrl: photo.photoUrl,
+                                    companyCharacterizationId: photo.companyCharacterizationId,
+                                };
+                            }),
+                            employees: employees.map((employee) => {
+                                return {
+                                    id: employee.id,
+                                };
+                            }),
+                            hierarchies: hierarchies.map((hierarchy) => {
+                                return {
+                                    id: hierarchy.id,
+                                };
+                            }),
+                            riskData: riskData?.map((riskData) => {
+                                return {
+                                    apiId: riskData.apiId,
+                                    riskId: riskData.riskId,
+                                    probability: riskData.probability,
+                                    probabilityAfter: riskData.probabilityAfter,
+                                    characterizationId: riskData.characterizationId,
+                                    recsToRiskData: riskData.recsToRiskData,
+                                    admsToRiskData: riskData.admsToRiskData,
+                                    engsToRiskData: riskData.engsToRiskData,
+                                    generateSourcesToRiskData: riskData.generateSourcesToRiskData,
+                                    episToRiskData: riskData.episToRiskData,
+                                };
+                            }),
+                        };
+                    },
+                );
+
+                console.log(JSON.stringify(characterizations));
+
+                // await companyRepository.updateWorkspaceDB(workspaceDB.id, {
+                //     lastSendApiCharacterization_at: new Date(),
+                // });
             }
         };
 

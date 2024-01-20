@@ -7,37 +7,22 @@ import { RiskDataRepository } from '@repositories/riskDataRepository';
 import { RiskDataPage } from '@screens/Characterization/components/RiskData/RiskDataPage';
 import { RiskDataFormProps } from '@screens/Characterization/types';
 import { useCallback } from 'react';
+import uuidGenerator from 'react-native-uuid';
 
-type MyComponentProps = {};
+type MyComponentProps = {
+    onRiskDataSave: (formValues: RiskDataFormProps) => void;
+};
 
-export const RiskDataModal = ({}: MyComponentProps) => {
+export const RiskDataModal = ({ onRiskDataSave }: MyComponentProps) => {
     const characterizationId = useCharacterizationFormStore((state) => state.getCharacterizationId());
     const setForm = useCharacterizationFormStore((state) => state.setForm);
     const riskId = useCharacterizationFormStore((state) => state.selectedRiskId);
     const setSelectedRiskDataId = useCharacterizationFormStore((state) => state.setSelectedRiskDataId);
     const { user } = useAuth();
 
-    const onRiskDataSave = useCallback(
-        async (formValues: RiskDataFormProps) => {
-            try {
-                if (characterizationId && formValues.id) {
-                    const riskDataRepository = new RiskDataRepository();
-                    await riskDataRepository.update(formValues.id, formValues);
-                } else if (characterizationId) {
-                    const riskDataRepository = new RiskDataRepository();
-                    await riskDataRepository.createRiskDataWithRecMedGs([formValues], characterizationId, user.id);
-                }
-
-                useCharacterizationFormStore.getState().addFormRiskData(formValues);
-            } catch (error) {
-                console.error(error);
-            }
-        },
-        [characterizationId, user.id],
-    );
-
     const onRiskDataDelete = useCallback(
         async (formValues: RiskDataFormProps) => {
+            console.log(formValues);
             if (characterizationId && formValues.id) {
                 const riskDataRepository = new RiskDataRepository();
                 await riskDataRepository.delete(formValues.id);

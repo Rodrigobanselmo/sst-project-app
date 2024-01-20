@@ -85,6 +85,7 @@ export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...pro
                 if (data.probabilityAfter) setValue('probabilityAfter', data.probabilityAfter);
             }
         } catch (e) {
+            console.info(e);
             // empty
         }
 
@@ -108,7 +109,7 @@ export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...pro
                 backButton
                 navidateFn={onGoBack}
                 mb={-2}
-                pt={0}
+                pt={30}
             />
             <RiskDataForm
                 form={form}

@@ -40,7 +40,7 @@ export function RiskTab({ onSave, onAddRisk, onClickRisk }: PageProps) {
                     );
                 }}
             />
-            <RiskDataModal />
+            <RiskDataModal onRiskDataSave={onAddRisk} />
         </>
     );
 }

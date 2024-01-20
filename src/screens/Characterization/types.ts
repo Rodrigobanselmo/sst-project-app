@@ -23,8 +23,8 @@ export interface CharacterizationFormProps {
     riskData?: RiskDataFormProps[];
     hierarchies?: { id: string }[];
     employees?: { id: string }[];
-    audios?: { uri: string }[];
-    videos?: { uri: string }[];
+    audios?: { uri: string; isUploaded?: boolean }[];
+    videos?: { uri: string; isUploaded?: boolean }[];
     // name?: string;
     // description?: string;
     // noiseValue?: string;

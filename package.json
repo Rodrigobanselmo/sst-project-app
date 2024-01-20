@@ -6,6 +6,8 @@
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "ios:devices": "xcrun xctrace list devices",
+    "ios:android": "adb devices",
     "pod": "cd ios && pod install && cd ..",
     "gradle:android": "cd android && ./gradlew --stop && ./gradlew clean && cd ..",
     "bundle:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'",

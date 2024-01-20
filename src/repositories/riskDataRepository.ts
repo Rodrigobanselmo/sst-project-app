@@ -71,6 +71,7 @@ export class RiskDataRepository {
             await Promise.all(
                 riskData.map(async (_riskData) => {
                     const newRiskData = await riskDataTable.create((newRiskData) => {
+                        if (_riskData.id) newRiskData._raw.id = _riskData.id;
                         newRiskData.characterizationId = characterizationId;
                         newRiskData.riskId = _riskData.riskId;
                         newRiskData.probability = _riskData.probability;

@@ -42,8 +42,8 @@ export function SignIn() {
     } = useForm<FormDataProps>({
         resolver: yupResolver(signInSchema),
         defaultValues: {
-            email: 'rodrigo@grupoevicon.com.br',
-            password: 'qweqweqwe',
+            email: 'alex@grupoevicon.com.br',
+            password: 'aaaa0123',
         },
     });
 

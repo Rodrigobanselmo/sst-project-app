@@ -9,7 +9,7 @@ type PageProps = {
 
 export function HeaderTab({ onDelete, navidateFn }: PageProps) {
     const isEdit = useCharacterizationFormStore((state) => !!state.form?.id);
-    const profileName = useCharacterizationFormStore((state) => !!state.form?.profileName);
+    const profileName = useCharacterizationFormStore((state) => state.form?.profileName);
 
     return (
         <SScreenHeader

@@ -71,7 +71,7 @@ export function SHeader({
         ]);
     };
 
-    const pdTopPx = pt !== undefined ? pt : paddingTop + 'px';
+    const pdTopPx = (pt !== undefined ? pt : paddingTop) + 'px';
     const pdTop = pt !== undefined ? pt : paddingTop;
 
     return (
@@ -103,8 +103,15 @@ export function SHeader({
             {subtitle && <SText fontSize={13}>{subtitle}</SText>}
             {!!subtitleComponent && subtitleComponent}
             {onDelete && (
-                <SBox position={'absolute'} right={4} top={pdTopPx}>
-                    <TouchableOpacity onPress={handleDelete}>
+                <SBox position={'absolute'} right={0} top={0}>
+                    <TouchableOpacity
+                        onPress={handleDelete}
+                        style={{
+                            paddingHorizontal: 16,
+                            paddingTop: pdTop,
+                            paddingBottom: 30,
+                        }}
+                    >
                         <SIcon as={Feather} name="trash" color="red.500" size={4} />
                     </TouchableOpacity>
                 </SBox>
