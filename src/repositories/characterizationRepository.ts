@@ -39,6 +39,17 @@ interface IGenerateSourceCreate {
     riskId: string;
 }
 
+export interface IFileCharacterization {
+    uri: string;
+    apiId?: string;
+}
+
+export interface ICharacterizationPhoto {
+    id?: string;
+    apiId?: string;
+    photoUrl: string;
+    name?: string;
+}
 export interface ICharacterizationCreate {
     apiId?: string;
     name: string;
@@ -52,17 +63,12 @@ export interface ICharacterizationCreate {
     workspaceId: string;
     moisturePercentage?: string;
     userId: number;
-    photos?: {
-        id?: string;
-        apiId?: string;
-        photoUrl: string;
-        isUploaded?: boolean;
-    }[];
+    photos?: ICharacterizationPhoto[];
     riskData?: IRiskDataCreate[];
     hierarchiesIds?: string[];
     employeeIds?: string[];
-    audios?: { uri: string; isUploaded?: boolean }[];
-    videos?: { uri: string; isUploaded?: boolean }[];
+    audios?: IFileCharacterization[];
+    videos?: IFileCharacterization[];
 }
 
 export class CharacterizationRepository {
@@ -357,6 +363,72 @@ export class CharacterizationRepository {
             );
 
             await mmCharacterization?.destroyPermanently();
+        });
+    }
+
+    async updatePhoto(id: string, data: Partial<ICharacterizationPhoto>) {
+        await database.write(async () => {
+            const characterizationPhotoTable = database.get<CharacterizationPhotoModel>(
+                DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO,
+            );
+
+            try {
+                const characterizationPhoto = await characterizationPhotoTable.find(id);
+                const newRecMed = await characterizationPhoto.update((photo) => {
+                    if (data.apiId) photo.apiId = data.apiId;
+                    if (data.photoUrl) photo.photoUrl = data.photoUrl;
+                    if (data.name) photo.name = data.name;
+                    photo.updated_at = new Date();
+                });
+
+                return newRecMed;
+            } catch (error) {
+                console.error(error);
+            }
+        });
+    }
+
+    async updateFiles(id: string, data: Partial<Pick<ICharacterizationCreate, 'audios' | 'videos'>>) {
+        return await database.write(async () => {
+            const characterizationTable = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
+
+            try {
+                const characterization = await characterizationTable.find(id);
+
+                const audios = (
+                    characterization.audios ? JSON.parse(characterization.audios) : []
+                ) as IFileCharacterization[];
+                const videos = (
+                    characterization.videos ? JSON.parse(characterization.videos) : []
+                ) as IFileCharacterization[];
+
+                data.audios?.forEach((audio) => {
+                    audios.find((audioItem) => {
+                        if (audioItem.uri === audio.uri) {
+                            audioItem.apiId = audio.apiId;
+                        }
+                    });
+                });
+
+                data.videos?.forEach((video) => {
+                    videos.find((videoItem) => {
+                        if (videoItem.uri === video.uri) {
+                            videoItem.apiId = video.apiId;
+                        }
+                    });
+                });
+
+                const newCharacterization = await characterization.update(() => {
+                    if (data.audios) characterization.audios = JSON.stringify(data.audios);
+                    if (data.videos) characterization.videos = JSON.stringify(data.videos);
+
+                    characterization.updated_at = new Date();
+                });
+
+                return newCharacterization;
+            } catch (error) {
+                console.error(error);
+            }
         });
     }
 }

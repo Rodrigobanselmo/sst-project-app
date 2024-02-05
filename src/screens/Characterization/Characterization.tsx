@@ -466,6 +466,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                         placeholder: 'Nome do perfil',
                         confirmButtonLabel: 'Criar perfil',
                         onConfirm: async (v) => v && action(v),
+                        type: 'prompt',
                     });
                 }
             } catch (e) {

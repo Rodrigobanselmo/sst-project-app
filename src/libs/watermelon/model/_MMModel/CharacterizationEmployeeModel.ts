@@ -14,6 +14,7 @@ class CharacterizationEmployeeModel extends Model {
 
     @field('employeeId') employeeId!: string;
     @field('characterizationId') characterizationId!: string;
+    @field('apiId') apiId?: string;
 
     @date('created_at') created_at?: Date;
     @date('updated_at') updated_at?: Date;

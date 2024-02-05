@@ -17,6 +17,7 @@ class HierarchyModel extends Model {
         [DBTablesEnum.COMPANY]: { type: 'belongs_to', key: 'companyId' },
         [DBTablesEnum.MM_WOKSPACE_HIERARCHY]: { type: 'has_many', foreignKey: 'hierarchyId' },
         [DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY]: { type: 'has_many', foreignKey: 'hierarchyId' },
+        [DBTablesEnum.HIERARCHY]: { type: 'has_many', foreignKey: 'hierarchyId' },
     } as const;
 
     @field('apiId') apiId?: string;

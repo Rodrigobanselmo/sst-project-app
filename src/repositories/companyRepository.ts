@@ -16,6 +16,8 @@ import { Q } from '@nozbe/watermelondb';
 import { asyncBatch } from '@utils/helpers/asyncBatch';
 import { asyncEach } from '@utils/helpers/asyncEach';
 import { RiskDataRepository } from './riskDataRepository';
+import { CharacterizationFormProps } from '@screens/Characterization/types';
+import { CharacterizationEmployeeModel } from '@libs/watermelon/model/_MMModel/CharacterizationEmployeeModel';
 
 export interface IWorkspaceCreate {
     id?: string;
@@ -294,12 +296,21 @@ export class CompanyRepository {
                     }),
                 );
 
+                const audios = (
+                    characterization.audios ? JSON.parse(characterization.audios) : []
+                ) as CharacterizationFormProps['audios'];
+                const videos = (
+                    characterization.videos ? JSON.parse(characterization.videos) : []
+                ) as CharacterizationFormProps['videos'];
+
                 return {
                     characterization,
                     riskData,
                     photos: photosModel,
                     hierarchies: hierarchiesModel,
                     employees: employeesModel,
+                    audios,
+                    videos,
                 };
             }),
         );

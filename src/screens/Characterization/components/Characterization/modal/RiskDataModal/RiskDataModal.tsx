@@ -22,7 +22,6 @@ export const RiskDataModal = ({ onRiskDataSave }: MyComponentProps) => {
 
     const onRiskDataDelete = useCallback(
         async (formValues: RiskDataFormProps) => {
-            console.log(formValues);
             if (characterizationId && formValues.id) {
                 const riskDataRepository = new RiskDataRepository();
                 await riskDataRepository.delete(formValues.id);

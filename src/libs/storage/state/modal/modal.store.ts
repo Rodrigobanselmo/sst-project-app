@@ -1,17 +1,32 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
-type IModalProps = {
+type IModalPropsBase = {
     title: string;
-    subtitle?: string;
     open: boolean;
+};
+
+type IModalPromptProps = IModalPropsBase & {
+    subtitle?: string;
     searchLabel?: string;
     isLoading?: boolean;
     onConfirm?: (value: string) => void;
     placeholder?: string;
     confirmButtonLabel?: string;
     cancelButtonLabel?: string;
+    type: 'prompt';
 };
+
+type IModalProgessProps = IModalPropsBase & {
+    bottomText?: string;
+    type: 'progress';
+    onCancel?: (onClose: () => void) => void;
+    actual?: number;
+    total?: number;
+    status?: 'pending' | 'success' | 'canceled' | 'error';
+};
+
+type IModalProps = IModalPromptProps | IModalProgessProps;
 
 type ISetModalProps = IModalProps | ((data: IModalProps) => IModalProps);
 type ISetPatialModalProps = Partial<IModalProps> | ((data: IModalProps) => IModalProps);
@@ -28,7 +43,8 @@ interface modalState {
 
 export const useModalStore = create<modalState>()(
     immer((set, get) => ({
-        modal: { open: false, title: '' },
+        modal: { open: false, title: '', type: 'prompt' },
+        progress: { actual: 0, total: 0, status: 'pending' },
         getIsOpen: () => get()?.modal?.open,
         onToggle: (value) =>
             set((state) => {
@@ -45,7 +61,7 @@ export const useModalStore = create<modalState>()(
         setModal: (data) => {
             if (typeof data === 'object')
                 set((state) => {
-                    state.modal = { ...state.modal, ...data };
+                    state.modal = data;
                 });
             if (typeof data === 'function')
                 set((state) => {

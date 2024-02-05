@@ -1,3 +1,4 @@
+import { create } from 'zustand';
 import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
 import { api } from '@services/api';
 import { IUser } from '@interfaces/IUser';
@@ -19,12 +20,22 @@ interface IQuerySync {
     companyStartIds?: string[];
 }
 
+interface IResponseChanges {
+    created: any[];
+    updated: any[];
+    deleted: any[];
+}
 interface IResponse {
     latestVersion: number;
     changes: {
-        [DBTablesEnum.RISK]: any;
-        [DBTablesEnum.REC_MED]: any;
-        [DBTablesEnum.GENERATE_SOURCE]: any;
+        [DBTablesEnum.RISK]: IResponseChanges;
+        [DBTablesEnum.REC_MED]: IResponseChanges;
+        [DBTablesEnum.GENERATE_SOURCE]: IResponseChanges;
+        [DBTablesEnum.EMPLOYEE]: IResponseChanges;
+        [DBTablesEnum.HIERARCHY]: IResponseChanges;
+        [DBTablesEnum.WORKSPACE]: IResponseChanges;
+        [DBTablesEnum.COMPANY]: IResponseChanges;
+        [DBTablesEnum.MM_WOKSPACE_HIERARCHY]: IResponseChanges;
     };
 }
 

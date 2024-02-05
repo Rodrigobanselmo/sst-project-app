@@ -11,6 +11,7 @@ export function SNoInternet({ children, skipNetInfo, showChildren }: Props): Rea
     const netInfo = useNetInfo();
 
     if (skipNetInfo) return <>{children}</>;
+    if (netInfo.isConnected == null) return <>{children}</>;
     if (netInfo.isConnected && !showChildren) return <>{children}</>;
 
     return (

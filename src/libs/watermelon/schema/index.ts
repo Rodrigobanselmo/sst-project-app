@@ -20,7 +20,7 @@ import { characterizationEmployeeSchema } from './_MMSchema/characterizationEmpl
 import { employeeSchema } from './employeeSchema';
 
 const schemas = appSchema({
-    version: 19,
+    version: 41,
     tables: [
         companySchema,
         workspaceSchema,

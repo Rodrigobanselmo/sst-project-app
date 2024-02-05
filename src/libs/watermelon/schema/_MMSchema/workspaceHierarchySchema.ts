@@ -4,6 +4,7 @@ import { tableSchema } from '@nozbe/watermelondb';
 const workspaceHierarchySchema = tableSchema({
     name: DBTablesEnum.MM_WOKSPACE_HIERARCHY,
     columns: [
+        { name: 'apiId', type: 'string', isIndexed: true },
         { name: 'workspaceId', type: 'string' },
         { name: 'hierarchyId', type: 'string' },
         { name: 'created_at', type: 'number' },

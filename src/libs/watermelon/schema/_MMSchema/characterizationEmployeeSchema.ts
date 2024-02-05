@@ -6,6 +6,7 @@ const characterizationEmployeeSchema = tableSchema({
     columns: [
         { name: 'characterizationId', type: 'string' },
         { name: 'employeeId', type: 'string' },
+        { name: 'apiId', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },

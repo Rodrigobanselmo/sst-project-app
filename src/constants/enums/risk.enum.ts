@@ -17,3 +17,8 @@ export enum RecTypeEnum {
     ENG = 'ENG',
     EPI = 'EPI',
 }
+
+export enum MedTypeEnum {
+    ADM = 'ADM',
+    ENG = 'ENG',
+}

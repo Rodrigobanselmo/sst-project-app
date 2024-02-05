@@ -3,6 +3,7 @@ import { RecTypeEnum } from '@constants/enums/risk.enum';
 import { RiskDataModel } from '@libs/watermelon/model/RiskDataModel';
 import { RiskModel } from '@libs/watermelon/model/RiskModel';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { IFileCharacterization } from '@repositories/characterizationRepository';
 import { AppRoutesProps } from '@routes/app/AppRoutesProps';
 import { Orientation } from 'expo-screen-orientation';
 
@@ -23,8 +24,8 @@ export interface CharacterizationFormProps {
     riskData?: RiskDataFormProps[];
     hierarchies?: { id: string }[];
     employees?: { id: string }[];
-    audios?: { uri: string; isUploaded?: boolean }[];
-    videos?: { uri: string; isUploaded?: boolean }[];
+    audios?: IFileCharacterization[];
+    videos?: IFileCharacterization[];
     // name?: string;
     // description?: string;
     // noiseValue?: string;

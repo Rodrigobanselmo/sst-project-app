@@ -4,6 +4,7 @@ import { tableSchema } from '@nozbe/watermelondb';
 const employeeSchema = tableSchema({
     name: DBTablesEnum.EMPLOYEE,
     columns: [
+        { name: 'apiId', type: 'number', isIndexed: true },
         { name: 'name', type: 'string' },
         { name: 'cpf', type: 'string' }, // Assuming HierarchyEnum is string
         { name: 'socialName', type: 'string', isOptional: true },
@@ -13,6 +14,7 @@ const employeeSchema = tableSchema({
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
+        { name: 'hierarchyId', type: 'string', isOptional: true },
     ],
 });
 

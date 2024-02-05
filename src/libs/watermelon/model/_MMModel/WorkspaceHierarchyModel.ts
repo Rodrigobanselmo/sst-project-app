@@ -11,6 +11,7 @@ class WorkspaceHierarchyModel extends Model {
         [DBTablesEnum.HIERARCHY]: { type: 'belongs_to', key: 'hierarchyId' },
     } as const;
 
+    @field('apiId') apiId?: string;
     @field('hierarchyId') hierarchyId!: string;
     @field('workspaceId') workspaceId!: string;
 

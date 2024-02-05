@@ -427,6 +427,8 @@ export class RiskDataRepository {
                 const recMed = await ((recsMM.RecMed as any).fetch() as Promise<RecMedModel>);
                 return {
                     name: recMed.recName,
+                    apiId: recMed.apiId,
+                    riskId: recMed.riskId,
                     id: recMed.id,
                     m2mId: recsMM.id,
                 };
@@ -439,6 +441,8 @@ export class RiskDataRepository {
                 return {
                     name: adm.medName,
                     id: adm.id,
+                    apiId: adm.apiId,
+                    riskId: adm.riskId,
                     m2mId: admsMM.id,
                 };
             }),
@@ -449,6 +453,8 @@ export class RiskDataRepository {
                 const eng = await ((engsMM.RecMed as any).fetch() as Promise<RecMedModel>);
                 return {
                     name: eng.medName,
+                    apiId: eng.apiId,
+                    riskId: eng.riskId,
                     id: eng.id,
                     efficientlyCheck: engsMM.efficientlyCheck,
                     m2mId: engsMM.id,
@@ -461,6 +467,8 @@ export class RiskDataRepository {
                 const gs = await ((gsMM.GenerateSource as any).fetch() as Promise<GenerateSourceModel>);
                 return {
                     name: gs.name,
+                    riskId: gs.riskId,
+                    apiId: gs.apiId,
                     id: gs.id,
                     m2mId: gsMM.id,
                 };

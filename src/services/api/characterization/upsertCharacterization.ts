@@ -3,6 +3,10 @@ import { CharacterizationTypeEnum } from '@constants/enums/characterization-type
 import { StatusEnum } from '@constants/enums/status.enum';
 import { api } from '@services/api';
 import { refreshToken } from '../user/refreshToken';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@services/queryClient';
+import { QueryEnum } from '@constants/enums/query.enums';
+import { ICharacterization } from '@interfaces/ICharacterization';
 
 export interface IAddCharacterizationPhoto {
     file?: File;
@@ -20,12 +24,12 @@ export interface IUpsertCharacterization {
     name?: string;
     description?: string;
     order?: number;
-    companyId?: string;
+    companyId: string;
     noiseValue?: string;
     temperature?: string;
     luminosity?: string;
     moisturePercentage?: string;
-    workspaceId?: string;
+    workspaceId: string;
     considerations?: string[];
     activities?: string[];
     profileParentId?: string;
@@ -62,7 +66,7 @@ export async function updateCharacterization(data: IUpsertCharacterization, comp
 
     const path = ApiRoutesEnum.CHARACTERIZATIONS.replace(':companyId', companyId).replace(':workspaceId', workspaceId);
 
-    const response = await api.post(path, formData, {
+    const response = await api.post<ICharacterization>(path, formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${token}`,
@@ -71,86 +75,17 @@ export async function updateCharacterization(data: IUpsertCharacterization, comp
     return response.data;
 }
 
-// export function useMutUpsertCharacterization() {
-//     const { enqueueSnackbar } = useSnackbar();
-//     const { getCompanyId, workspaceId } = useGetCompanyId();
+export function useMutUpsertCharacterization() {
+    return useMutation({
+        mutationFn: async (data: IUpsertCharacterization) =>
+            updateCharacterization(data, data.companyId, data.workspaceId),
+        onSuccess: async (resp) => {
+            if (resp) {
+                queryClient.invalidateQueries({ queryKey: [QueryEnum.GHO] });
+                return resp;
+            }
 
-//     return useMutation(
-//         async ({ workspaceId: wId, ...data }: IUpsertCharacterization) =>
-//             updateCharacterization(data, getCompanyId(data), wId || workspaceId),
-//         {
-//             onSuccess: async (resp) => {
-//                 if (resp) {
-//                     queryClient.invalidateQueries([QueryEnum.GHO]);
-
-//                     const actualData = queryClient.getQueryData(
-//                         // eslint-disable-next-line prettier/prettier
-//                         [QueryEnum.CHARACTERIZATIONS, resp.companyId, resp.workspaceId],
-//                     );
-//                     if (actualData) {
-//                         queryClient.invalidateQueries([
-//                             QueryEnum.CHARACTERIZATION,
-//                             resp.companyId,
-//                             resp.workspaceId,
-//                             resp.profileParentId || resp.id,
-//                         ]);
-//                         queryClient.setQueryData(
-//                             [QueryEnum.CHARACTERIZATIONS, resp.companyId, resp.workspaceId],
-//                             (oldData: ICharacterization[] | undefined) => {
-//                                 if (oldData) {
-//                                     const newData = [...oldData];
-
-//                                     const updateIndexData = oldData.findIndex(
-//                                         (old) => old.id == (resp.profileParentId || resp.id),
-//                                     );
-
-//                                     if (resp.profileParentId) {
-//                                         if (!newData[updateIndexData]) return newData;
-
-//                                         const updateIndexDataParent = newData[updateIndexData].profiles.findIndex(
-//                                             (old) => old.id == resp.id,
-//                                         );
-
-//                                         if (updateIndexDataParent != -1) {
-//                                             newData[updateIndexData].profiles[updateIndexDataParent] = resp;
-//                                         } else {
-//                                             newData[updateIndexData].profiles = [
-//                                                 ...newData[updateIndexData].profiles,
-//                                                 resp,
-//                                             ];
-//                                         }
-//                                         return newData;
-//                                     }
-
-//                                     if (updateIndexData != -1) {
-//                                         newData[updateIndexData] = resp;
-//                                     } else {
-//                                         newData.unshift(resp);
-//                                     }
-
-//                                     return newData;
-//                                 }
-//                                 return [];
-//                             },
-//                         );
-//                     }
-//                 }
-
-//                 enqueueSnackbar('Ação realizado com sucesso', {
-//                     variant: 'success',
-//                 });
-//                 return resp;
-//             },
-//             onError: (error: IErrorResp) => {
-//                 console.error(error);
-//                 enqueueSnackbar(error.response.data.message, {
-//                     variant: 'error',
-//                     anchorOrigin: {
-//                         vertical: 'top',
-//                         horizontal: 'center',
-//                     },
-//                 });
-//             },
-//         },
-//     );
-// }
+            return resp;
+        },
+    });
+}

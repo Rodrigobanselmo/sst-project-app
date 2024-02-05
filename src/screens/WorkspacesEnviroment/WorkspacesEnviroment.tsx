@@ -1,35 +1,17 @@
 import { SFloatingButton, SIcon, SSpinner, SVStack, useSToast } from '@components/core';
-import { SHomeHeader, SScreenHeader } from '@components/index';
+import { SHomeHeader } from '@components/index';
 import { SSearchCompany } from '@components/organisms/SSearchModal/components/SSearchCompany';
 import { SSearchWorkspace } from '@components/organisms/SSearchModal/components/SSearchWorkspace';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useAuth } from '@hooks/useAuth';
+import { useGetUser } from '@hooks/database/useGetUser';
+import { useSync } from '@hooks/useSync';
 import { ICompany, IWorkspace } from '@interfaces/ICompany';
 import { useNavigation } from '@react-navigation/native';
 import { CompanyRepository } from '@repositories/companyRepository';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { useEffect, useState } from 'react';
-import { WorkspacesEviromentsPageProps } from './types';
-import { UserAuthRepository } from '@repositories/userAuthRepository';
-import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
-import EnhancedCharacterizationList from '@screens/Characterizations/components/CharacterizationList';
+import { useState } from 'react';
 import EnhancedWorkspaceEnviromentList from './components/WorkspaceEnviromentList';
-import { database } from '@libs/watermelon';
-import { DBTablesEnum } from '@constants/enums/db-tables';
-import { Q } from '@nozbe/watermelondb';
-import { useGetUser } from '@hooks/database/useGetUser';
-import { useSync } from '@hooks/useSync';
-import getSyncChanges from '@nozbe/watermelondb/Schema/migrations/getSyncChanges';
-import { getHierarchySync, usePersistedStateHierarchy } from '@services/api/sync/getHierarchySync';
-import { usePersistedState } from '@hooks/usePersistState';
-import { HIERARCHY_STORAGE } from '@libs/storage/disk/config';
-import { IHierarchy, IHierarchyMap } from '@interfaces/IHierarchy';
-import { queryHierarchies } from '@services/api/hierarchy/getHierarchies';
-import {
-    HierarchyListParents,
-    HierarchyListWithTypes,
-    hierarchyListParents,
-} from '@utils/helpers/hierarchyListParents';
+import { WorkspacesEviromentsPageProps } from './types';
 
 export function WorkspacesEnviroment({ route }: WorkspacesEviromentsPageProps): React.ReactElement {
     const [isOpenAdd, setIsOpenAdd] = useState(false);

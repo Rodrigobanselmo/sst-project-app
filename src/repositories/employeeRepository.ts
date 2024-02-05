@@ -9,10 +9,12 @@ import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
 import { RiskModel } from '@libs/watermelon/model/RiskModel';
 import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
 import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
+import { CharacterizationEmployeeModel } from '@libs/watermelon/model/_MMModel/CharacterizationEmployeeModel';
 import { Q } from '@nozbe/watermelondb';
 
 export interface IEmployeeCreate {
     id: string;
+    apiId?: number;
     name: string;
     companyId: string;
     userId: number;
@@ -62,6 +64,7 @@ export class EmployeeRepository {
 
             const newEmployee = await employeeTable.create((employee) => {
                 employee._raw.id = data.id;
+                employee.apiId = data.apiId;
                 employee.name = data.name;
                 employee.userId = String(data.userId);
                 employee.socialName = data.socialName;
@@ -74,6 +77,27 @@ export class EmployeeRepository {
             });
 
             return newEmployee;
+        });
+    }
+
+    async updateMMCharacterization(id: string, data: Partial<any>) {
+        await database.write(async () => {
+            const charEmployeeTable = database.get<CharacterizationEmployeeModel>(
+                DBTablesEnum.MM_CHARACTERIZATION_EMPLOYEE,
+            );
+
+            try {
+                const charEmployee = await charEmployeeTable.find(id);
+                const newRecMed = await charEmployee.update((recMed) => {
+                    if (data.apiId) recMed.apiId = data.apiId;
+                    if (data.characterizationId) recMed.characterizationId = data.characterizationId;
+                    recMed.updated_at = new Date();
+                });
+
+                return newRecMed;
+            } catch (error) {
+                console.error(error);
+            }
         });
     }
 }

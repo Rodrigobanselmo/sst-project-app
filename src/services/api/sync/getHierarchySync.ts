@@ -1,23 +1,13 @@
 import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
-import { api } from '@services/api';
-import { IUser } from '@interfaces/IUser';
-import { StatusEnum } from '@constants/enums/status.enum';
-import { IPagination } from '@interfaces/IPagination';
-import queryString from 'query-string';
-import { IPaginationReturn } from '@interfaces/IPaginationResponse';
-import { ICompany } from '@interfaces/ICompany';
-import { emptyMapReturn } from '@utils/helpers/emptyFunc';
-import { useAuth } from '@hooks/useAuth';
-import { useQuery } from '@tanstack/react-query';
 import { QueryEnum } from '@constants/enums/query.enums';
-import { DBTablesEnum } from '@constants/enums/db-tables';
-import { IHierarchy } from '@interfaces/IHierarchy';
-import { setMapHierarchies } from '../hierarchy/getHierarchies';
-import { HierarchyListWithTypes, hierarchyListParents } from '@utils/helpers/hierarchyListParents';
 import { usePersistedState } from '@hooks/usePersistState';
+import { IHierarchy } from '@interfaces/IHierarchy';
 import { HIERARCHY_STORAGE } from '@libs/storage/disk/config';
-import { useEffect } from 'react';
+import { api } from '@services/api';
 import { queryClient } from '@services/queryClient';
+import { HierarchyListWithTypes, hierarchyListParents } from '@utils/helpers/hierarchyListParents';
+import queryString from 'query-string';
+import { useEffect } from 'react';
 
 interface IQuerySync {
     workspaceId?: string;
@@ -31,7 +21,7 @@ export const getHierarchySync = async (query: IQuerySync) => {
     return response.data;
 };
 
-export function useFetchQueryEpis() {
+export function useFetchQueryHierarchy() {
     const fetchHierarchySync = async (query = {} as IQuerySync, take = 20, page = 1) => {
         const data = await queryClient
             .fetchQuery({
@@ -56,7 +46,7 @@ export const usePersistedStateHierarchy = ({
     companyId?: string;
     autoFetch?: boolean;
 }) => {
-    const { fetchHierarchySync } = useFetchQueryEpis();
+    const { fetchHierarchySync } = useFetchQueryHierarchy();
     const [hierarchyList, setHierarchyList] = usePersistedState<HierarchyListWithTypes>(HIERARCHY_STORAGE + companyId, {
         hierarchies: [],
         types: [],

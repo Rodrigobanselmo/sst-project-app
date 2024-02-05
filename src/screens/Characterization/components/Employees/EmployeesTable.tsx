@@ -38,8 +38,7 @@ export function EmployeesTable({ onClick, renderRightElement, onSave }: PageProp
         }
 
         return employeesList;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [employees, search]);
+    }, [employees, search, employeeIds]);
 
     const { results } = useResultSearch({
         data,
