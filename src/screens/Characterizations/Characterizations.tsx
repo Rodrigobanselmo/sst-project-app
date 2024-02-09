@@ -116,6 +116,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                 const generateSources: ICreateGenerateSource[] = [];
                 const subOffices: IAutomateHierarchySubOffice[] = [];
                 const characterizations: (IUpsertCharacterization & { id: string })[] = [];
+                const characterizationsProfile: (IUpsertCharacterization & { id: string })[] = [];
                 const photosData: (Omit<IAddCharacterizationPhoto, 'file'> & { uri: string })[] = [];
                 const videosData: (Omit<IAddCharacterizationFile, 'file'> & { uri: string })[][] = [];
                 const audiosData: (Omit<IAddCharacterizationFile, 'file'> & { uri: string })[][] = [];
@@ -246,7 +247,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                         .map((hierarchy) => hierarchy.apiId as string)
                         .filter(Boolean);
 
-                    characterizations.push({
+                    (characterization.profileParentId ? characterizationsProfile : characterizations).push({
                         id: characterization.id,
                         companyId,
                         workspaceId,
@@ -312,6 +313,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     generateSources.length +
                     subOffices.length +
                     characterizations.length +
+                    characterizationsProfile.length +
                     photosData.length +
                     riskDataInsert.length +
                     audiosData.length +
@@ -344,7 +346,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                         .mutateAsync({
                             id: recMed.id,
                             riskId: recMed.riskId,
-                            companyId,
+                            companyId: user.companyId as string,
                             medName: recMed.medName,
                             redName: recMed.redName,
                             returnIfExist: true,
@@ -369,7 +371,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                         .mutateAsync({
                             id: generateSource.id,
                             riskId: generateSource.riskId,
-                            companyId,
+                            companyId: user.companyId as string,
                             name: generateSource.name,
                             returnIfExist: true,
                         })
@@ -406,6 +408,19 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                 if (error(errorsMessage)) return;
 
                 await asyncBatch(characterizations, 5, async (characterization) => {
+                    await upsertCharacterization
+                        .mutateAsync({
+                            ...characterization,
+                            hierarchyIds: characterizationHierarchyMap[characterization.id] || [],
+                        })
+                        .catch((error) => {
+                            errorsMessage.push(error?.message);
+                        });
+
+                    updateProgress();
+                });
+
+                await asyncBatch(characterizationsProfile, 5, async (characterization) => {
                     await upsertCharacterization
                         .mutateAsync({
                             ...characterization,

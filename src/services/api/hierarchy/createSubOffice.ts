@@ -17,18 +17,17 @@ export interface IAutomateHierarchySubOffice {
     organizeByOffice?: boolean;
 }
 
-export async function automateHierarchySubOffice(data: IAutomateHierarchySubOffice, companyId: string) {
-    const response = await api.post<IHierarchy | IHierarchy[]>(`${ApiRoutesEnum.HIERARCHY}/sub-office/${companyId}`, {
-        ...data,
-        companyId,
-    });
-
+export async function automateHierarchySubOffice(data: IAutomateHierarchySubOffice) {
+    const response = await api.post<IHierarchy | IHierarchy[]>(
+        `${ApiRoutesEnum.HIERARCHY}/sub-office/${data.companyId}`,
+        data,
+    );
     return response.data;
 }
 
 export function useMutateCreateSubOffice() {
     return useMutation({
-        mutationFn: async (data: IAutomateHierarchySubOffice) => automateHierarchySubOffice(data, data.companyId),
+        mutationFn: async (data: IAutomateHierarchySubOffice) => automateHierarchySubOffice(data),
         onSuccess: async (resp) => {
             queryClient.invalidateQueries({ queryKey: [QueryEnum.HIERARCHY] });
             return resp;

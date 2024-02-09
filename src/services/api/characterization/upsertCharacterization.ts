@@ -42,6 +42,8 @@ export interface IUpsertCharacterization {
 
 export async function updateCharacterization(data: IUpsertCharacterization, companyId: string, workspaceId: string) {
     const formData = new FormData();
+    formData.append('createWithId', 'true');
+
     data.photos?.forEach((photo) => {
         if (photo.file) formData.append('files[]', photo.file);
         if (photo.name) formData.append('photos[]', photo.name);

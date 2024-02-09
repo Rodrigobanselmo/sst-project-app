@@ -292,7 +292,15 @@ export class CompanyRepository {
                 const riskData = await Promise.all(
                     riskDataModel.map(async (riskDataModel) => {
                         const m2mData = await riskDataRepository.getRiskDataInfo(riskDataModel);
-                        return { ...riskDataModel, ...m2mData };
+                        const riskDataAll = {
+                            ...m2mData,
+                            apiId: riskDataModel.apiId,
+                            riskId: riskDataModel.riskId,
+                            probability: riskDataModel.probability,
+                            probabilityAfter: riskDataModel.probabilityAfter,
+                            characterizationId: riskDataModel.characterizationId,
+                        };
+                        return riskDataAll;
                     }),
                 );
 

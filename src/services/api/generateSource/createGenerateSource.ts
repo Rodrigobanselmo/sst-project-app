@@ -14,20 +14,15 @@ export interface ICreateGenerateSource extends Pick<IGenerateSource, 'riskId'> {
     returnIfExist?: boolean;
 }
 
-export async function createGenerateSource(data: ICreateGenerateSource, companyId?: string) {
-    if (!companyId) return null;
-
-    const response = await api.post<IGenerateSource>(ApiRoutesEnum.GENERATE_SOURCE, {
-        ...data,
-        companyId,
-    });
+export async function createGenerateSource(data: ICreateGenerateSource) {
+    const response = await api.post<IGenerateSource>(ApiRoutesEnum.GENERATE_SOURCE, data);
 
     return response.data;
 }
 
 export function useMutCreateGenerateSource() {
     return useMutation({
-        mutationFn: async (data: ICreateGenerateSource) => createGenerateSource(data, data.companyId),
+        mutationFn: async (data: ICreateGenerateSource) => createGenerateSource(data),
         onSuccess: async (newGenerateSource) => {
             queryClient.invalidateQueries({ queryKey: [QueryEnum.GENERATE_SOURCE] });
             return newGenerateSource;

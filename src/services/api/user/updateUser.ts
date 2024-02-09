@@ -24,8 +24,7 @@ export interface IUpdateUser {
 }
 
 export async function updateUser(data: IUpdateUser) {
-    const response = await api.patch<IUser>(ApiRoutesEnum.USERS, {
-        ...data,
-    });
+    const response = await api.patch<IUser>(ApiRoutesEnum.USERS, data);
+
     return response.data;
 }

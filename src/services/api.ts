@@ -43,6 +43,9 @@ api.registerInterceptTokenManager = (singOut) => {
                         return new Promise((resolve, reject) => {
                             failedQueued.push({
                                 onSuccess: (token: string) => {
+                                    if (originalRequestConfig.data) {
+                                        originalRequestConfig.data = JSON.parse(originalRequestConfig.data);
+                                    }
                                     originalRequestConfig.headers = { Authorization: `Bearer ${token}` };
                                     resolve(api(originalRequestConfig));
                                 },

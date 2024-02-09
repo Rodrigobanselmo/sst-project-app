@@ -20,6 +20,7 @@ export async function createCharacterizationFile(
     const formData = new FormData();
 
     formData.append('file', data.file);
+    if (data.id) formData.append('id', data.id);
     formData.append('companyCharacterizationId', data.companyCharacterizationId);
 
     const { token } = await refreshToken();

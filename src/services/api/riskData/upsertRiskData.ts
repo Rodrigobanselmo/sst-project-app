@@ -35,9 +35,7 @@ export interface IUpsertRiskData {
 export async function upsertRiskData(data: IUpsertRiskData) {
     if (!data.companyId) return null;
 
-    const response = await api.post<IRiskData>(`${ApiRoutesEnum.RISK_DATA}`, {
-        ...data,
-    });
+    const response = await api.post<IRiskData>(`${ApiRoutesEnum.RISK_DATA}`, data);
 
     if (typeof response.data === 'string') {
         return {

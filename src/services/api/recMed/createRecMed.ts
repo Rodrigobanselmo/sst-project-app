@@ -17,20 +17,14 @@ export interface ICreateRecMed extends Pick<IRecMed, 'riskId'> {
     skipIfExist?: boolean;
 }
 
-export async function createRecMed(data: ICreateRecMed, companyId?: string) {
-    if (!companyId) return null;
-
-    const response = await api.post<IRecMed>(`${ApiRoutesEnum.REC_MED}`, {
-        ...data,
-        companyId,
-    });
-
+export async function createRecMed(data: ICreateRecMed) {
+    const response = await api.post<IRecMed>(`${ApiRoutesEnum.REC_MED}`, data);
     return response.data;
 }
 
 export function useMutCreateRecMed() {
     return useMutation({
-        mutationFn: async (data: ICreateRecMed) => createRecMed(data, data.companyId),
+        mutationFn: async (data: ICreateRecMed) => createRecMed(data),
         onSuccess: async (newRecMed) => {
             queryClient.invalidateQueries({ queryKey: [QueryEnum.REC_MED] });
             return newRecMed;
