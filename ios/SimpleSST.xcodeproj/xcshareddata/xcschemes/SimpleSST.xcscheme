@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "sstprojectmobile.app"
-               BlueprintName = "sstprojectmobile"
-               ReferencedContainer = "container:sstprojectmobile.xcodeproj">
+               BuildableName = "SimpleSST.app"
+               BlueprintName = "SimpleSST"
+               ReferencedContainer = "container:SimpleSST.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "sstprojectmobileTests.xctest"
-               BlueprintName = "sstprojectmobileTests"
-               ReferencedContainer = "container:sstprojectmobile.xcodeproj">
+               BuildableName = "SimpleSSTTests.xctest"
+               BlueprintName = "SimpleSSTTests"
+               ReferencedContainer = "container:SimpleSST.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "sstprojectmobile.app"
-            BlueprintName = "sstprojectmobile"
-            ReferencedContainer = "container:sstprojectmobile.xcodeproj">
+            BuildableName = "SimpleSST.app"
+            BlueprintName = "SimpleSST"
+            ReferencedContainer = "container:SimpleSST.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "sstprojectmobile.app"
-            BlueprintName = "sstprojectmobile"
-            ReferencedContainer = "container:sstprojectmobile.xcodeproj">
+            BuildableName = "SimpleSST.app"
+            BlueprintName = "SimpleSST"
+            ReferencedContainer = "container:SimpleSST.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

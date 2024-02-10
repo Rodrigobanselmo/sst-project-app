@@ -1,20 +1,19 @@
-import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useNavigation } from '@react-navigation/native';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 
 import { useAuth } from '@hooks/useAuth';
 
 import { AppError } from '@utils/errors';
 
-import LogoTextSvg from '@assets/brand/logoTextFull.svg';
 import LogoSvg from '@assets/brand/logoSimple.svg';
-import { AuthNavigatorRoutesProps } from '@routes/auth/AuthRoutesProps';
-import { SButton, SInput } from '@components/index';
-import { SHStack, SHeading, SToast, SVStack, SCenter, useSToast, SBox, SImage } from '@components/core';
-import { ScrollView } from 'react-native';
 import { LogoTextFull } from '@assets/brand/logoTextFull';
+import { SCenter, SHStack, SHeading, SVStack, useSToast } from '@components/core';
+import { SButton, SInput } from '@components/index';
+import { AuthNavigatorRoutesProps } from '@routes/auth/AuthRoutesProps';
+import { ScrollView } from 'react-native';
 
 type FormDataProps = {
     email: string;
@@ -41,10 +40,10 @@ export function SignIn() {
         formState: { errors },
     } = useForm<FormDataProps>({
         resolver: yupResolver(signInSchema),
-        defaultValues: {
-            email: 'alex@grupoevicon.com.br',
-            password: 'aaaa0123',
-        },
+        // defaultValues: {
+        //     email: 'testes@simplesst.com',
+        //     password: 'NovaSenha12.',
+        // },
     });
 
     async function handleSignIn({ email, password }: FormDataProps) {
@@ -121,9 +120,9 @@ export function SignIn() {
                             <SInput
                                 inputProps={{
                                     placeholder: 'Senha',
-                                    keyboardType: 'email-address',
                                     variant: 'filled',
                                     autoCapitalize: 'none',
+                                    type: 'password',
                                     value,
                                     secureTextEntry: true,
                                     onChangeText: onChange,

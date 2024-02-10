@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "sst-project-mobile",
-    "slug": "sst-project-mobile",
+    "name": "SimpleSST",
+    "slug": "SimpleSST",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
@@ -48,14 +48,16 @@
     ],
     "ios": {
       "requireFullScreen": true,
-      "supportsTablet": true
+      "supportsTablet": true,
+      "buildNumber": "1"
     },
     "android": {
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"

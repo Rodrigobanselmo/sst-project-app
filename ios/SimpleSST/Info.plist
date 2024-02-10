@@ -60,7 +60,7 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
   <key>UIStatusBarStyle</key>
-  <string></string>
+  <string/>
   <key>CADisableMinimumFrameDurationOnPhone</key>
   <true/>
 </dict>

@@ -1,4 +1,4 @@
-package com.sstprojectmobile;
+package com.simplesst.app;
 
 import android.app.Application;
 import android.content.res.Configuration;

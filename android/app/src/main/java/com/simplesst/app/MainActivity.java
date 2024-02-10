@@ -1,4 +1,4 @@
-package com.sstprojectmobile;
+package com.simplesst.app;
 
 import android.os.Build;
 import android.os.Bundle;
