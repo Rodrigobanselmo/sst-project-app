@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SLabel } from '../SLabel';
 import { SNoContent } from '../SNoContent';
+import uuidGenerator from 'react-native-uuid';
 
 const SAudioRecorder = ({
     audios: savedRecordings = [],
@@ -45,12 +46,28 @@ const SAudioRecorder = ({
     };
 
     const stopRecording = async () => {
-        if (recording) {
-            setIsRecording(false);
+        if (!recording) return;
+        setIsRecording(false);
+
+        try {
             await recording.stopAndUnloadAsync();
             const uri = recording.getURI();
 
-            if (uri) setSavedRecordings([...savedRecordings, uri]);
+            const mp3Uri = `${FileSystem.documentDirectory}audio-${uuidGenerator.v4() as string}.mp3`;
+            await Audio.Sound.createAsync(
+                { uri: recording.getURI() as string },
+                { isLooping: false },
+                async (status) => {
+                    if (status.isLoaded) {
+                        await FileSystem.copyAsync({ from: uri as string, to: mp3Uri });
+                        if (mp3Uri) setSavedRecordings([...savedRecordings, mp3Uri]);
+                    }
+                },
+            );
+        } catch (error) {
+            console.error('Failed to stop recording:', error);
+        } finally {
+            setRecording(null);
         }
     };
 
@@ -79,6 +96,14 @@ const SAudioRecorder = ({
         },
         [savedRecordings, setSavedRecordings],
     );
+
+    useEffect(() => {
+        return () => {
+            if (recording) {
+                recording.stopAndUnloadAsync();
+            }
+        };
+    }, [recording]);
 
     return (
         <View style={styles.container}>
