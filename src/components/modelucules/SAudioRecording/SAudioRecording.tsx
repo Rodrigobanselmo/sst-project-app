@@ -48,27 +48,10 @@ const SAudioRecorder = ({
     const stopRecording = async () => {
         if (!recording) return;
         setIsRecording(false);
+        await recording.stopAndUnloadAsync();
+        const uri = recording.getURI();
 
-        try {
-            await recording.stopAndUnloadAsync();
-            const uri = recording.getURI();
-
-            const mp3Uri = `${FileSystem.documentDirectory}audio-${uuidGenerator.v4() as string}.mp3`;
-            await Audio.Sound.createAsync(
-                { uri: recording.getURI() as string },
-                { isLooping: false },
-                async (status) => {
-                    if (status.isLoaded) {
-                        await FileSystem.copyAsync({ from: uri as string, to: mp3Uri });
-                        if (mp3Uri) setSavedRecordings([...savedRecordings, mp3Uri]);
-                    }
-                },
-            );
-        } catch (error) {
-            console.error('Failed to stop recording:', error);
-        } finally {
-            setRecording(null);
-        }
+        if (uri) setSavedRecordings([...savedRecordings, uri]);
     };
 
     const deleteRecording = useCallback(
