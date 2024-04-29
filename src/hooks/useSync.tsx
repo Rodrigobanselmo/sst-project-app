@@ -1,9 +1,9 @@
 import { database } from '@libs/watermelon';
 import { synchronize } from '@nozbe/watermelondb/sync';
-import { getSyncChanges } from '@services/api/sync/getSyncChanges';
 import { useNetInfo } from '@react-native-community/netinfo';
-import { useCallback, useRef } from 'react';
 import { CompanyRepository } from '@repositories/companyRepository';
+import { getSyncChanges } from '@services/api/sync/getSyncChanges';
+import { useCallback, useRef } from 'react';
 import { useAuth } from './useAuth';
 
 export function useSync() {

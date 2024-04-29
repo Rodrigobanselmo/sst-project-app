@@ -9,6 +9,8 @@ const riskDataSchema = tableSchema({
         { name: 'probability', type: 'number', isOptional: true },
         { name: 'probabilityAfter', type: 'number', isOptional: true },
         { name: 'characterizationId', type: 'string', isOptional: true },
+        { name: 'exposure', type: 'string', isOptional: true },
+        { name: 'activities', type: 'string', isOptional: true },
         { name: 'user_id', type: 'string' },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },

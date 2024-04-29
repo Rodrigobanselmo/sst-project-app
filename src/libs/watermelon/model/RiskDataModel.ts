@@ -10,6 +10,10 @@ import { EpisRiskDataModel } from './_MMModel/EpisRiskDataModel';
 import { GenerateRiskDataModel } from './_MMModel/GenerateRiskDataModel';
 import { RecsRiskDataModel } from './_MMModel/RecsRiskDataModel';
 
+export type IRiskDataActivities = {
+    activities: { description: string; subActivity?: string }[];
+    realActivity?: string;
+};
 class RiskDataModel extends Model {
     static table = DBTablesEnum.RISK_DATA;
     static associations = {
@@ -29,6 +33,8 @@ class RiskDataModel extends Model {
     @field('probability') probability?: number;
     @field('probabilityAfter') probabilityAfter?: number;
     @field('characterizationId') characterizationId?: string;
+    @field('activities') activities?: string;
+    @field('exposure') exposure?: string;
 
     @field('user_id') userId!: string;
     @date('created_at') created_at?: Date;

@@ -25,7 +25,7 @@ type MyComponentProps<T> = {
     disableNoInternetContent?: boolean;
     handleGoBack?: () => void;
     onShowModal: (open: boolean) => void;
-    onSearch: (text: string) => void;
+    onSearch?: (text: string) => void;
     renderTopItem?: () => React.ReactElement;
     data: (T & { id: any })[];
     renderItem: ({ item }: { item: T }) => React.ReactElement;
@@ -58,7 +58,7 @@ export const SSearchModal = <T,>({
     disableNoInternetContent,
 }: MyComponentProps<T>) => {
     const handleSearchChange = useDebouncedCallback((value: string) => {
-        onSearch(value);
+        onSearch?.(value);
     }, debounceTime);
 
     return (
@@ -83,32 +83,34 @@ export const SSearchModal = <T,>({
                     >
                         <SBox px={3} flex={1} py={3}>
                             {renderTopItem?.()}
-                            <SFormControl>
-                                {searchLabel && <SFormControl.Label>{searchLabel}</SFormControl.Label>}
-                                <SInput
-                                    ref={searchRef}
-                                    placeholder={placeholder}
-                                    onChangeText={(v) => {
-                                        handleSearchChange(v);
-                                        if (searchRef?.current) {
-                                            searchRef.current.value = v;
-                                        }
-                                    }}
-                                    {...(onConfirmInput && {
-                                        InputRightElement: (
-                                            <SButton
-                                                title="adicionar"
-                                                autoWidth
-                                                addColor
-                                                onPress={() => {
-                                                    onShowModal(false);
-                                                    onConfirmInput();
-                                                }}
-                                            />
-                                        ),
-                                    })}
-                                />
-                            </SFormControl>
+                            {onSearch && (
+                                <SFormControl>
+                                    {searchLabel && <SFormControl.Label>{searchLabel}</SFormControl.Label>}
+                                    <SInput
+                                        ref={searchRef}
+                                        placeholder={placeholder}
+                                        onChangeText={(v) => {
+                                            handleSearchChange(v);
+                                            if (searchRef?.current) {
+                                                searchRef.current.value = v;
+                                            }
+                                        }}
+                                        {...(onConfirmInput && {
+                                            InputRightElement: (
+                                                <SButton
+                                                    title="adicionar"
+                                                    autoWidth
+                                                    addColor
+                                                    onPress={() => {
+                                                        onShowModal(false);
+                                                        onConfirmInput();
+                                                    }}
+                                                />
+                                            ),
+                                        })}
+                                    />
+                                </SFormControl>
+                            )}
                             <SLoadContainer controledIsLoading={isLoading} loadingRef={loadingRef}>
                                 <SErrorBox showError={isError}>
                                     <SNoInternet skipNetInfo={disableNoInternetContent}>

@@ -8,7 +8,7 @@ import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 import { GenerateSourceModel } from '@libs/watermelon/model/GenerateSourceModel';
 import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
 import { RecMedModel } from '@libs/watermelon/model/RecMedModel';
-import { RiskDataModel } from '@libs/watermelon/model/RiskDataModel';
+import { IRiskDataActivities, RiskDataModel } from '@libs/watermelon/model/RiskDataModel';
 import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
 import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
 import { EpisRiskDataModel } from '@libs/watermelon/model/_MMModel/EpisRiskDataModel';
@@ -18,6 +18,7 @@ import { asyncEach } from '@utils/helpers/asyncEach';
 import { RiskDataRepository } from './riskDataRepository';
 import { CharacterizationFormProps } from '@screens/Characterization/types';
 import { CharacterizationEmployeeModel } from '@libs/watermelon/model/_MMModel/CharacterizationEmployeeModel';
+import { ExposureTypeEnum } from '@constants/enums/exposure.enum';
 
 export interface IWorkspaceCreate {
     id?: string;
@@ -294,11 +295,15 @@ export class CompanyRepository {
                         const m2mData = await riskDataRepository.getRiskDataInfo(riskDataModel);
                         const riskDataAll = {
                             ...m2mData,
+                            exposure: riskDataModel.exposure as ExposureTypeEnum,
                             apiId: riskDataModel.apiId,
                             riskId: riskDataModel.riskId,
                             probability: riskDataModel.probability,
                             probabilityAfter: riskDataModel.probabilityAfter,
                             characterizationId: riskDataModel.characterizationId,
+                            activities: riskDataModel.activities
+                                ? (JSON.parse(riskDataModel.activities) as IRiskDataActivities)
+                                : undefined,
                         };
                         return riskDataAll;
                     }),

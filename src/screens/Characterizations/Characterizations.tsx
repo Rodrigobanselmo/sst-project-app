@@ -209,6 +209,8 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     riskData?.forEach((riskData) => {
                         riskDataInsert.push({
                             companyId: companyId,
+                            exposure: riskData.exposure,
+                            activities: riskData.activities,
                             homogeneousGroupId: params.characterizationId,
                             generateSources: riskData.generateSourcesToRiskData.map(
                                 (generateSource) => generateSource.id,

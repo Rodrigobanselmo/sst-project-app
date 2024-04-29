@@ -12,6 +12,7 @@ const riskSchema = tableSchema({
         { name: 'user_id', type: 'string' },
         { name: 'companyId', type: 'string', isOptional: true },
         { name: 'representAll', type: 'boolean', isOptional: true },
+        { name: 'activities', type: 'string', isOptional: true },
         { name: 'cas', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },

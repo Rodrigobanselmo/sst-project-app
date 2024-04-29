@@ -1,4 +1,5 @@
 import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
+import { ExposureTypeEnum } from '@constants/enums/exposure.enum';
 import { HomoTypeEnum } from '@constants/enums/homo-type.enum';
 import { QueryEnum } from '@constants/enums/query.enums';
 import { IErrorResp } from '@interfaces/IApi';
@@ -19,6 +20,8 @@ export interface IUpsertRiskData {
     standardExams?: boolean;
     probability?: number;
     probabilityAfter?: number;
+    exposure?: ExposureTypeEnum;
+    activities?: any;
     adms?: string[];
     recs?: string[];
     type?: HomoTypeEnum;

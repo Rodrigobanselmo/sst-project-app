@@ -21,10 +21,11 @@ import { WorkspaceHierarchyModel } from './model/_MMModel/WorkspaceHierarchyMode
 import { CharacterizationHierarchyModel } from './model/_MMModel/CharacterizationHierarchyModel';
 import { CharacterizationEmployeeModel } from './model/_MMModel/CharacterizationEmployeeModel';
 import { EmployeeModel } from './model/EmployeeModel';
+import { migrations } from './migrations';
 
 const adapter = new SQLiteAdapter({
     schema: schemas,
-    // migrations: migrations,
+    migrations: migrations,
 });
 
 export const database = new Database({

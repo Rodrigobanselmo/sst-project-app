@@ -1,8 +1,8 @@
-import { SHStack, SScrollView, SText, SVStack } from '@components/core';
+import { SBox, SHStack, SScrollView, SText, SVStack } from '@components/core';
 import React from 'react';
 import { RiskDataFormProps, RiskDataFormRelationsProps, RiskDataFormSelectedProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
-import { SButton } from '@components/index';
+import { SButton, SInput, SInputArea } from '@components/index';
 import { SHorizontalMenu } from '@components/modelucules/SHorizontalMenu';
 import { SLabel } from '@components/modelucules/SLabel';
 import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
@@ -15,6 +15,8 @@ import { RiskDataModalSearch, RiskDataSearchModal } from './RiskDataModalSearch'
 import { RiskDataSelectedItem } from './RiskDataSelectedList';
 import { RiskOcupacionalTag } from './RiskOcupacionalTag';
 import { IRiskDataValues } from './schemas';
+import { ExposureTypeEnum } from '@constants/enums/exposure.enum';
+import { SVerticalMenu } from '@components/modelucules/SVerticalMenu';
 
 type PageProps = {
     form: RiskDataFormProps;
@@ -126,7 +128,7 @@ export function RiskDataForm({ onEditForm, onSaveForm, form, control, risk }: Pa
                                             { label: '5', value: 5 },
                                             { label: '!', value: 6 },
                                         ]}
-                                        activeColor="primary.light"
+                                        activeColor="info.main"
                                         getKeyExtractor={(item) => item.value}
                                         getLabel={(item) => item.label}
                                         getIsActive={(item) => item.value === field.value}
@@ -140,6 +142,67 @@ export function RiskDataForm({ onEditForm, onSaveForm, form, control, risk }: Pa
                             )}
                         />
                     </SHStack>
+
+                    <SLabel>Exposição</SLabel>
+                    <SHStack mb={-2}>
+                        <Controller
+                            control={control}
+                            name="exposure"
+                            render={({ field }) => (
+                                <SVStack width="100%">
+                                    <SVerticalMenu
+                                        fontSizeButton={17}
+                                        mb={10}
+                                        onChange={(val) => field.onChange(val.value)}
+                                        paddingHorizontal={0}
+                                        options={[
+                                            { label: 'Habitual/Intermitente', value: ExposureTypeEnum.HI },
+                                            { label: 'Ocasional', value: ExposureTypeEnum.O },
+                                            { label: 'Habitual/Permantente', value: ExposureTypeEnum.HP },
+                                        ]}
+                                        activeColor="info.main"
+                                        getKeyExtractor={(item) => item.value}
+                                        getLabel={(item) => item.label}
+                                        getIsActive={(item) => item.value === field.value}
+                                    />
+                                </SVStack>
+                            )}
+                        />
+                    </SHStack>
+
+                    {risk?.activities && (
+                        <>
+                            <RiskDataSelectedItem
+                                mb={10}
+                                data={form.activities}
+                                keyExtractor={(item) => item.name}
+                                getLabel={(item) => item.name}
+                                getDescription={(item) => item.description}
+                                title="Atividades"
+                                onAdd={() => modalRef.current?.setOpenModal('activity')}
+                                onDelete={(data) => handleDelete({ data, key: 'activities' })}
+                            />
+                            <SBox mt={-5}>
+                                <Controller
+                                    control={control}
+                                    name="realActivity"
+                                    render={({ field: { onChange, value } }) => (
+                                        <SInputArea
+                                            inputProps={{
+                                                placeholder: '',
+                                                keyboardType: 'default',
+                                                autoCapitalize: 'none',
+                                                value,
+                                                onChangeText: onChange,
+                                            }}
+                                            startAdornmentText={'Atividade real'}
+                                        />
+                                    )}
+                                />
+                            </SBox>
+                        </>
+                    )}
+
                     <RiskDataSelectedItem
                         mb={10}
                         data={form.generateSourcesToRiskData}
@@ -226,7 +289,7 @@ export function RiskDataForm({ onEditForm, onSaveForm, form, control, risk }: Pa
                                             { label: '5', value: 5 },
                                             { label: '!', value: 6 },
                                         ]}
-                                        activeColor="primary.light"
+                                        activeColor="info.main"
                                         getKeyExtractor={(item) => item.value}
                                         getLabel={(item) => item.label}
                                         getIsActive={(item) => item.value === field.value}

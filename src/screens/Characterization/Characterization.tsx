@@ -29,9 +29,10 @@ import { Alert, Linking, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Camera } from 'react-native-vision-camera';
 import { CharacterizationTabView } from './components/Characterization/CharacterizationTabView';
-import { RiskDataPage } from './components/RiskData/RiskDataPage';
+import { getRiskDataFormActivities, RiskDataPage } from './components/RiskData/RiskDataPage';
 import { ICharacterizationValues, characterizationSchema } from './schemas';
 import uuidGenerator from 'react-native-uuid';
+import { IRiskDataActivities } from '@libs/watermelon/model/RiskDataModel';
 
 const Stack = createNativeStackNavigator<FormCharacterizationRoutesProps>();
 
@@ -415,6 +416,15 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
 
                                     data.probability = riskData.probability;
                                     data.probabilityAfter = riskData.probabilityAfter;
+                                    data.exposure = riskData.exposure;
+
+                                    if (riskData.activities) {
+                                        const { activities, realActivity } = getRiskDataFormActivities(
+                                            riskData.activities,
+                                        );
+                                        data.realActivity = realActivity;
+                                        data.activities = activities;
+                                    }
 
                                     const admsToRiskData = rest.admsToRiskData.map(({ m2mId, ...data }) => data as any);
                                     const engsToRiskData = rest.engsToRiskData.map(({ m2mId, ...data }) => data as any);

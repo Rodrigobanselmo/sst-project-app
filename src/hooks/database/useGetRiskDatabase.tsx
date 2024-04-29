@@ -8,7 +8,7 @@ interface IUseGetRiskDatabase {
     riskId: string;
 }
 
-const onFetchRisk = async ({ riskId }: IUseGetRiskDatabase) => {
+export const onFetchRisk = async ({ riskId }: IUseGetRiskDatabase) => {
     if (!riskId) return null;
 
     const riskRepository = new RiskRepository();

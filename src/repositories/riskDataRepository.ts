@@ -6,7 +6,7 @@ import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationMo
 import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
 import { GenerateSourceModel } from '@libs/watermelon/model/GenerateSourceModel';
 import { RecMedModel } from '@libs/watermelon/model/RecMedModel';
-import { RiskDataModel } from '@libs/watermelon/model/RiskDataModel';
+import { IRiskDataActivities, RiskDataModel } from '@libs/watermelon/model/RiskDataModel';
 import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
 import { AdmsRiskDataModel } from '@libs/watermelon/model/_MMModel/AdmsRiskDataModel';
 import { EngsRiskDataModel } from '@libs/watermelon/model/_MMModel/EngsRiskDataModel';
@@ -16,6 +16,7 @@ import { RecsRiskDataModel } from '@libs/watermelon/model/_MMModel/RecsRiskDataM
 import clone from 'clone';
 import { Q } from '@nozbe/watermelondb';
 import {
+    RiskDataFormActivitySelectedProps,
     RiskDataFormRelationsDeletionsProps,
     RiskDataFormRelationsProps,
     RiskDataFormSelectedProps,
@@ -24,6 +25,8 @@ import uuidGenerator from 'react-native-uuid';
 
 export interface IRiskDataCreate extends RiskDataFormRelationsDeletionsProps, RiskDataFormRelationsProps {
     id?: string;
+    realActivity?: string;
+    exposure?: string;
     probability?: number;
     probabilityAfter?: number;
     riskId: string;
@@ -43,6 +46,20 @@ interface IGenerateSourceCreate {
     name: string;
     riskId: string;
 }
+
+const formatActivities = (data: Pick<IRiskDataCreate, 'activities' | 'realActivity'>) => {
+    const activities = data.activities?.map<RiskDataFormActivitySelectedProps>((activity) => {
+        return {
+            description: activity.name,
+            subActivity: activity.description,
+        };
+    });
+
+    return JSON.stringify({
+        activities: activities || [],
+        realActivity: data.realActivity,
+    } satisfies IRiskDataActivities);
+};
 
 export class RiskDataRepository {
     constructor() {}
@@ -75,10 +92,16 @@ export class RiskDataRepository {
                         newRiskData.characterizationId = characterizationId;
                         newRiskData.riskId = _riskData.riskId;
                         newRiskData.probability = _riskData.probability;
+                        newRiskData.exposure = _riskData.exposure;
                         newRiskData.probabilityAfter = _riskData.probabilityAfter;
                         newRiskData.userId = String(userId);
                         newRiskData.created_at = new Date();
                         newRiskData.updated_at = new Date();
+
+                        const activitiesString = formatActivities(_riskData);
+                        if (activitiesString) {
+                            newRiskData.activities = activitiesString;
+                        }
                     });
 
                     await this.createRiskDataRelations(_riskData, newRiskData.id, userId);
@@ -394,8 +417,14 @@ export class RiskDataRepository {
             try {
                 const riskData = await riskDataCollection.find(id);
                 const newRiskData = await riskData.update(() => {
+                    if (data.exposure) riskData.exposure = data.exposure;
                     if (data.probability) riskData.probability = data.probability;
                     if (data.probabilityAfter) riskData.probabilityAfter = data.probabilityAfter;
+
+                    const activitiesString = formatActivities(data);
+                    if (activitiesString) {
+                        riskData.activities = activitiesString;
+                    }
 
                     riskData.updated_at = new Date();
                 });

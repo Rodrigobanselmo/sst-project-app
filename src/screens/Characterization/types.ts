@@ -37,12 +37,15 @@ export interface CharacterizationFormProps {
 export type RiskDataFormSelectedProps = {
     name: string;
     id?: string;
+    description?: string;
     efficientlyCheck?: boolean;
     type?: RecTypeEnum;
     m2mId?: string;
 };
+export type RiskDataFormActivitySelectedProps = { description: string; subActivity?: string };
 
 export type RiskDataFormRelationsProps = {
+    activities?: RiskDataFormSelectedProps[];
     recsToRiskData?: RiskDataFormSelectedProps[];
     admsToRiskData?: RiskDataFormSelectedProps[];
     engsToRiskData?: RiskDataFormSelectedProps[];
@@ -56,6 +59,8 @@ export type RiskDataFormRelationsDeletionsProps = {
 
 export type RiskDataFormProps = {
     id?: string;
+    realActivity?: string;
+    exposure?: string;
     probability?: number;
     probabilityAfter?: number;
     riskId: string;
@@ -76,4 +81,11 @@ export type CharacterizationPageProps = NativeStackScreenProps<
 export type FormCharacterizationScreenProps = {
     route: any;
     navigation: any;
+};
+
+export type RiskFactorActivities = {
+    description: string;
+    subActivities?: {
+        description: string;
+    }[];
 };

@@ -1,5 +1,5 @@
 import React, { useCallback, useImperativeHandle, useState } from 'react';
-import { RiskDataFormProps, RiskDataFormSelectedProps } from '../../types';
+import { RiskDataFormProps, RiskDataFormSelectedProps, RiskFactorActivities } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
 import { SSearchSimpleModal } from '@components/organisms/SSearchModal/components/SSearchSimpleModal';
 import { RecTypeEnum } from '@constants/enums/risk.enum';
@@ -11,8 +11,9 @@ import { useFetchQueryEpis } from '@services/api/epis/useQueryEpis';
 import { isNaEpi, isNaRecMed } from '@utils/helpers/isNa';
 import { Alert } from 'react-native';
 import sortArray from 'sort-array';
+import { SSelectSimpleModal } from '@components/organisms/SSearchModal/components/SSelectSimpleModal';
 
-type modalOpenType = 'gs' | 'epi' | 'eng' | 'adm' | 'rec' | false;
+type modalOpenType = 'gs' | 'epi' | 'eng' | 'adm' | 'rec' | 'activity' | false;
 
 export type RiskDataSearchModal = {
     setOpenModal: (value: modalOpenType) => void;
@@ -28,6 +29,7 @@ type PageProps = {
 
 type DataProps = {
     name: string;
+    descriptions?: string[];
     id: string;
 };
 
@@ -219,12 +221,15 @@ export function RiskDataModalSearch({ onEditForm, form, risk, modalRef }: PagePr
         [admsSearch, engsSearch, generateSourseSerach, isOpen, onGetEpis, onGetRiskRelations, recsSearch],
     );
 
+    const isActivity = isOpen === 'activity';
+
     const onGetTitle = () => {
         if (isOpen === 'gs') return 'Fontes Geradoras';
         if (isOpen === 'epi') return 'EPIs';
         if (isOpen === 'eng') return 'Medidas de Engenharia';
         if (isOpen === 'adm') return 'Medidas Administrativas';
         if (isOpen === 'rec') return 'Recomendações';
+        if (isActivity) return 'Atividades';
 
         return '';
     };
@@ -234,6 +239,7 @@ export function RiskDataModalSearch({ onEditForm, form, risk, modalRef }: PagePr
         if (isOpen === 'eng') return 'engsToRiskData';
         if (isOpen === 'adm') return 'admsToRiskData';
         if (isOpen === 'rec') return 'recsToRiskData';
+        if (isActivity) return 'activities';
 
         return 'generateSourcesToRiskData';
     };
@@ -243,6 +249,7 @@ export function RiskDataModalSearch({ onEditForm, form, risk, modalRef }: PagePr
         if (isOpen === 'eng') return 'Descrição medida de engenharia';
         if (isOpen === 'adm') return 'Descrição medida administrativa';
         if (isOpen === 'rec') return 'Descrição recomendação';
+        if (isActivity) return 'Descrição atividade';
 
         return 'Nome fonte geradora';
     };
@@ -250,6 +257,40 @@ export function RiskDataModalSearch({ onEditForm, form, risk, modalRef }: PagePr
     const key = onGetKey();
 
     if (!isOpen) return null as any;
+
+    if (isActivity) {
+        const activities = JSON.parse(risk?.activities || '[]') as RiskFactorActivities[];
+        const results =
+            activities?.map<DataProps>((item) => ({
+                name: item.description,
+                id: item.description,
+                descriptions: item.subActivities?.map((sub) => sub.description),
+            })) || [];
+
+        return (
+            <SSelectSimpleModal
+                data={results}
+                disableNoInternetContent
+                onGetLabel={(item) => item.name}
+                onGetDescriptionLabel={(item: string) => item}
+                onGetDescriptions={(item) => item.descriptions || ([] as string[])}
+                setShowModal={() => setIsOpen(false)}
+                showModal={!!isOpen}
+                placeholder={placeholder()}
+                title={onGetTitle()}
+                onSelect={(item, description) =>
+                    handleEditSelect({
+                        data: {
+                            name: item.name,
+                            description: description || '',
+                            id: item.name + String(description),
+                        },
+                        key,
+                    })
+                }
+            />
+        );
+    }
 
     return (
         <SSearchSimpleModal

@@ -6,10 +6,11 @@ import { RiskDataRepository } from '@repositories/riskDataRepository';
 import * as React from 'react';
 import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { RiskDataFormProps } from '../../types';
+import { RiskDataFormProps, RiskDataFormSelectedProps } from '../../types';
 import { RiskDataForm } from './RiskDataForm';
 import { IRiskDataValues } from './schemas';
 import { SHeader } from '@components/organisms/SScreenHeader/SHeader';
+import { IRiskDataActivities } from '@libs/watermelon/model/RiskDataModel';
 
 type PageProps = {
     onSaveForm: (form: RiskDataFormProps) => void;
@@ -18,6 +19,18 @@ type PageProps = {
     isEdit?: boolean;
     onClickRisk?: (risk: any) => void;
     title?: string;
+};
+
+export const getRiskDataFormActivities = (str: string) => {
+    const activities = JSON.parse(str) as IRiskDataActivities;
+    return {
+        realActivity: activities.realActivity,
+        activities: activities.activities.map<RiskDataFormSelectedProps>((activity) => ({
+            name: activity.description,
+            description: activity.subActivity,
+            id: activity.description + String(activity.subActivity),
+        })),
+    };
 };
 
 export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...props }: PageProps) {
@@ -36,13 +49,15 @@ export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...pro
     }, []);
 
     const onSave = useCallback(async () => {
-        const { probability, probabilityAfter } = getValues();
+        const { probability, probabilityAfter, realActivity, exposure } = getValues();
 
         onSaveForm({
             ...form,
             riskId,
             probability,
             probabilityAfter,
+            realActivity,
+            exposure,
         });
 
         onGoBack();
@@ -78,11 +93,21 @@ export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...pro
 
                     data.probability = riskData.probability;
                     data.probabilityAfter = riskData.probabilityAfter;
-                    setForm(data);
+                    data.exposure = riskData.exposure;
+
+                    if (riskData.activities) {
+                        const { activities, realActivity } = getRiskDataFormActivities(riskData.activities);
+                        data.realActivity = realActivity;
+                        data.activities = activities;
+                    }
                 }
 
+                setForm(data);
+
                 if (data.probability) setValue('probability', data.probability);
+                if (data.exposure) setValue('exposure', data.exposure);
                 if (data.probabilityAfter) setValue('probabilityAfter', data.probabilityAfter);
+                if (data.realActivity) setValue('realActivity', data.realActivity);
             }
         } catch (e) {
             console.info(e);

@@ -29,6 +29,7 @@ class RiskModel extends Model {
     @field('status') status!: StatusEnum;
     @field('type') type!: RiskEnum;
     @field('companyId') companyId?: string;
+    @field('activities') activities?: string;
     @field('representAll') representAll?: boolean;
     @field('cas') cas?: string;
 

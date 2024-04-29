@@ -23,6 +23,10 @@ export const THEME = extendTheme({
             100: '#E1E1E6',
             50: '#ebebf0',
         },
+        info: {
+            main: '#4559c9',
+            light: '#899ed1',
+        },
         status: {
             error: '#F44336',
         },
