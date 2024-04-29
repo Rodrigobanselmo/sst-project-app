@@ -2,7 +2,7 @@ import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
 import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { StatusEnum } from '@constants/enums/status.enum';
 import { api } from '@services/api';
-import { refreshToken } from '../user/refreshToken';
+import { refreshToken } from '../session/refreshToken';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@services/queryClient';
 import { QueryEnum } from '@constants/enums/query.enums';

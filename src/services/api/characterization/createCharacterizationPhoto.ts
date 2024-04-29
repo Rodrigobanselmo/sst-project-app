@@ -1,5 +1,5 @@
 import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
-import { refreshToken } from '../user/refreshToken';
+import { refreshToken } from '../session/refreshToken';
 import { api } from '@services/api';
 import { ICharacterization } from '@interfaces/ICharacterization';
 import { useMutation } from '@tanstack/react-query';

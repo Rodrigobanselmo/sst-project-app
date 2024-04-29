@@ -2,7 +2,7 @@ import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
 import { ICharacterization } from '@interfaces/ICharacterization';
 import { api } from '@services/api';
 import { useMutation } from '@tanstack/react-query';
-import { refreshToken } from '../user/refreshToken';
+import { refreshToken } from '../session/refreshToken';
 
 export interface IAddCharacterizationFile {
     id?: string;
