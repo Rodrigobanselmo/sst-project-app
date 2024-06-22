@@ -25,7 +25,7 @@ import { migrations } from './migrations';
 
 const adapter = new SQLiteAdapter({
     schema: schemas,
-    migrations: migrations,
+    // migrations: migrations,
 });
 
 export const database = new Database({

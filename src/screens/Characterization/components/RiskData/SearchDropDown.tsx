@@ -7,7 +7,7 @@ interface PageProps<T> {
     onSearch: (text: string) => Promise<T[]>;
 }
 
-export function SearchDropDown<T>({ onSearch }: PageProps<T>) {
+export function SearchDropDown<T extends { name: string; id: any }>({ onSearch }: PageProps<T>) {
     const [searchText, setSearchText] = useState('');
     const [searchResults, setSearchResults] = useState<T[]>([]);
     const [showDropdown, setShowDropdown] = useState(false);

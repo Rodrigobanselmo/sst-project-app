@@ -158,7 +158,9 @@ export class RiskDataRepository {
                         if (epi.id !== undefined) {
                             if (!epi.m2mId) {
                                 await MMEpisTable.create((newEpi) => {
-                                    newEpi.ca = epi.id as string;
+                                    newEpi.description = epi.name as string;
+                                    newEpi.ca = epi.description as string;
+                                    newEpi.epiId = Number(epi.id);
                                     newEpi.riskDataId = riskDataId;
                                     newEpi.efficientlyCheck = epi.efficientlyCheck;
                                     newEpi.userId = String(userId);
@@ -518,8 +520,9 @@ export class RiskDataRepository {
             engsToRiskData: engsToRiskDataWithRecs,
             generateSourcesToRiskData: gsToRiskDataWithGS,
             episToRiskData: episToRiskData.map((episMM) => ({
-                name: episMM.ca,
-                id: episMM.ca,
+                name: episMM.description,
+                description: episMM.ca,
+                id: episMM.epiId,
                 m2mId: episMM.id,
                 efficientlyCheck: episMM.efficientlyCheck,
             })),

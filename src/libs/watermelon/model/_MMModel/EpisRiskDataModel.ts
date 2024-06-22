@@ -18,7 +18,8 @@ class EpisRiskDataModel extends Model {
         // [DBTablesEnum.EPI]: { type: 'belongs_to', key: 'epiId' },
     } as const;
 
-    // @field('epiId') epiId!: string;
+    @field('epiId') epiId!: number;
+    @field('description') description!: string;
     @field('ca') ca!: string;
     @field('riskDataId') riskDataId!: string;
     @field('efficientlyCheck') efficientlyCheck?: boolean;

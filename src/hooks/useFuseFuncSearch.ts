@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useMemo, useState } from 'react';
 
-import Fuse from 'fuse.js';
+import Fuse, { FuseOptionKey, IFuseOptions } from 'fuse.js';
 import sortArray from 'sort-array';
 import { useDebouncedCallback } from 'use-debounce';
 import { normalizeString } from '@utils/helpers/normalizeString';
@@ -10,8 +10,8 @@ interface IUseTableSearch<T> {
     minLengthSearch?: number;
     sortFunction?: (array: T[]) => T[];
     transformSearchTextBefore?: (search: string) => string;
-    keys: Fuse.FuseOptionKey<any>[];
-    fuseOptions?: Partial<Fuse.IFuseOptions<T>>;
+    keys: FuseOptionKey<any>[];
+    fuseOptions?: Partial<IFuseOptions<T>>;
 }
 
 export interface IReturnUseFuseSearch<T> {
@@ -57,10 +57,10 @@ export const useFuseFuncSearch = <T>({
             const resultSearch = searchValue
                 ? fuseResults.map((result) => result.item)
                 : sortFunction
-                ? Array.isArray(data)
-                    ? sortFunction(data)
-                    : []
-                : data;
+                  ? Array.isArray(data)
+                      ? sortFunction(data)
+                      : []
+                  : data;
             return resultSearch;
         },
         // remove fuse sate from dependencies

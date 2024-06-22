@@ -20,7 +20,7 @@ import Reanimated, {
     useSharedValue,
     withRepeat,
 } from 'react-native-reanimated';
-import type { Camera, PhotoFile, TakePhotoOptions, TakeSnapshotOptions, VideoFile } from 'react-native-vision-camera';
+import type { Camera, PhotoFile, TakePhotoOptions, VideoFile } from 'react-native-vision-camera';
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../../constants/constants';
 import { SBox } from '@components/core';
 import { Orientation } from 'expo-screen-orientation';
@@ -67,7 +67,7 @@ const _CaptureButton: React.FC<Props> = ({
     const pressDownDate = useRef<Date | undefined>(undefined);
     const isRecording = useRef(false);
     const recordingProgress = useSharedValue(0);
-    const takePhotoOptions = useMemo<TakePhotoOptions & TakeSnapshotOptions>(
+    const takePhotoOptions = useMemo<TakePhotoOptions>(
         () => ({
             photoCodec: 'jpeg',
             qualityPrioritization: 'speed',

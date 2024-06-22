@@ -3,6 +3,7 @@ import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
 import { API_URL } from '@env';
 import { storageAuthTokenGet, storageAuthTokenSave } from '@libs/storage/disk/token';
 import { AppError } from '@utils/errors';
+import { DeduplicationEnum, deduplicator } from '@utils/helpers/deduplication';
 import axios, { AxiosError, AxiosInstance } from 'axios';
 
 type SignOut = () => void;
@@ -17,7 +18,7 @@ interface PromiseType {
 }
 
 const api = axios.create({
-    baseURL: API_URL || 'https://api.simplesst.com/',
+    baseURL: API_URL || 'https://api.simplesst.com.br/',
 }) as APIInstanceProps;
 
 let failedQueued: Array<PromiseType> = [];
@@ -59,7 +60,11 @@ api.registerInterceptTokenManager = (singOut) => {
 
                     return new Promise(async (resolve, reject) => {
                         try {
-                            const { data } = await api.post(ApiRoutesEnum.REFRESH, { refresh_token, isApp: true });
+                            const { data } = await deduplicator.execute(
+                                async () => api.post(ApiRoutesEnum.REFRESH, { refresh_token, isApp: true }),
+                                DeduplicationEnum.REFRESH,
+                            );
+
                             await storageAuthTokenSave({ token: data.token, refresh_token: data.refresh_token });
 
                             if (originalRequestConfig.data) {

@@ -30,6 +30,7 @@ type PageProps = {
 type DataProps = {
     name: string;
     descriptions?: string[];
+    description?: string;
     id: string;
 };
 
@@ -182,7 +183,7 @@ export function RiskDataModalSearch({ onEditForm, form, risk, modalRef }: PagePr
 
                             const name = isNa ? equipment : `${item.ca}: ${equipment}`;
 
-                            return { name, id: String(item.ca) };
+                            return { name, id: String(item.id), description: item.ca };
                         });
                         results = resultData;
                     }

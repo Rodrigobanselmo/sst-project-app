@@ -170,7 +170,7 @@ export function RiskDataForm({ onEditForm, onSaveForm, form, control, risk }: Pa
                         />
                     </SHStack>
 
-                    {risk?.activities && (
+                    {!!risk?.activities?.length && risk?.activities != '[]' && risk?.activities != 'null' && (
                         <>
                             <RiskDataSelectedItem
                                 mb={10}
@@ -221,7 +221,7 @@ export function RiskDataForm({ onEditForm, onSaveForm, form, control, risk }: Pa
                         onAdd={() => modalRef.current?.setOpenModal('epi')}
                         getCheck={(item) => !!item.efficientlyCheck}
                         onDelete={(data) => handleDelete({ data, key: 'episToRiskData' })}
-                        hideCheck={(item) => !!item.id && isNaEpi(item.id)}
+                        hideCheck={(item) => !!item.description && isNaEpi(item.description)}
                         onEfficiencyCheck={(data) => {
                             handleEditSelect({
                                 data: { ...data, efficientlyCheck: !data.efficientlyCheck },
