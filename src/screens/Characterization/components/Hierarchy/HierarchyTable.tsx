@@ -41,6 +41,7 @@ export function HierarchyTable({ onClick, renderRightElement, onSave }: PageProp
 
     const data = React.useMemo(() => {
         const hierarchiesData = hierarchyListParents(hierarchies || []);
+
         let hierarchiesList = hierarchiesData.hierarchies;
 
         if (!search) {

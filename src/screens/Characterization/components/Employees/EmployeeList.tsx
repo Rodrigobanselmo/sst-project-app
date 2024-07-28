@@ -7,17 +7,34 @@ import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
 import { EmployeeCard } from './EmployeeCard';
 import { memo } from 'react';
 import { checkArrayEqual } from '@utils/helpers/checkArrayEqual';
+import React from 'react';
+import { useGetHierarchyDatabase } from '@hooks/database/useGetHierarchyDatabase';
+import { HierarchyListParents, hierarchyListParents } from '@utils/helpers/hierarchyListParents';
 
 type Props = {
     employees?: EmployeeModel[];
     selectedIds?: string[];
+    workspaceId: string;
     user?: UserAuthModel;
     onClick?: (risk: EmployeeModel) => Promise<void>;
     renderRightElement?: (risk: EmployeeModel, selected: boolean) => React.ReactElement;
 };
 
 export const EmployeeList = memo(
-    ({ employees, onClick, selectedIds, renderRightElement }: Props) => {
+    ({ employees, onClick, selectedIds, workspaceId, renderRightElement }: Props) => {
+        const { hierarchies } = useGetHierarchyDatabase({ workspaceId });
+
+        const hierarchyTree = React.useMemo(() => {
+            const hierarchiesData = hierarchyListParents(hierarchies || []);
+            const hierarchyTree: Record<string, HierarchyListParents> = {};
+
+            hierarchiesData.hierarchies.forEach((node) => {
+                hierarchyTree[node.id] = node;
+            });
+
+            return hierarchyTree;
+        }, [hierarchies]);
+
         return (
             <>
                 {!!employees?.length && (
@@ -27,6 +44,7 @@ export const EmployeeList = memo(
                         keyboardShouldPersistTaps={'handled'}
                         renderItem={({ item }) => (
                             <EmployeeCard
+                                hierarchy={item.hierarchyId ? hierarchyTree[item.hierarchyId] : undefined}
                                 renderRightElement={renderRightElement}
                                 onClick={onClick}
                                 employee={item}

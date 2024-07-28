@@ -1,11 +1,14 @@
 import { formatCPF } from '@brazilian-utils/brazilian-utils';
 import { SHStack, SText, SVStack } from '@components/core';
 import { SRowCard } from '@components/modelucules/SRowCard';
+import { hierarchyConstant } from '@constants/maps/hierarchy.map';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 import { withObservables } from '@nozbe/watermelondb/react';
+import { HierarchyListParents } from '@utils/helpers/hierarchyListParents';
 import { memo, useState } from 'react';
 
 type Props = {
+    hierarchy?: HierarchyListParents;
     employee: EmployeeModel & { selected?: boolean };
     onClick?: (risk: EmployeeModel) => Promise<void>;
     selected?: boolean;
@@ -13,7 +16,7 @@ type Props = {
 };
 
 export const EmployeeCard = memo(
-    ({ employee, selected, onClick, renderRightElement }: Props) => {
+    ({ employee, selected, hierarchy, onClick, renderRightElement }: Props) => {
         const [isLoading, setIsLoading] = useState(false);
 
         const handleClick = () => {
@@ -22,6 +25,12 @@ export const EmployeeCard = memo(
                 onClick(employee).finally(() => setIsLoading(false));
             }
         };
+
+        const parents = hierarchy
+            ? [...(hierarchy?.parents || []), hierarchy]
+                  .map((h) => `${hierarchyConstant[h.type]?.short || ''}: ${h.name}`)
+                  .join(' > ')
+            : 'sem cargo';
 
         return (
             <SRowCard loading={isLoading} selected={selected} onPress={handleClick}>
@@ -34,6 +43,13 @@ export const EmployeeCard = memo(
                             CPF: {formatCPF(employee.cpf)}
                         </SText>
                         <SText fontSize={11}>RG: {employee.rg}</SText>
+                    </SHStack>
+                    <SHStack flex={1} mt={-1}>
+                        {parents && (
+                            <SText flex={1} fontSize={11} mt={1}>
+                                {parents}
+                            </SText>
+                        )}
                     </SHStack>
                 </SVStack>
                 {renderRightElement?.(employee, !!selected)}

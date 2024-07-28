@@ -1,19 +1,16 @@
 import { SSpinner, SVStack } from '@components/core';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback } from 'react-native';
-import { CharacterizationFormProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
-import { SButton, SInputSearch } from '@components/index';
+import { SButton } from '@components/index';
+import { SInputLoadingSearch } from '@components/modelucules/SInputSearch/SInputLoadingSearch';
 import { SAFE_AREA_PADDING, pagePadding } from '@constants/constants';
-import { HierarchyEnum } from '@constants/enums/hierarchy.enum';
 import { useGetEmployee } from '@hooks/database/useGetEmployee';
-import { useTableSearch } from '@hooks/useTableSearchOld';
+import { useResultSearch } from '@hooks/useResultSearch';
+import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 import sortArray from 'sort-array';
 import { EmployeeList } from './EmployeeList';
-import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
-import { useResultSearch } from '@hooks/useResultSearch';
-import { SInputLoadingSearch } from '@components/modelucules/SInputSearch/SInputLoadingSearch';
 
 type PageProps = {
     onSave: () => Promise<void>;
@@ -28,7 +25,7 @@ export function EmployeesTable({ onClick, renderRightElement, onSave }: PageProp
     const employeeIds = useCharacterizationFormStore((state) => state.form?.employees?.map((e) => e.id));
     const workspaceId = useCharacterizationFormStore((state) => state.form.workspaceId);
 
-    const { isLoading, employees } = useGetEmployee({ workspaceId: workspaceId });
+    const { isLoading, employees } = useGetEmployee({ workspaceId });
 
     const data = React.useMemo(() => {
         let employeesList = employees || [];
@@ -77,6 +74,7 @@ export function EmployeesTable({ onClick, renderRightElement, onSave }: PageProp
                                 onClick={handleClick}
                                 employees={results}
                                 selectedIds={employeeIds}
+                                workspaceId={workspaceId}
                             />
                         )}
                     </SVStack>
