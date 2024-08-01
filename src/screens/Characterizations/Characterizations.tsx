@@ -41,12 +41,15 @@ import { GenerateSourceRepository } from '@repositories/generateSourceRepository
 import { IEpiRiskData } from '@interfaces/IEpi';
 import { useModalStore } from '@libs/storage/state/modal/modal.store';
 import { removeDuplicateById } from '@utils/helpers/removeDuplicate';
+import { onGenerateSyncCharacterizatinKey, useSyncCharacterization } from '@hooks/useSyncCharacterization';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export function Characterizations({ route }: CharacterizationsPageProps): React.ReactElement {
     const [workspaceDB, setWorkspaceDB] = useState<WorkspaceModel>();
     const [companyDB, setCompanyDB] = useState<CompanyModel>();
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
+    const { syncCharacterization } = useSyncCharacterization();
 
     const createRecMed = useMutCreateRecMed();
     const createGenerateSource = useMutCreateGenerateSource();
@@ -103,7 +106,16 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
             const workspaceId = workspaceDB?.id as string;
             const companyId = companyDB?.id as string;
 
+            const lastSync = workspaceDB?.lastSendApiCharacterization_at
+                ? new Date(workspaceDB.lastSendApiCharacterization_at)
+                : null;
+
             if (workspaceId && companyId) {
+                await syncCharacterization({
+                    workspaceId: route.params.workspaceId,
+                    companyId: companyDB?.apiId || companyId,
+                });
+
                 const companyRepository = new CompanyRepository();
                 const recMedRepository = new RecMedRepository();
                 const generateSourceRepository = new GenerateSourceRepository();
@@ -207,7 +219,10 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     params: { characterizationId: string },
                 ) => {
                     riskData?.forEach((riskData) => {
+                        if (lastSync && riskData.updatedAt && new Date(riskData.updatedAt) < lastSync) return;
+
                         riskDataInsert.push({
+                            createId: riskData.id,
                             companyId: companyId,
                             exposure: riskData.exposure,
                             activities: riskData.activities,
@@ -245,6 +260,9 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     characterization: CharacterizationModel,
                     hierarchies: HierarchyModel[],
                 ) => {
+                    if (lastSync && characterization.updated_at && new Date(characterization.updated_at) < lastSync)
+                        return;
+
                     characterizationHierarchyMap[characterization.id] = hierarchies
                         .map((hierarchy) => hierarchy.apiId as string)
                         .filter(Boolean);
@@ -534,6 +552,14 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     lastSendApiCharacterization_at: new Date(),
                 });
 
+                const key = onGenerateSyncCharacterizatinKey({
+                    companyId,
+                    userId: user.id,
+                    workspaceId,
+                });
+
+                AsyncStorage.setItem(key, new Date().toISOString());
+
                 setModal({
                     open: false,
                     title: '',
@@ -569,6 +595,13 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
             isMounted = false;
         };
     }, [fetchCharacterizations]);
+
+    useEffect(() => {
+        if (companyDB?.apiId) {
+            syncCharacterization({ workspaceId: route.params.workspaceId, companyId: companyDB.apiId });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [companyDB, route.params.workspaceId]);
 
     const companyName = companyDB?.fantasy || companyDB?.name || '';
     const workspaceName = workspaceDB?.name || '';

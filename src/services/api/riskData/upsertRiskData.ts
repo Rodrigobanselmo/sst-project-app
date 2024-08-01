@@ -12,6 +12,7 @@ import { useMutation } from '@tanstack/react-query';
 
 export interface IUpsertRiskData {
     id?: string;
+    createId?: string;
     companyId: string;
     riskId?: string;
     riskIds?: string[];

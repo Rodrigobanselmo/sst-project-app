@@ -52,6 +52,7 @@ export interface ICharacterizationPhoto {
 }
 export interface ICharacterizationCreate {
     apiId?: string;
+    id?: string;
     name: string;
     type: CharacterizationTypeEnum;
     description?: string;
@@ -69,6 +70,7 @@ export interface ICharacterizationCreate {
     employeeIds?: string[];
     audios?: IFileCharacterization[];
     videos?: IFileCharacterization[];
+    updatedAt?: Date;
 }
 
 export class CharacterizationRepository {
@@ -94,6 +96,15 @@ export class CharacterizationRepository {
         const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
         const characterizations = await characterizationCollection
             .query(Q.where('profileParentId', Q.eq(null)), Q.where('workspaceId', workspaceId))
+            .fetch();
+
+        return { characterizations };
+    }
+
+    async findAllByWorkspace({ workspaceId, userId }: { workspaceId: string; userId: number }) {
+        const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
+        const characterizations = await characterizationCollection
+            .query(Q.where('workspaceId', workspaceId), Q.where('user_id', String(userId)))
             .fetch();
 
         return { characterizations };
@@ -140,7 +151,7 @@ export class CharacterizationRepository {
             }
 
             const newCharacterization = await characterizationTable.create((characterization) => {
-                characterization._raw.id = uuidGenerator.v4() as string;
+                characterization._raw.id = data.id || (uuidGenerator.v4() as string);
                 characterization.apiId = data.apiId;
                 characterization.name = data.name;
                 characterization.userId = String(data.userId);
@@ -214,7 +225,7 @@ export class CharacterizationRepository {
                     if (data.audios) characterization.audios = JSON.stringify(data.audios);
                     if (data.videos) characterization.videos = JSON.stringify(data.videos);
 
-                    characterization.updated_at = new Date();
+                    characterization.updated_at = data.updatedAt || new Date();
                 });
 
                 const photos = data.photos;

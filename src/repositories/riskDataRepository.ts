@@ -25,6 +25,7 @@ import uuidGenerator from 'react-native-uuid';
 
 export interface IRiskDataCreate extends RiskDataFormRelationsDeletionsProps, RiskDataFormRelationsProps {
     id?: string;
+    apiId?: string;
     realActivity?: string;
     exposure?: string;
     probability?: number;
@@ -88,7 +89,7 @@ export class RiskDataRepository {
             await Promise.all(
                 riskData.map(async (_riskData) => {
                     const newRiskData = await riskDataTable.create((newRiskData) => {
-                        if (_riskData.id) newRiskData._raw.id = _riskData.id;
+                        newRiskData._raw.id = _riskData.id || (uuidGenerator.v4() as string);
                         newRiskData.characterizationId = characterizationId;
                         newRiskData.riskId = _riskData.riskId;
                         newRiskData.probability = _riskData.probability;
@@ -412,7 +413,7 @@ export class RiskDataRepository {
         return riskData;
     }
 
-    async update(id: string, data: Partial<IRiskDataCreate> & { riskId: string }) {
+    async update(id: string, data: Partial<IRiskDataCreate> & { riskId: string; updatedAt?: Date }) {
         await database.write(async () => {
             const riskDataCollection = database.get<RiskDataModel>(DBTablesEnum.RISK_DATA);
 
@@ -422,13 +423,14 @@ export class RiskDataRepository {
                     if (data.exposure) riskData.exposure = data.exposure;
                     if (data.probability) riskData.probability = data.probability;
                     if (data.probabilityAfter) riskData.probabilityAfter = data.probabilityAfter;
+                    if (data.apiId) riskData.apiId = data.apiId;
 
                     const activitiesString = formatActivities(data);
                     if (activitiesString) {
                         riskData.activities = activitiesString;
                     }
 
-                    riskData.updated_at = new Date();
+                    riskData.updated_at = data.updatedAt || new Date();
                 });
 
                 let rikDataArray = [data];

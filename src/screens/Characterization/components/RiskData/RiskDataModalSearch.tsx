@@ -49,6 +49,15 @@ const sortFunctionGS = (array: any[]) =>
         order: ['asc'],
     });
 
+export const getEquipmentName = (item: { ca: string; equipment: string }) => {
+    const isNa = isNaEpi(item.ca);
+    const equipment = item.equipment;
+
+    const name = isNa ? equipment : `${item.ca}: ${equipment}`;
+
+    return name;
+};
+
 export function RiskDataModalSearch({ onEditForm, form, risk, modalRef }: PageProps): React.ReactElement {
     const [isOpen, setIsOpen] = useState<modalOpenType>(false);
 
@@ -177,11 +186,7 @@ export function RiskDataModalSearch({ onEditForm, form, risk, modalRef }: PagePr
                     const data = result?.data;
                     if (data) {
                         const resultData = data.map<DataProps>((item) => {
-                            const isNa = isNaEpi(item.ca);
-                            const equipment = item.equipment;
-                            // const equipment = addDotsText({ text: item.equipment, maxLength: 40 });
-
-                            const name = isNa ? equipment : `${item.ca}: ${equipment}`;
+                            const name = getEquipmentName(item);
 
                             return { name, id: String(item.id), description: item.ca };
                         });

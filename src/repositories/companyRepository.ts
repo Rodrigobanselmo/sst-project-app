@@ -295,6 +295,8 @@ export class CompanyRepository {
                         const m2mData = await riskDataRepository.getRiskDataInfo(riskDataModel);
                         const riskDataAll = {
                             ...m2mData,
+                            id: riskDataModel.id,
+                            updatedAt: riskDataModel.updated_at,
                             exposure: riskDataModel.exposure as ExposureTypeEnum,
                             apiId: riskDataModel.apiId,
                             riskId: riskDataModel.riskId,
