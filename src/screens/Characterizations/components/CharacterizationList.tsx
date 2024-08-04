@@ -1,4 +1,4 @@
-import { SFlatList, SFloatingButton, SIcon } from '@components/core';
+import { SFlatList, SFloatingButton, SIcon, SText } from '@components/core';
 // import * as ImagePicker from 'expo-image-picker';
 import { SInputSearch, SNoContent } from '@components/modelucules';
 import { SHorizontalMenu } from '@components/modelucules/SHorizontalMenu';
@@ -77,7 +77,7 @@ export function CharacterizationList({ characterizations, workspace }: Props): R
 
             {!!characterizationsFiltered?.length && (
                 <SFlatList
-                    data={results || []}
+                    data={results?.slice(0, 10) || []}
                     keyExtractor={(item) => item.id}
                     // keyboardShouldPersistTaps={'handled'}
                     renderItem={({ item }) => <EnhancedCharacterizationCard characterization={item} />}
@@ -86,6 +86,7 @@ export function CharacterizationList({ characterizations, workspace }: Props): R
                 />
             )}
             {!characterizationsFiltered?.length && <SNoContent mx="pagePaddingPx" />}
+            <SText ml={4}>Total: {results.length}</SText>
         </>
     );
 }

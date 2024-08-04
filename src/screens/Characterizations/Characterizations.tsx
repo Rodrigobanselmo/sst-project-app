@@ -47,7 +47,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export function Characterizations({ route }: CharacterizationsPageProps): React.ReactElement {
     const [workspaceDB, setWorkspaceDB] = useState<WorkspaceModel>();
     const [companyDB, setCompanyDB] = useState<CompanyModel>();
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState([true, true]);
     const { user } = useAuth();
     const { syncCharacterization } = useSyncCharacterization();
 
@@ -71,7 +71,12 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
         } catch (error) {
             console.error('fetchCharacterizations', error);
         } finally {
-            setLoading(false);
+            setLoading((prev) => {
+                const newLoading = [...prev];
+                newLoading[0] = false;
+
+                return newLoading;
+            });
         }
     }, [route.params.workspaceId]);
 
@@ -597,14 +602,25 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
     }, [fetchCharacterizations]);
 
     useEffect(() => {
-        if (companyDB?.apiId) {
-            syncCharacterization({ workspaceId: route.params.workspaceId, companyId: companyDB.apiId });
-        }
+        const sync = async () => {
+            if (companyDB?.apiId) {
+                await syncCharacterization({ workspaceId: route.params.workspaceId, companyId: companyDB.apiId });
+                setLoading((prev) => {
+                    const newLoading = [...prev];
+                    newLoading[1] = false;
+
+                    return newLoading;
+                });
+            }
+        };
+
+        sync();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [companyDB, route.params.workspaceId]);
 
     const companyName = companyDB?.fantasy || companyDB?.name || '';
     const workspaceName = workspaceDB?.name || '';
+    const isLoading = loading.some(Boolean);
 
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -615,7 +631,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     title="Ambientes / Atividades"
                     subtitleComponent={
                         <SBox px={12}>
-                            {!loading && (
+                            {!isLoading && (
                                 <SText fontSize={14} color="text.label">
                                     {companyName} <SText fontSize={13}>({workspaceName})</SText>
                                 </SText>
@@ -623,8 +639,8 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                         </SBox>
                     }
                 />
-                {loading && <SSpinner color={'primary.main'} size={32} mt={29} />}
-                {!loading && (
+                {isLoading && <SSpinner color={'primary.main'} size={32} mt={29} />}
+                {!isLoading && (
                     <>
                         <RenderEnhancedCharacterizationList workspace={workspaceDB} />
                         <SFloatingButton

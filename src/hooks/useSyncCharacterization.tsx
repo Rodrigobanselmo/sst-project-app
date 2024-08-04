@@ -13,6 +13,7 @@ import { RiskDataFormSelectedProps } from '@screens/Characterization/types';
 import { getSyncCharacterization, ICharacterizationResponseChanges } from '@services/api/sync/getSyncCharacterization';
 import { useCallback, useRef } from 'react';
 import { useAuth } from './useAuth';
+import { asyncBatch } from '@utils/helpers/asyncBatch';
 
 interface IOptions {
     companyId: string;
@@ -145,7 +146,7 @@ export function useSyncCharacterization() {
             };
         };
 
-        Object.entries(characterizationMap).forEach(async ([id, { local, server }]) => {
+        await asyncBatch(Object.entries(characterizationMap), 10, async ([id, { local, server }]) => {
             const shouldDelete = ({
                 localCreatedAt,
                 existServer,
@@ -311,6 +312,7 @@ export function useSyncCharacterization() {
                     userId: user.id,
                     workspaceId,
                 });
+
                 const storedDate = await AsyncStorage.getItem(key);
 
                 const lastSync = storedDate ? new Date(storedDate) : null;
