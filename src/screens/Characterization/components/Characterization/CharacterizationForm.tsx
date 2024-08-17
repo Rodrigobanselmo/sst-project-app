@@ -289,7 +289,7 @@ export function CharacterizationForm({
                                         onChangeText: onChange,
                                     }}
                                     h={300}
-                                    startAdornmentText="Descrição"
+                                    startAdornmentText="Anotações"
                                     errorMessage={errors.description?.message}
                                 />
                             )}

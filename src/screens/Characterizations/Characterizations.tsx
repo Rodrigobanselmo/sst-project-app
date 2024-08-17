@@ -277,7 +277,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                         companyId,
                         workspaceId,
                         name: characterization.name,
-                        paragraphs: characterization.description ? [characterization.description] : undefined,
+                        description: characterization.description,
                         type: characterization.type,
                         luminosity: characterization.luminosity,
                         moisturePercentage: characterization.moisturePercentage,

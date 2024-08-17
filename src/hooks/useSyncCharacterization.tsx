@@ -203,7 +203,6 @@ export function useSyncCharacterization() {
                         userId: user.id,
                         workspaceId,
                         apiId: server.id,
-                        description: server.description,
                         luminosity: server.luminosity,
                         noiseValue: server.noiseValue,
                         temperature: server.temperature,
@@ -230,7 +229,6 @@ export function useSyncCharacterization() {
                     await characterizationRepository.update(local.id, {
                         name: server.name,
                         type: server.type,
-                        description: server.description,
                         luminosity: server.luminosity,
                         noiseValue: server.noiseValue,
                         temperature: server.temperature,
