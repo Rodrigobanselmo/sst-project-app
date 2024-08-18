@@ -33,7 +33,9 @@ export const EnhancedCharacterizationPhoto = enhance(CharacterizationPhoto);
 
 const styles = StyleSheet.create({
     container: {
-        height: 50,
+        maxHeight: 50,
+        maxWidth: 80,
+        minHeight: 50,
         minWidth: 80,
         position: 'relative',
     },

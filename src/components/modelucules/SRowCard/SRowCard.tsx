@@ -8,9 +8,10 @@ type Props = {
     children?: any;
     loading?: boolean;
     selected?: boolean;
+    done?: boolean;
 };
 
-export function SRowCard({ onPress, children, disabled, selected, loading }: Props): React.ReactElement {
+export function SRowCard({ done, onPress, children, disabled, selected, loading }: Props): React.ReactElement {
     return (
         <TouchableOpacity disabled={disabled || loading} style={{ opacity: loading ? 0.7 : 1 }} onPress={onPress}>
             <SHStack
@@ -18,7 +19,7 @@ export function SRowCard({ onPress, children, disabled, selected, loading }: Pro
                 borderWidth={1}
                 borderColor={'gray.200'}
                 borderRadius={10}
-                bg={'background.paper'}
+                bg={done ? 'success.100' : 'background.paper'}
                 opacity={disabled ? 0.5 : 1}
                 flex={1}
                 px={2}

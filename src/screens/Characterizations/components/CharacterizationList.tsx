@@ -13,9 +13,10 @@ import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import sortArray from 'sort-array';
 import EnhancedCharacterizationCard from './CharacterizationCard';
+import { ActivityIndicator } from 'react-native';
 
 type Props = {
     characterizations?: CharacterizationModel[];
@@ -23,8 +24,10 @@ type Props = {
 };
 
 export function CharacterizationList({ characterizations, workspace }: Props): React.ReactElement {
+    const [page, setPage] = useState(1);
     const { navigate } = useNavigation<AppNavigatorRoutesProps>();
     const [activeType, setActiveType] = useState<CharacterizationTypeEnum | null>(null);
+    const rowsPerPage = 10;
 
     const handleCreateCharacterization = () => {
         navigate('characterization', { workspaceId: workspace.id, type: activeType || undefined });
@@ -37,18 +40,32 @@ export function CharacterizationList({ characterizations, workspace }: Props): R
         return characterizations?.filter((characterization) => characterization.type === activeType);
     }, [activeType, characterizations]);
 
-    const { handleSearchChange, results } = useTableSearch({
+    const { handleSearchChange, results, search } = useTableSearch({
         data: characterizationsFiltered,
         keys: ['name'],
+        threshold: 0,
         sortFunction: (array) =>
             sortArray(array, {
-                by: ['typeOrder', 'name'],
-                order: ['asc', 'asc'],
+                by: ['typeOrder', 'done_at', 'name'],
+                order: ['asc', 'asc', 'asc'],
                 computed: {
                     typeOrder: (row) => characterizationMap[row.type]?.order,
                 },
             }),
     });
+
+    const loadMoreData = () => {
+        const endOfList = results.length <= page * rowsPerPage;
+        if (endOfList) return;
+
+        setPage((prev) => prev + 1);
+    };
+
+    useEffect(() => {
+        setPage(1);
+    }, [search]);
+
+    const resultsFiltered = results?.slice(0, page * rowsPerPage) || [];
 
     return (
         <>
@@ -77,12 +94,17 @@ export function CharacterizationList({ characterizations, workspace }: Props): R
 
             {!!characterizationsFiltered?.length && (
                 <SFlatList
-                    data={results?.slice(0, 10) || []}
+                    data={resultsFiltered}
                     keyExtractor={(item) => item.id}
                     // keyboardShouldPersistTaps={'handled'}
                     renderItem={({ item }) => <EnhancedCharacterizationCard characterization={item} />}
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ flexGrow: 1, paddingHorizontal: pagePaddingPx }}
+                    contentContainerStyle={{ flexGrow: 1, paddingHorizontal: pagePaddingPx, paddingBottom: 50 }}
+                    onEndReached={loadMoreData}
+                    onEndReachedThreshold={0.5}
+                    ListFooterComponent={
+                        resultsFiltered.length != results?.length ? <ActivityIndicator size="large" /> : null
+                    }
                 />
             )}
             {!characterizationsFiltered?.length && <SNoContent mx="pagePaddingPx" />}

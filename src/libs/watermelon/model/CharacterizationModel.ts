@@ -48,6 +48,7 @@ class CharacterizationModel extends Model {
     @date('created_at') created_at?: Date;
     @date('updated_at') updated_at?: Date;
     @date('deleted_at') deleted_at?: Date;
+    @date('done_at') done_at?: Date | null;
 
     @relation(DBTablesEnum.USER_AUTH, 'user_id') UserAuth?: UserAuthModel;
     @relation(DBTablesEnum.COMPANY, 'companyId') Company?: CompanyModel;

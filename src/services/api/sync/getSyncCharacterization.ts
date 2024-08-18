@@ -18,6 +18,7 @@ export interface ICharacterizationResponseChanges {
     created_at: Date;
     deleted_at: Date;
     updated_at: Date;
+    done_at: Date;
     type: CharacterizationTypeEnum;
     luminosity: string;
     moisturePercentage: string;

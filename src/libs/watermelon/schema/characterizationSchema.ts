@@ -22,6 +22,7 @@ const characterizationSchema = tableSchema({
         { name: 'videos', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
+        { name: 'done_at', type: 'number' },
     ],
 });
 

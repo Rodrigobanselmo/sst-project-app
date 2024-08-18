@@ -1,7 +1,7 @@
 import { DBTablesEnum } from '@constants/enums/db-tables';
 import { addColumns, schemaMigrations } from '@nozbe/watermelondb/Schema/migrations';
-import { migration42 } from './versions/migration_42';
+import { migration45 } from './versions/migration_45';
 
 export const migrations = schemaMigrations({
-    migrations: [migration42],
+    migrations: [migration45],
 });

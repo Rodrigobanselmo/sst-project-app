@@ -8,6 +8,7 @@ export type ICharacterization = {
     description?: string;
     created_at: Date;
     deleted_at?: Date;
+    done_at?: Date;
     updated_at: Date;
     workspaceId: string;
     type: CharacterizationTypeEnum;

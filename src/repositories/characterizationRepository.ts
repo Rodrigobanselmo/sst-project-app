@@ -71,6 +71,7 @@ export interface ICharacterizationCreate {
     audios?: IFileCharacterization[];
     videos?: IFileCharacterization[];
     updatedAt?: Date;
+    done_at?: Date;
 }
 
 export class CharacterizationRepository {
@@ -167,6 +168,7 @@ export class CharacterizationRepository {
                 characterization.status = StatusEnum.ACTIVE;
                 characterization.created_at = new Date();
                 characterization.updated_at = new Date();
+                characterization.done_at = data.done_at ? new Date(data.done_at) : undefined;
                 characterization.audios = JSON.stringify(data.audios);
                 characterization.videos = JSON.stringify(data.videos);
             });
@@ -213,6 +215,7 @@ export class CharacterizationRepository {
             try {
                 const characterization = await characterizationTable.find(id);
                 const newCharacterization = await characterization.update(() => {
+                    console.log(1, data.done_at, data.done_at ? new Date(data.done_at) : null);
                     if (data.apiId) characterization.apiId = data.apiId;
                     if (data.name) characterization.name = data.name;
                     if (data.profileName) characterization.profileName = data.profileName;
@@ -224,6 +227,8 @@ export class CharacterizationRepository {
                     if (data.moisturePercentage) characterization.moisturePercentage = data.moisturePercentage;
                     if (data.audios) characterization.audios = JSON.stringify(data.audios);
                     if (data.videos) characterization.videos = JSON.stringify(data.videos);
+                    if (data.done_at !== undefined)
+                        characterization.done_at = data.done_at ? new Date(data.done_at) : null;
 
                     characterization.updated_at = data.updatedAt || new Date();
                 });
