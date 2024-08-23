@@ -43,6 +43,7 @@ import { useModalStore } from '@libs/storage/state/modal/modal.store';
 import { removeDuplicateById } from '@utils/helpers/removeDuplicate';
 import { onGenerateSyncCharacterizatinKey, useSyncCharacterization } from '@hooks/useSyncCharacterization';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { captureExeption, captureLog } from '@utils/errors/captureExecption';
 
 export function Characterizations({ route }: CharacterizationsPageProps): React.ReactElement {
     const [workspaceDB, setWorkspaceDB] = useState<WorkspaceModel>();
@@ -458,6 +459,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     updateProgress();
                 });
 
+                await captureLog({ message: 'done characterizations profile' });
                 if (error(errorsMessage)) return;
 
                 await asyncBatch(photosData, 2, async (photo) => {
@@ -471,6 +473,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                             file,
                         })
                         .catch((error) => {
+                            captureExeption({ message: 'error photo', error });
                             errorsMessage.push(error?.message);
                         });
 
@@ -483,6 +486,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     updateProgress();
                 });
 
+                await captureLog({ message: 'done photo' });
                 if (error(errorsMessage)) return;
 
                 await asyncBatch(riskDataInsert, 4, async (riskData) => {
@@ -491,12 +495,14 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                             ...riskData,
                         })
                         .catch((error) => {
+                            captureExeption({ message: 'error risk data', error });
                             errorsMessage.push(error?.message);
                         });
 
                     updateProgress();
                 });
 
+                await captureLog({ message: 'done risk data' });
                 if (error(errorsMessage)) return;
 
                 const createFile = async (files: (typeof audiosData)[0]) => {
@@ -512,6 +518,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                             })
                             .catch((error) => {
                                 errorsMessage.push(error?.message);
+                                captureExeption({ message: 'error file', error });
                                 apiId = undefined;
                             });
 
@@ -520,35 +527,47 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                 };
 
                 await asyncBatch(audiosData, 2, async (audioData) => {
-                    const audiosFiles = await createFile(audioData);
+                    try {
+                        const audiosFiles = await createFile(audioData);
 
-                    const charId = audioData?.[0]?.companyCharacterizationId;
+                        const charId = audioData?.[0]?.companyCharacterizationId;
 
-                    if (charId && audiosFiles.length > 0) {
-                        await characterizationRepository.updateFiles(charId, {
-                            audios: audiosFiles,
-                        });
+                        if (charId && audiosFiles.length > 0) {
+                            await characterizationRepository.updateFiles(charId, {
+                                audios: audiosFiles,
+                            });
+                        }
+
+                        updateProgress();
+                    } catch (e) {
+                        captureExeption({ message: 'error audio', error });
                     }
-
-                    updateProgress();
                 });
 
-                if (error(errorsMessage)) return;
+                await captureLog({ message: 'done audio' });
+                if (error(errorsMessage)) {
+                    await captureExeption({ message: 'audio errors message', error: errorsMessage });
+                }
 
                 await asyncBatch(videosData, 2, async (videoData) => {
-                    const videosFiles = await createFile(videoData);
+                    try {
+                        const videosFiles = await createFile(videoData);
 
-                    const charId = videoData?.[0]?.companyCharacterizationId;
+                        const charId = videoData?.[0]?.companyCharacterizationId;
 
-                    if (charId && videosFiles.length > 0) {
-                        await characterizationRepository.updateFiles(charId, {
-                            videos: videosFiles,
-                        });
+                        if (charId && videosFiles.length > 0) {
+                            await characterizationRepository.updateFiles(charId, {
+                                videos: videosFiles,
+                            });
+                        }
+
+                        updateProgress();
+                    } catch (e) {
+                        await captureExeption({ message: 'error video', error: e });
                     }
-
-                    updateProgress();
                 });
 
+                await captureLog({ message: 'done video' });
                 if (error(errorsMessage)) return;
 
                 Alert.alert('Sucesso', 'Dados enviados com sucesso.');
