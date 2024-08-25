@@ -1,6 +1,6 @@
 import { SBox, SHStack, SScrollView, SText } from '@components/core';
 import { SCREEN_WIDTH, pagePaddingPx } from '@constants/constants';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { deleteImageOrVideoFromGallery, saveImageOrVideoToGallery } from '@utils/helpers/saveAsset';
 import { Audio, ResizeMode, Video } from 'expo-av';
 import { Camera } from 'expo-camera';

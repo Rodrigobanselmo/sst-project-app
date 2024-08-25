@@ -2,7 +2,7 @@ import { ISBoxProps, SBox, SHStack, SIcon, SText, SVStack } from '@components/co
 import React from 'react';
 // import * as ImagePicker from 'expo-image-picker';
 import { SButton } from '@components/modelucules';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import { TouchableOpacity } from 'react-native';
 
 type CompProps<T> = {

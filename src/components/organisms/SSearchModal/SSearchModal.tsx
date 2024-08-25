@@ -1,20 +1,13 @@
-import { formatCNPJ } from '@brazilian-utils/brazilian-utils';
-import { SBox, SCenter, SFlatList, SFormControl, SHStack, SSpinner, SIcon, SText } from '@components/core';
-import { SButton, SInput, SLoading, SNoContent } from '@components/modelucules';
-import { SRowCard } from '@components/modelucules/SRowCard';
+import { SBox, SFlatList, SFormControl, SHStack, SIcon, SText } from '@components/core';
+import { SButton, SInput, SNoContent } from '@components/modelucules';
+import { SErrorBox } from '@components/modelucules/SErrorBox';
+import { ILoadingRef, SLoadContainer } from '@components/modelucules/SLoadContainer/SLoadContainer';
+import { SNoInternet } from '@components/modelucules/SNoInternet';
 import { SModal } from '@components/organisms/SModal';
 import { SCREEN_HEIGHT } from '@constants/constants';
-import { ICompany } from '@interfaces/ICompany';
-import { useQueryCompanies } from '@services/api/company/getCompanies';
-import { addDotsText } from '@utils/helpers/addDotsText';
-import { useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
-import NetInfo, { useNetInfo } from '@react-native-community/netinfo';
-import { SNoInternet } from '@components/modelucules/SNoInternet';
-import { SErrorBox } from '@components/modelucules/SErrorBox';
+import Feather from '@expo/vector-icons/Feather';
 import { Keyboard, KeyboardAvoidingView, Platform, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { ILoadingRef, SLoadContainer } from '@components/modelucules/SLoadContainer/SLoadContainer';
+import { useDebouncedCallback } from 'use-debounce';
 
 type MyComponentProps<T> = {
     title: string;

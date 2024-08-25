@@ -2,7 +2,7 @@ import { SBox, SIcon, SImage } from '@components/core';
 import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
 // import * as ImagePicker from 'expo-image-picker';
 import PlaceholderImage from '@assets/placeholder-image.png';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Orientation } from 'expo-screen-orientation';
 
 type PageProps = {

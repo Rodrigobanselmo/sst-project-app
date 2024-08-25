@@ -1,8 +1,5 @@
 import React from 'react';
 import { SInput, SInputProps } from '../SInput/SInput';
-import { TouchableOpacity } from 'react-native';
-import { SIcon } from '@components/core';
-import { MaterialIcons } from '@expo/vector-icons';
 
 export interface SInputSearchProps extends SInputProps {
     search?: string;

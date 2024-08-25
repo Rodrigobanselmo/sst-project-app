@@ -2,7 +2,7 @@ import { SFloatingButton, SIcon, SSpinner, SVStack, useSToast } from '@component
 import { SHomeHeader } from '@components/index';
 import { SSearchCompany } from '@components/organisms/SSearchModal/components/SSearchCompany';
 import { SSearchWorkspace } from '@components/organisms/SSearchModal/components/SSearchWorkspace';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useGetUser } from '@hooks/database/useGetUser';
 import { useSync } from '@hooks/useSync';
 import { ICompany, IWorkspace } from '@interfaces/ICompany';

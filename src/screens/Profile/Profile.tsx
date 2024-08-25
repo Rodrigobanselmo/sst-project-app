@@ -31,7 +31,7 @@ export const Profile = () => {
             name: user.name,
             email: user.email,
         },
-        resolver: yupResolver(profileFormSchema),
+        resolver: yupResolver(profileFormSchema as any),
     });
 
     const handleProfileUpdate = async (data: IProfileFormProps) => {

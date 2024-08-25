@@ -1,6 +1,6 @@
 import { SBox, SCenter, SHStack, SIcon, SSpinner } from '@components/core';
 import { TouchableOpacity } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 type Props = {
     onPress: () => void;

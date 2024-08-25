@@ -25,8 +25,8 @@ import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../../constants/constants';
 import { SBox } from '@components/core';
 import { Orientation } from 'expo-screen-orientation';
 
-const PAN_GESTURE_HANDLER_FAIL_X = [-SCREEN_WIDTH, SCREEN_WIDTH];
-const PAN_GESTURE_HANDLER_ACTIVE_Y = [-2, 2];
+const PAN_GESTURE_HANDLER_FAIL_X: [number, number] = [-SCREEN_WIDTH, SCREEN_WIDTH];
+const PAN_GESTURE_HANDLER_ACTIVE_Y: [number, number] = [-2, 2];
 const CAPTURE_BUTTON_SIZE = 78;
 
 const START_RECORDING_DELAY = 200;

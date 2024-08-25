@@ -1,6 +1,7 @@
 import { SHStack, SText } from '@components/core';
 import { pagePaddingPx } from '@constants/constants';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { Box, Progress, theme } from 'native-base';
@@ -100,7 +101,7 @@ const SAudioRecorder = ({
                             </SText>
                         )}
                         {isRecording ? (
-                            <Ionicons name="ios-stop-circle-outline" size={20} color="white" />
+                            <Ionicons name={'stop-circle-outline'} size={20} color="white" />
                         ) : (
                             <FontAwesome name={'microphone'} size={18} color="white" />
                         )}

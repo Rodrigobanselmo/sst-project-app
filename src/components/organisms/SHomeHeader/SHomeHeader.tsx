@@ -1,17 +1,15 @@
+import { SHeading, SHStack, SIcon, SText, SVStack } from '@components/core';
+import Feather from '@expo/vector-icons/Feather';
 import { TouchableOpacity } from 'react-native';
-import { SHeading, SHStack, SText, SVStack, SIcon } from '@components/core';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
 
 import { useAuth } from '@hooks/useAuth';
-
-import { api } from '@services/api';
 
 import { UserPhoto } from '@components/organisms/SUserPhoto';
 
 import defaultUserPhotoImage from '@assets/userPhotoDefault.png';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
 import { useNavigation } from '@react-navigation/native';
+import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function SHomeHeader({ bottomSpace }: { bottomSpace?: boolean }) {
     const { user } = useAuth();

@@ -1,9 +1,7 @@
 import { SBox, SCenter, SHeading, SIcon, SText } from '@components/core';
-import { Feather } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Feather from '@expo/vector-icons/Feather';
 import { Alert, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { AppNavigatorRoutesProps, AppRoutesProps } from '@routes/app/AppRoutesProps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ScreenHeaderProps {
     title: string;

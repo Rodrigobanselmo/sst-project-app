@@ -1,49 +1,47 @@
 import { SBox, SFloatingButton, SIcon, SSpinner, SText, SVStack } from '@components/core';
 import { SScreenHeader } from '@components/index';
 import { SAFE_AREA_PADDING } from '@constants/constants';
-import { Ionicons } from '@expo/vector-icons';
-import { CompanyModel } from '@libs/watermelon/model/CompanyModel';
-import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
-import { CompanyRepository } from '@repositories/companyRepository';
-import { ICreateRecMed, useMutCreateRecMed } from '@services/api/recMed/createRecMed';
-import { asyncBatch } from '@utils/helpers/asyncBatch';
-import { useCallback, useEffect, useState } from 'react';
-import { Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
-import RenderEnhancedCharacterizationList from './components/CharacterizationList';
-import { CharacterizationsPageProps } from './types';
-import { RecMedRepository } from '@repositories/recMedRepository';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAuth } from '@hooks/useAuth';
+import { onGenerateSyncCharacterizatinKey, useSyncCharacterization } from '@hooks/useSyncCharacterization';
+import { IEpiRiskData } from '@interfaces/IEpi';
+import { useModalStore } from '@libs/storage/state/modal/modal.store';
+import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
+import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
+import { CompanyModel } from '@libs/watermelon/model/CompanyModel';
+import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
+import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
+import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CharacterizationRepository, IFileCharacterization } from '@repositories/characterizationRepository';
+import { CompanyRepository } from '@repositories/companyRepository';
+import { GenerateSourceRepository } from '@repositories/generateSourceRepository';
+import { RecMedRepository } from '@repositories/recMedRepository';
+import {
+    IAddCharacterizationFile,
+    useMutCreateCharacterizationFile,
+} from '@services/api/characterization/createCharacterizationFile';
 import {
     IAddCharacterizationPhoto,
     useMutCreateCharacterizationPhoto,
 } from '@services/api/characterization/createCharacterizationPhoto';
 import {
-    IAddCharacterizationFile,
-    useMutCreateCharacterizationFile,
-} from '@services/api/characterization/createCharacterizationFile';
-import { CharacterizationPhotoModel } from '@libs/watermelon/model/CharacterizationPhotoModel';
-import { CharacterizationRepository, IFileCharacterization } from '@repositories/characterizationRepository';
-import { getFormFileFromURI } from '@utils/helpers/getAssetInfo';
-import {
     IUpsertCharacterization,
     useMutUpsertCharacterization,
 } from '@services/api/characterization/upsertCharacterization';
 import { ICreateGenerateSource, useMutCreateGenerateSource } from '@services/api/generateSource/createGenerateSource';
-import { IUpsertRiskData, useMutUpsertRiskData } from '@services/api/riskData/upsertRiskData';
-import uuidGenerator from 'react-native-uuid';
-import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
-import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
-import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
 import { IAutomateHierarchySubOffice, useMutateCreateSubOffice } from '@services/api/hierarchy/createSubOffice';
-import { CharacterizationEmployeeModel } from '@libs/watermelon/model/_MMModel/CharacterizationEmployeeModel';
-import { EmployeeRepository } from '@repositories/employeeRepository';
-import { GenerateSourceRepository } from '@repositories/generateSourceRepository';
-import { IEpiRiskData } from '@interfaces/IEpi';
-import { useModalStore } from '@libs/storage/state/modal/modal.store';
-import { removeDuplicateById } from '@utils/helpers/removeDuplicate';
-import { onGenerateSyncCharacterizatinKey, useSyncCharacterization } from '@hooks/useSyncCharacterization';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ICreateRecMed, useMutCreateRecMed } from '@services/api/recMed/createRecMed';
+import { IUpsertRiskData, useMutUpsertRiskData } from '@services/api/riskData/upsertRiskData';
 import { captureExeption, captureLog } from '@utils/errors/captureExecption';
+import { asyncBatch } from '@utils/helpers/asyncBatch';
+import { getFormFileFromURI } from '@utils/helpers/getAssetInfo';
+import { removeDuplicateById } from '@utils/helpers/removeDuplicate';
+import { useCallback, useEffect, useState } from 'react';
+import { Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import uuidGenerator from 'react-native-uuid';
+import RenderEnhancedCharacterizationList from './components/CharacterizationList';
+import { CharacterizationsPageProps } from './types';
 
 export function Characterizations({ route }: CharacterizationsPageProps): React.ReactElement {
     const [workspaceDB, setWorkspaceDB] = useState<WorkspaceModel>();

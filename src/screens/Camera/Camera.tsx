@@ -5,7 +5,8 @@ import { PinchGestureHandler, TapGestureHandler } from 'react-native-gesture-han
 import Reanimated from 'react-native-reanimated';
 import { Camera, PhotoFile, VideoFile } from 'react-native-vision-camera';
 import { CONTENT_SPACING, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from '../../constants/constants';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { calculateActualDimensions } from '@utils/helpers/calculateAspectRatio';
 import { isAndroid } from '@utils/helpers/getPlataform';
 import { saveImageOrVideoToGallery } from '@utils/helpers/saveAsset';
@@ -201,8 +202,8 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                         isPortrait
                             ? styles.rightButtonRow
                             : isLandscapeRight
-                            ? styles.rightButtonRowRight
-                            : styles.rightButtonRowLeft
+                              ? styles.rightButtonRowRight
+                              : styles.rightButtonRowLeft
                     }
                 >
                     {supportsCameraFlipping && (
@@ -240,8 +241,8 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                                         item.orientation === Orientation.PORTRAIT_UP
                                             ? styles.image
                                             : item.orientation == Orientation.LANDSCAPE_LEFT
-                                            ? styles.imageLL
-                                            : styles.imageLR
+                                              ? styles.imageLL
+                                              : styles.imageLR
                                     }
                                 />
                                 <TouchableOpacity

@@ -11,6 +11,10 @@
       "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
+    "packagerOpts": {
+      "sourceExts": ["js", "jsx", "svgx"],
+      "transformer": "node_modules/react-native-svg-transformer/index.js"
+    },
     "plugins": [
       [
         "expo-media-library",
@@ -38,14 +42,12 @@
         {
           "microphonePermission": "Permita que o APP SimpleSST acesse seu microfone."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
       "requireFullScreen": true,
       "supportsTablet": true,

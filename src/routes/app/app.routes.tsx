@@ -6,7 +6,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Characterization } from '@screens/Characterization';
 import { Characterizations } from '@screens/Characterizations';
 import { Profile } from '@screens/Profile';
-import { Test } from '@screens/Test';
 import { WorkspacesEnviroment } from '@screens/WorkspacesEnviroment';
 import { useEffect } from 'react';
 import { THEME } from '../../theme/theme';
@@ -81,7 +80,6 @@ export const AppRoutes = () => {
             <Stack.Screen name="main" component={BottomRoutes} />
             <Stack.Screen name="characterizations" component={Characterizations} />
             <Stack.Screen name="characterization" component={Characterization} />
-            <Stack.Screen name={'test' as unknown as any} component={Test} />
         </Stack.Navigator>
     );
 };

@@ -6,7 +6,7 @@ import { SAFE_AREA_PADDING, pagePaddingPx } from '@constants/constants';
 import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { characterizationOptionsList } from '@constants/maps/characterization-options.map';
 import { characterizationMap } from '@constants/maps/characterization.map';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useTableSearch } from '@hooks/useTableSearchOld';
 import { CharacterizationModel } from '@libs/watermelon/model/CharacterizationModel';
 import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';

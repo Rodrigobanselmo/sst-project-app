@@ -2,7 +2,7 @@ import { ISInputProps, SBox, SCenter, SFormControl, Input as SI, SIcon, SSpinner
 import React from 'react';
 import { useRef } from 'react';
 import { TouchableOpacity } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export interface SInputProps extends ISInputProps {
     errorMessage?: string | null;

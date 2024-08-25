@@ -1,25 +1,13 @@
-import { SFlatList, SFloatingButton, SIcon, useSToast } from '@components/core';
+import { SFlatList } from '@components/core';
 // import * as ImagePicker from 'expo-image-picker';
-import { SInputSearch, SNoContent } from '@components/modelucules';
-import { SHorizontalMenu } from '@components/modelucules/SHorizontalMenu';
-import { SAFE_AREA_PADDING, pagePaddingPx } from '@constants/constants';
-import { characterizationOptionsList } from '@constants/maps/characterization-options.map';
-import { characterizationMap } from '@constants/maps/characterization.map';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTableSearch } from '@hooks/useTableSearchOld';
-import { withObservables } from '@nozbe/watermelondb/react';
-import { useNavigation } from '@react-navigation/native';
-import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { memo, useMemo, useState } from 'react';
-import sortArray from 'sort-array';
-import EnhancedRiskCard, { RiskCard } from './RiskCard';
+import { SNoContent } from '@components/modelucules';
+import { pagePaddingPx } from '@constants/constants';
 import { RiskModel } from '@libs/watermelon/model/RiskModel';
 import { UserAuthModel } from '@libs/watermelon/model/UserAuthModel';
-import { RiskEnum } from '@constants/enums/risk.enum';
-import { riskOptionsList } from '@constants/maps/risk-options.map';
-import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
-import { useShallow } from 'zustand/react/shallow';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { checkArrayEqual } from '@utils/helpers/checkArrayEqual';
+import { memo } from 'react';
+import { RiskCard } from './RiskCard';
 
 type Props = {
     risks?: RiskModel[];
