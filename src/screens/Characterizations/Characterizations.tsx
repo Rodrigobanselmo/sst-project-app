@@ -112,7 +112,9 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
 
             const lastSync = workspaceDB?.lastSendApiCharacterization_at
                 ? new Date(workspaceDB.lastSendApiCharacterization_at)
-                : null;
+                : workspaceDB?.startChar_at
+                  ? new Date(workspaceDB?.startChar_at)
+                  : null;
 
             if (workspaceId && companyId) {
                 await syncCharacterization({

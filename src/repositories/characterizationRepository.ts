@@ -71,6 +71,7 @@ export interface ICharacterizationCreate {
     audios?: IFileCharacterization[];
     videos?: IFileCharacterization[];
     updatedAt?: Date;
+    createdAt?: Date;
     done_at?: Date;
 }
 
@@ -166,8 +167,8 @@ export class CharacterizationRepository {
                 characterization.moisturePercentage = data.moisturePercentage;
                 characterization.workspaceId = data.workspaceId;
                 characterization.status = StatusEnum.ACTIVE;
-                characterization.created_at = new Date();
-                characterization.updated_at = new Date();
+                characterization.created_at = data.createdAt || new Date();
+                characterization.updated_at = data.updatedAt || new Date();
                 characterization.done_at = data.done_at ? new Date(data.done_at) : undefined;
                 characterization.audios = JSON.stringify(data.audios);
                 characterization.videos = JSON.stringify(data.videos);
