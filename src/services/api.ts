@@ -1,6 +1,5 @@
 /* eslint-disable no-async-promise-executor */
 import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
-import { API_URL } from '@env';
 import { storageAuthTokenGet, storageAuthTokenSave } from '@libs/storage/disk/token';
 import { AppError } from '@utils/errors';
 import { DeduplicationEnum, deduplicator } from '@utils/helpers/deduplication';
@@ -18,7 +17,7 @@ interface PromiseType {
 }
 
 const api = axios.create({
-    baseURL: API_URL || 'https://api.simplesst.com.br/',
+    baseURL: 'https://api.simplesst.com.br/',
 }) as APIInstanceProps;
 
 let failedQueued: Array<PromiseType> = [];

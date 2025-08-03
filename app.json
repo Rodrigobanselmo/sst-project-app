@@ -2,7 +2,7 @@
   "expo": {
     "name": "SimpleSST",
     "slug": "SimpleSST",
-    "version": "1.0.0",
+    "version": "1.0.15",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -43,7 +43,13 @@
           "microphonePermission": "Permita que o APP SimpleSST acesse seu microfone."
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "A aplicação acessa sua camera para permitir enviar fotos ao banco de imagens do Projeto SST."
+        }
+      ]
     ],
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -51,7 +57,28 @@
     "ios": {
       "requireFullScreen": true,
       "supportsTablet": true,
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "bundleIdentifier": "com.simplesst.app",
+      "deploymentTarget": "13.4",
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "Dar permissão ao SimpleSST para salvar fotos em seu album.",
+        "NSCameraUsageDescription": "Dar permissão ao SimpleSST para acessar sua camera",
+        "NSMicrophoneUsageDescription": "Dar permissão ao SimpleSST para acessar o audio do seu despositivo",
+        "NSPhotoLibraryUsageDescription": "Dar permissão ao SimpleSST para ter acesso as fotos em seu album",
+        "UILaunchStoryboardName": "SplashScreen",
+        "UIStatusBarStyle": "UIStatusBarStyleDefault",
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ],
+        "UIViewControllerBasedStatusBarAppearance": false,
+        "CADisableMinimumFrameDurationOnPhone": true,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSAllowsLocalNetworking": true
+        }
+      }
     },
     "android": {
       "softwareKeyboardLayoutMode": "pan",
@@ -59,7 +86,55 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "versionCode": 1
+      "versionCode": 16,
+      "package": "com.simplesst.app",
+      "minSdkVersion": 24,
+      "targetSdkVersion": 35,
+      "compileSdkVersion": 35,
+      "buildToolsVersion": "35.0.0",
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_IMAGES"
+      ],
+      "intentFilters": [
+        {
+          "action": "android.intent.action.VIEW",
+          "category": ["android.intent.category.BROWSABLE"],
+          "data": {
+            "scheme": "https"
+          }
+        }
+      ],
+      "buildConfigFields": {
+        "MYAPP_UPLOAD_STORE_FILE": "my-upload-key.keystore",
+        "MYAPP_UPLOAD_KEY_ALIAS": "my-key-alias",
+        "MYAPP_UPLOAD_STORE_PASSWORD": "-Sil3556725",
+        "MYAPP_UPLOAD_KEY_PASSWORD": "-Sil3556725"
+      },
+      "manifest": {
+        "application": {
+          "android:requestLegacyExternalStorage": "true",
+          "android:allowBackup": "true"
+        },
+        "application@tools:replace": "android:allowBackup",
+        "usesFeature": [
+          {
+            "android:name": "android.hardware.camera",
+            "android:required": "false"
+          },
+          {
+            "android:name": "android.hardware.camera.front",
+            "android:required": "false"
+          }
+        ]
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
