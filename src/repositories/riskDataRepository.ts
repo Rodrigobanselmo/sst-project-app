@@ -457,54 +457,98 @@ export class RiskDataRepository {
 
         const recsToRiskDataWithRecsPromise = Promise.all(
             recsToRiskData.map(async (recsMM) => {
-                const recMed = await ((recsMM.RecMed as any).fetch() as Promise<RecMedModel>);
-                return {
-                    name: recMed.recName,
-                    apiId: recMed.apiId,
-                    riskId: recMed.riskId,
-                    id: recMed.id,
-                    m2mId: recsMM.id,
-                };
+                try {
+                    const recMed = await ((recsMM.RecMed as any).fetch() as Promise<RecMedModel>);
+                    return {
+                        name: recMed.recName,
+                        apiId: recMed.apiId,
+                        riskId: recMed.riskId,
+                        id: recMed.id,
+                        m2mId: recsMM.id,
+                    };
+                } catch (error) {
+                    console.warn('⚠️ RecMed não encontrado, mock de referência:', recsMM.id);
+                    return {
+                        name: '-',
+                        apiId: recsMM.id,
+                        riskId: riskData.riskId,
+                        id: recsMM.id,
+                        m2mId: recsMM.id,
+                    };
+                }
             }),
         );
 
         const admsToRiskDataWithRecsPromise = Promise.all(
             admsToRiskData.map(async (admsMM) => {
-                const adm = await ((admsMM.RecMed as any).fetch() as Promise<RecMedModel>);
-                return {
-                    name: adm.medName,
-                    id: adm.id,
-                    apiId: adm.apiId,
-                    riskId: adm.riskId,
-                    m2mId: admsMM.id,
-                };
+                try {
+                    const adm = await ((admsMM.RecMed as any).fetch() as Promise<RecMedModel>);
+                    return {
+                        name: adm.medName,
+                        id: adm.id,
+                        apiId: adm.apiId,
+                        riskId: adm.riskId,
+                        m2mId: admsMM.id,
+                    };
+                } catch (error) {
+                    console.warn('⚠️ RecMed (ADM) não encontrado, mock de referência:', admsMM.id);
+                    return {
+                        name: '-',
+                        apiId: admsMM.id,
+                        riskId: riskData.riskId,
+                        id: admsMM.id,
+                        m2mId: admsMM.id,
+                    };
+                }
             }),
         );
 
         const engsToRiskDataWithRecsPromise = Promise.all(
             engsToRiskData.map(async (engsMM) => {
-                const eng = await ((engsMM.RecMed as any).fetch() as Promise<RecMedModel>);
-                return {
-                    name: eng.medName,
-                    apiId: eng.apiId,
-                    riskId: eng.riskId,
-                    id: eng.id,
-                    efficientlyCheck: engsMM.efficientlyCheck,
-                    m2mId: engsMM.id,
-                };
+                try {
+                    const eng = await ((engsMM.RecMed as any).fetch() as Promise<RecMedModel>);
+                    return {
+                        name: eng.medName,
+                        apiId: eng.apiId,
+                        riskId: eng.riskId,
+                        id: eng.id,
+                        efficientlyCheck: engsMM.efficientlyCheck,
+                        m2mId: engsMM.id,
+                    };
+                } catch (error) {
+                    console.warn('⚠️ RecMed (ENG) não encontrado, mock de referência:', engsMM.id);
+                    return {
+                        name: '-',
+                        apiId: engsMM.id,
+                        riskId: riskData.riskId,
+                        id: engsMM.id,
+                        m2mId: engsMM.id,
+                    };
+                }
             }),
         );
 
         const gsToRiskDataWithGSPromise = Promise.all(
             generateSourcesToRiskData.map(async (gsMM) => {
-                const gs = await ((gsMM.GenerateSource as any).fetch() as Promise<GenerateSourceModel>);
-                return {
-                    name: gs.name,
-                    riskId: gs.riskId,
-                    apiId: gs.apiId,
-                    id: gs.id,
-                    m2mId: gsMM.id,
-                };
+                try {
+                    const gs = await ((gsMM.GenerateSource as any).fetch() as Promise<GenerateSourceModel>);
+                    return {
+                        name: gs.name,
+                        riskId: gs.riskId,
+                        apiId: gs.apiId,
+                        id: gs.id,
+                        m2mId: gsMM.id,
+                    };
+                } catch (error) {
+                    console.warn('⚠️ GenerateSource não encontrado, mock de referência:', gsMM.id);
+                    return {
+                        name: '-',
+                        apiId: gsMM.id,
+                        riskId: riskData.riskId,
+                        id: gsMM.id,
+                        m2mId: gsMM.id,
+                    };
+                }
             }),
         );
 
@@ -517,10 +561,10 @@ export class RiskDataRepository {
             ]);
 
         return {
-            recsToRiskData: recsToRiskDataWithRecs,
-            admsToRiskData: admsToRiskDataWithRecs,
-            engsToRiskData: engsToRiskDataWithRecs,
-            generateSourcesToRiskData: gsToRiskDataWithGS,
+            recsToRiskData: recsToRiskDataWithRecs.filter(Boolean),
+            admsToRiskData: admsToRiskDataWithRecs.filter(Boolean),
+            engsToRiskData: engsToRiskDataWithRecs.filter(Boolean),
+            generateSourcesToRiskData: gsToRiskDataWithGS.filter(Boolean),
             episToRiskData: episToRiskData.map((episMM) => ({
                 name: episMM.description,
                 description: episMM.ca,

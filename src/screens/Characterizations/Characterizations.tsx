@@ -1,3 +1,4 @@
+import React from 'react';
 import { SBox, SFloatingButton, SIcon, SSpinner, SText, SVStack } from '@components/core';
 import { SScreenHeader } from '@components/index';
 import { SAFE_AREA_PADDING } from '@constants/constants';
@@ -107,6 +108,9 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
         };
 
         const action = async () => {
+            console.log('🚀 Action iniciada');
+            console.log('📊 Dados iniciais:', { workspaceId: workspaceDB?.id, companyId: companyDB?.id });
+
             const workspaceId = workspaceDB?.id as string;
             const companyId = companyDB?.id as string;
 
@@ -116,18 +120,36 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                   ? new Date(workspaceDB?.startChar_at)
                   : null;
 
+            console.log('📅 LastSync:', lastSync);
+
             if (workspaceId && companyId) {
+                console.log('✅ WorkspaceId e CompanyId válidos, iniciando sync...');
+                console.log('🔄 Iniciando syncCharacterization...');
                 await syncCharacterization({
                     workspaceId: route.params.workspaceId,
                     companyId: companyDB?.apiId || companyId,
                 });
+                console.log('✅ syncCharacterization concluído');
 
+                console.log('📚 Inicializando repositories...');
                 const companyRepository = new CompanyRepository();
                 const recMedRepository = new RecMedRepository();
                 const generateSourceRepository = new GenerateSourceRepository();
                 const characterizationRepository = new CharacterizationRepository();
 
+                console.log('📥 Buscando dados do companyRepository.getAll...');
+                console.log('🔍 WorkspaceId:', workspaceId);
+                console.log('🔍 CompanyRepository instance:', !!companyRepository);
+
+                console.log('⏳ Iniciando chamada companyRepository.getAll...');
                 const data = await companyRepository.getAll(workspaceId);
+                console.log('✅ companyRepository.getAll concluído');
+                console.log('📊 Dados obtidos:', {
+                    characterizationsCount: data.characterizations?.length || 0,
+                    hasData: !!data.characterizations,
+                    dataKeys: Object.keys(data || {}),
+                    dataType: typeof data,
+                });
 
                 const recMeds: ICreateRecMed[] = [];
                 const riskDataInsert: IUpsertRiskData[] = [];
@@ -318,8 +340,20 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     });
                 };
 
+                console.log('🔄 Processando characterizations...');
                 data.characterizations.forEach(
-                    ({ photos, employees, hierarchies, characterization, riskData, audios, videos }) => {
+                    ({ photos, employees, hierarchies, characterization, riskData, audios, videos }, index) => {
+                        console.log(`📋 Processando characterization ${index + 1}:`, {
+                            id: characterization.id,
+                            name: characterization.name,
+                            hasPhotos: !!photos?.length,
+                            hasVideos: !!videos?.length,
+                            hasAudios: !!audios?.length,
+                            hasRiskData: !!riskData?.length,
+                            hasEmployees: !!employees?.length,
+                            hasHierarchies: !!hierarchies?.length,
+                        });
+
                         const characterizationName = characterization.profileName || characterization.name;
                         const characterizationId = characterization.id;
 
@@ -332,6 +366,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                         if (photos) addPhoto(photos, { name: characterization.name, characterizationId });
                     },
                 );
+                console.log('✅ Processamento de characterizations concluído');
 
                 const errorsMessage: string[] = [];
                 const totalRequests =
@@ -345,6 +380,20 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     audiosData.length +
                     videosData.length;
 
+                console.log('📊 Resumo dos dados para envio:', {
+                    recMeds: recMeds.length,
+                    generateSources: generateSources.length,
+                    subOffices: subOffices.length,
+                    characterizations: characterizations.length,
+                    characterizationsProfile: characterizationsProfile.length,
+                    photosData: photosData.length,
+                    riskDataInsert: riskDataInsert.length,
+                    audiosData: audiosData.length,
+                    videosData: videosData.length,
+                    totalRequests,
+                });
+
+                console.log('🎯 Abrindo modal de progresso...');
                 setModal({
                     open: true,
                     type: 'progress',
@@ -367,7 +416,9 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     },
                 });
 
+                console.log('🔄 Iniciando envio de recMeds...');
                 await asyncBatch(removeDuplicateById(recMeds), 5, async (recMed) => {
+                    console.log('📤 Enviando recMed:', { id: recMed.id, riskId: recMed.riskId });
                     const createdRecMec = await createRecMed
                         .mutateAsync({
                             id: recMed.id,
@@ -378,10 +429,12 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                             returnIfExist: true,
                         })
                         .catch((error) => {
+                            console.error('❌ Erro ao enviar recMed:', error);
                             errorsMessage.push(error?.message);
                         });
 
                     if (createdRecMec?.id && recMed.id) {
+                        console.log('✅ RecMed criado com sucesso:', createdRecMec.id);
                         await recMedRepository.update(recMed.id, {
                             apiId: createdRecMec.id,
                         });
@@ -389,10 +442,16 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
 
                     updateProgress();
                 });
+                console.log('✅ Envio de recMeds concluído');
 
-                if (error(errorsMessage)) return;
+                if (error(errorsMessage)) {
+                    console.log('❌ Erro encontrado, parando execução');
+                    return;
+                }
 
+                console.log('🔄 Iniciando envio de generateSources...');
                 await asyncBatch(removeDuplicateById(generateSources), 5, async (generateSource) => {
+                    console.log('📤 Enviando generateSource:', { id: generateSource.id, name: generateSource.name });
                     const createdGenerateSource = await createGenerateSource
                         .mutateAsync({
                             id: generateSource.id,
@@ -402,10 +461,12 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                             returnIfExist: true,
                         })
                         .catch((error) => {
+                            console.error('❌ Erro ao enviar generateSource:', error);
                             errorsMessage.push(error?.message);
                         });
 
                     if (createdGenerateSource?.id && generateSource.id) {
+                        console.log('✅ GenerateSource criado com sucesso:', createdGenerateSource.id);
                         await generateSourceRepository.update(generateSource.id, {
                             apiId: createdGenerateSource.id,
                         });
@@ -413,10 +474,16 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
 
                     updateProgress();
                 });
+                console.log('✅ Envio de generateSources concluído');
 
-                if (error(errorsMessage)) return;
+                if (error(errorsMessage)) {
+                    console.log('❌ Erro encontrado, parando execução');
+                    return;
+                }
 
+                console.log('🔄 Iniciando envio de subOffices...');
                 await asyncBatch(subOffices, 5, async (subOffice) => {
+                    console.log('📤 Enviando subOffice:', { id: subOffice.id, name: subOffice.name });
                     await createSubOffice
                         .mutateAsync({
                             companyId,
@@ -425,44 +492,68 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                             id: subOffice.id,
                         })
                         .catch((error) => {
+                            console.error('❌ Erro ao enviar subOffice:', error);
                             errorsMessage.push(error?.message);
                         });
 
                     updateProgress();
                 });
+                console.log('✅ Envio de subOffices concluído');
 
-                if (error(errorsMessage)) return;
+                if (error(errorsMessage)) {
+                    console.log('❌ Erro encontrado, parando execução');
+                    return;
+                }
 
+                console.log('🔄 Iniciando envio de characterizations...');
                 await asyncBatch(characterizations, 5, async (characterization) => {
+                    console.log('📤 Enviando characterization:', {
+                        id: characterization.id,
+                        name: characterization.name,
+                    });
                     await upsertCharacterization
                         .mutateAsync({
                             ...characterization,
                             hierarchyIds: characterizationHierarchyMap[characterization.id] || [],
                         })
                         .catch((error) => {
+                            console.error('❌ Erro ao enviar characterization:', error);
                             errorsMessage.push(error?.message);
                         });
 
                     updateProgress();
                 });
+                console.log('✅ Envio de characterizations concluído');
 
+                console.log('🔄 Iniciando envio de characterizationsProfile...');
                 await asyncBatch(characterizationsProfile, 5, async (characterization) => {
+                    console.log('📤 Enviando characterizationProfile:', {
+                        id: characterization.id,
+                        name: characterization.name,
+                    });
                     await upsertCharacterization
                         .mutateAsync({
                             ...characterization,
                             hierarchyIds: characterizationHierarchyMap[characterization.id] || [],
                         })
                         .catch((error) => {
+                            console.error('❌ Erro ao enviar characterizationProfile:', error);
                             errorsMessage.push(error?.message);
                         });
 
                     updateProgress();
                 });
+                console.log('✅ Envio de characterizationsProfile concluído');
 
                 await captureLog({ message: 'done characterizations profile' });
-                if (error(errorsMessage)) return;
+                if (error(errorsMessage)) {
+                    console.log('❌ Erro encontrado, parando execução');
+                    return;
+                }
 
+                console.log('🔄 Iniciando envio de photosData...');
                 await asyncBatch(photosData, 2, async (photo) => {
+                    console.log('📤 Enviando photo:', { id: photo.id, name: photo.name });
                     const id = uuidGenerator.v4() as string;
                     const file = await getFormFileFromURI(photo.uri);
 
@@ -473,11 +564,13 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                             file,
                         })
                         .catch((error) => {
+                            console.error('❌ Erro ao enviar photo:', error);
                             captureExeption({ message: 'error photo', error });
                             errorsMessage.push(error?.message);
                         });
 
                     if (char?.id && photo.id) {
+                        console.log('✅ Photo criada com sucesso:', char.id);
                         await characterizationRepository.updatePhoto(photo.id, {
                             apiId: id,
                         });
@@ -485,28 +578,42 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
 
                     updateProgress();
                 });
+                console.log('✅ Envio de photosData concluído');
 
                 await captureLog({ message: 'done photo' });
-                if (error(errorsMessage)) return;
+                if (error(errorsMessage)) {
+                    console.log('❌ Erro encontrado, parando execução');
+                    return;
+                }
 
+                console.log('🔄 Iniciando envio de riskDataInsert...');
                 await asyncBatch(riskDataInsert, 4, async (riskData) => {
+                    console.log('📤 Enviando riskData:', { createId: riskData.createId, riskId: riskData.riskId });
                     await upsertRiskData
                         .mutateAsync({
                             ...riskData,
                         })
                         .catch((error) => {
+                            console.error('❌ Erro ao enviar riskData:', error);
                             captureExeption({ message: 'error risk data', error });
                             errorsMessage.push(error?.message);
                         });
 
                     updateProgress();
                 });
+                console.log('✅ Envio de riskDataInsert concluído');
 
                 await captureLog({ message: 'done risk data' });
-                if (error(errorsMessage)) return;
+                if (error(errorsMessage)) {
+                    console.log('❌ Erro encontrado, parando execução');
+                    return;
+                }
 
+                console.log('🔄 Iniciando processamento de arquivos...');
                 const createFile = async (files: (typeof audiosData)[0]) => {
+                    console.log('📁 Processando arquivos:', files.length);
                     return await asyncBatch(files, 2, async (file) => {
+                        console.log('📤 Enviando arquivo:', { uri: file.uri });
                         let apiId: string | undefined = uuidGenerator.v4() as string;
                         const fileForm = await getFormFileFromURI(file.uri);
 
@@ -517,6 +624,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                                 file: fileForm,
                             })
                             .catch((error) => {
+                                console.error('❌ Erro ao enviar arquivo:', error);
                                 errorsMessage.push(error?.message);
                                 captureExeption({ message: 'error file', error });
                                 apiId = undefined;
@@ -526,13 +634,16 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     });
                 };
 
+                console.log('🔄 Iniciando envio de audiosData...');
                 await asyncBatch(audiosData, 2, async (audioData) => {
                     try {
+                        console.log('🎵 Processando audios:', audioData.length);
                         const audiosFiles = await createFile(audioData);
 
                         const charId = audioData?.[0]?.companyCharacterizationId;
 
                         if (charId && audiosFiles.length > 0) {
+                            console.log('✅ Atualizando audios para characterization:', charId);
                             await characterizationRepository.updateFiles(charId, {
                                 audios: audiosFiles,
                             });
@@ -540,22 +651,29 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
 
                         updateProgress();
                     } catch (e) {
-                        captureExeption({ message: 'error audio', error });
+                        console.error('❌ Erro ao processar audios:', e);
+                        captureExeption({ message: 'error audio', error: e });
                     }
                 });
+                console.log('✅ Envio de audiosData concluído');
 
                 await captureLog({ message: 'done audio' });
                 if (error(errorsMessage)) {
+                    console.log('❌ Erro encontrado, parando execução');
                     await captureExeption({ message: 'audio errors message', error: errorsMessage });
+                    return;
                 }
 
+                console.log('🔄 Iniciando envio de videosData...');
                 await asyncBatch(videosData, 2, async (videoData) => {
                     try {
+                        console.log('🎬 Processando videos:', videoData.length);
                         const videosFiles = await createFile(videoData);
 
                         const charId = videoData?.[0]?.companyCharacterizationId;
 
                         if (charId && videosFiles.length > 0) {
+                            console.log('✅ Atualizando videos para characterization:', charId);
                             await characterizationRepository.updateFiles(charId, {
                                 videos: videosFiles,
                             });
@@ -563,34 +681,49 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
 
                         updateProgress();
                     } catch (e) {
+                        console.error('❌ Erro ao processar videos:', e);
                         await captureExeption({ message: 'error video', error: e });
                     }
                 });
+                console.log('✅ Envio de videosData concluído');
 
                 await captureLog({ message: 'done video' });
-                if (error(errorsMessage)) return;
+                if (error(errorsMessage)) {
+                    console.log('❌ Erro encontrado, parando execução');
+                    return;
+                }
 
+                console.log('🎉 Todos os dados foram enviados com sucesso!');
                 Alert.alert('Sucesso', 'Dados enviados com sucesso.');
 
+                console.log('💾 Atualizando workspace com timestamp...');
                 await companyRepository.updateWorkspaceDB(workspaceId, {
                     lastSendApiCharacterization_at: new Date(),
                 });
 
+                console.log('🔑 Gerando chave de sync...');
                 const key = onGenerateSyncCharacterizatinKey({
                     companyId,
                     userId: user.id,
                     workspaceId,
                 });
 
+                console.log('💾 Salvando timestamp no AsyncStorage...');
                 AsyncStorage.setItem(key, new Date().toISOString());
 
+                console.log('🎯 Fechando modal...');
                 setModal({
                     open: false,
                     title: '',
                     type: 'progress',
                 });
+                console.log('✅ Action concluída com sucesso!');
+            } else {
+                console.log('❌ WorkspaceId ou CompanyId inválidos:', { workspaceId, companyId });
             }
         };
+
+        console.log('🔄 Iniciando envio de dados...');
 
         Alert.alert(
             'Atenção',
