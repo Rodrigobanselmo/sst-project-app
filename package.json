@@ -11,7 +11,9 @@
     "pod": "cd ios && pod install && cd ..",
     "gradle:android": "cd android && ./gradlew --stop && ./gradlew clean && cd ..",
     "bundle:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "prebuild": "expo prebuild",
+    "prebuild:clean": "expo prebuild --clean"
   },
   "dependencies": {
     "@baronha/react-native-photo-editor": "^1.1.6",

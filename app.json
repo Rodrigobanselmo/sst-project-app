@@ -16,6 +16,7 @@
       "transformer": "node_modules/react-native-svg-transformer/index.js"
     },
     "plugins": [
+      "./plugins/withCustomNativeConfig.js",
       [
         "expo-media-library",
         {
@@ -49,10 +50,22 @@
         {
           "cameraPermission": "A aplicação acessa sua camera para permitir enviar fotos ao banco de imagens do Projeto SST."
         }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow $(PRODUCT_NAME) to access your device motion"
+        }
       ]
     ],
     "updates": {
       "fallbackToCacheTimeout": 0
+    },
+    "jsEngine": "hermes",
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
     },
     "ios": {
       "requireFullScreen": true,
@@ -121,9 +134,9 @@
       "manifest": {
         "application": {
           "android:requestLegacyExternalStorage": "true",
-          "android:allowBackup": "true"
+          "android:allowBackup": "true",
+          "tools:replace": "android:allowBackup"
         },
-        "application@tools:replace": "android:allowBackup",
         "usesFeature": [
           {
             "android:name": "android.hardware.camera",
