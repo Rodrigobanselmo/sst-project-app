@@ -19,24 +19,7 @@ const withCustomNativeConfig = (config) => {
 
       let modified = false;
 
-      // Add simdjson pod from node_modules for WatermelonDB
-      // WatermelonDB depends on simdjson which needs to be referenced locally
-      const simdjsonPod = "  pod 'simdjson', path: '../node_modules/@nozbe/simdjson'";
-
-      if (!podfileContent.includes("pod 'simdjson'")) {
-        // Add simdjson pod after use_native_modules! or use_expo_modules!
-        const targetRegex = /(target\s+['"]SimpleSST['"]\s+do\s+use_expo_modules!\s+config = use_native_modules!\s+)/;
-
-        if (targetRegex.test(podfileContent)) {
-          podfileContent = podfileContent.replace(
-            targetRegex,
-            `$1\n${simdjsonPod}\n`
-          );
-          modified = true;
-        }
-      }
-
-      // Add use_modular_headers! for Swift pods compatibility
+      // Add use_modular_headers! for Swift pods compatibility FIRST
       if (!podfileContent.includes('use_modular_headers!')) {
         // Add after use_expo_modules! and before use_frameworks!
         const modulesRegex = /(target\s+['"]SimpleSST['"]\s+do\s+use_expo_modules!\s+)/;
@@ -45,6 +28,24 @@ const withCustomNativeConfig = (config) => {
           podfileContent = podfileContent.replace(
             modulesRegex,
             `$1\n  use_modular_headers!\n`
+          );
+          modified = true;
+        }
+      }
+
+      // Add simdjson pod from node_modules for WatermelonDB
+      // WatermelonDB depends on simdjson which needs to be referenced locally
+      const simdjsonPod = "  pod 'simdjson', path: '../node_modules/@nozbe/simdjson'\n";
+
+      if (!podfileContent.includes("pod 'simdjson'")) {
+        // Add simdjson pod after use_expo_modules! (right after the blank line)
+        // This ensures it's added before any conditional statements
+        const targetRegex = /(target\s+['"]SimpleSST['"]\s+do\s+use_expo_modules!\s+\n\s+\n\s+use_modular_headers!\s*\n)/;
+
+        if (targetRegex.test(podfileContent)) {
+          podfileContent = podfileContent.replace(
+            targetRegex,
+            `$1${simdjsonPod}`
           );
           modified = true;
         }
