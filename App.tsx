@@ -27,9 +27,9 @@ onlineManager.setEventListener((setOnline) => {
     });
 });
 
-console.log = () => null;
-console.warn = () => null;
-console.error = () => null;
+// console.log = () => null;
+// console.warn = () => null;
+// console.error = () => null;
 
 export default function App() {
     const [fontsLoaded] = useFonts({

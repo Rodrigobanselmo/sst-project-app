@@ -7,7 +7,13 @@ export function SModalProvider() {
     const onToggle = useModalStore((state) => state.onToggle);
 
     if (modal.type == 'progress') {
-        const progress = ((modal.actual || 0) / (modal.total || 1)) * 100;
+        // Calculate progress with safety checks to avoid precision errors
+        const actual = modal.actual || 0;
+        const total = modal.total || 1;
+        const rawProgress = (actual / total) * 100;
+
+        // Clamp and round to avoid precision issues
+        const progress = Math.min(100, Math.max(0, Math.round(rawProgress * 100) / 100));
 
         return (
             <SProgressModal
@@ -16,7 +22,7 @@ export function SModalProvider() {
                 title={modal.title}
                 bottomText={modal.bottomText}
                 onCancel={modal.onCancel}
-                progress={progress}
+                progress={isFinite(progress) ? progress : 0}
             />
         );
     }

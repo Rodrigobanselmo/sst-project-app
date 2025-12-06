@@ -2,7 +2,8 @@ import { SBox, SHStack, SScrollView, SText } from '@components/core';
 import { SCREEN_WIDTH, pagePaddingPx } from '@constants/constants';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { deleteImageOrVideoFromGallery, saveImageOrVideoToGallery } from '@utils/helpers/saveAsset';
-import { Audio, ResizeMode, Video } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
+import { AudioModule } from 'expo-audio';
 import { Camera } from 'expo-camera';
 import { theme } from 'native-base';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -25,9 +26,9 @@ export default function VideoRecorder({ videos, setVideos }: { setVideos: (arg: 
                 return;
             }
 
-            const permissionAudio = await Audio.requestPermissionsAsync();
+            const permissionAudio = await AudioModule.requestRecordingPermissionsAsync();
 
-            if (permissionAudio.status === 'denied') {
+            if (!permissionAudio.granted) {
                 await Linking.openSettings();
                 return;
             }
@@ -125,21 +126,23 @@ const VideoItem = ({
     deleteVideo: (uri: string) => Promise<void>;
     index: number;
 }) => {
-    const video = React.useRef<Video>(null);
     const [asset, setAsset] = useState<AssetInfo | null>(null);
+    const [videoSource, setVideoSource] = useState<string>('');
 
     useEffect(() => {
-        const setVideo = async () => {
-            if (video.current) {
-                const videoAsset = await getAssetInfo(videoUri);
-                setAsset(videoAsset);
-                const uri = videoAsset?.localUri || videoUri;
-                if (uri) video.current.loadAsync({ uri });
-            }
+        const loadVideo = async () => {
+            const videoAsset = await getAssetInfo(videoUri);
+            setAsset(videoAsset);
+            const uri = videoAsset?.localUri || videoUri;
+            if (uri) setVideoSource(uri);
         };
 
-        setVideo();
+        loadVideo();
     }, [videoUri]);
+
+    const player = useVideoPlayer(videoSource, (player) => {
+        player.loop = true;
+    });
 
     const { height, width } = calculateActualDimensions({
         aspectRatio: `${asset?.width || 9}:${asset?.height || 16}`,
@@ -151,15 +154,14 @@ const VideoItem = ({
         <View
             style={{ ...styles.item, width: width + 20, height: 490, justifyContent: 'center', alignItems: 'center' }}
         >
-            <Video
-                ref={video}
+            <VideoView
+                player={player}
                 style={{
                     width: width,
                     height: height,
                 }}
-                useNativeControls
-                resizeMode={ResizeMode.CONTAIN}
-                isLooping
+                nativeControls
+                contentFit="contain"
             />
             <SHStack
                 mt={6}

@@ -2,14 +2,20 @@ import { SHStack, SText } from '@components/core';
 import { pagePaddingPx } from '@constants/constants';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Audio } from 'expo-av';
+import {
+    useAudioRecorder,
+    AudioModule,
+    RecordingPresets,
+    useAudioRecorderState,
+    useAudioPlayer,
+    useAudioPlayerStatus,
+} from 'expo-audio';
 import * as FileSystem from 'expo-file-system';
-import { Box, Progress, theme } from 'native-base';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Box, theme } from 'native-base';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View, GestureResponderEvent } from 'react-native';
 import { SLabel } from '../SLabel';
 import { SNoContent } from '../SNoContent';
-import uuidGenerator from 'react-native-uuid';
 
 const SAudioRecorder = ({
     audios: savedRecordings = [],
@@ -18,41 +24,53 @@ const SAudioRecorder = ({
     setAudios: (arg: string[]) => void;
     audios: string[];
 }) => {
-    const [isRecording, setIsRecording] = useState(false);
-    const [recording, setRecording] = useState<Audio.Recording | null>(null);
-    const [duration, setDuration] = useState<Audio.RecordingStatus['durationMillis'] | null>(null);
+    const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+    const recorderState = useAudioRecorderState(audioRecorder, 100);
 
     useEffect(() => {
-        if (recording) {
-            recording.setOnRecordingStatusUpdate((status) => setDuration(status.durationMillis));
-        }
-    }, [recording]);
+        console.log('Recorder state changed:', {
+            isRecording: recorderState.isRecording,
+            durationMillis: recorderState.durationMillis,
+        });
+    }, [recorderState.isRecording, recorderState.durationMillis]);
 
     const startRecording = async () => {
         try {
-            await Audio.requestPermissionsAsync();
-            await Audio.setAudioModeAsync({
-                allowsRecordingIOS: true,
-                playsInSilentModeIOS: true,
+            console.log('startRecording called');
+            const { granted } = await AudioModule.requestRecordingPermissionsAsync();
+            console.log('Permission granted:', granted);
+            if (!granted) {
+                Alert.alert('Permissão negada', 'Você precisa permitir o acesso ao microfone para gravar áudio.');
+                return;
+            }
+
+            console.log('Setting audio mode...');
+            await AudioModule.setAudioModeAsync({
+                allowsRecording: true,
+                playsInSilentMode: true,
             });
-            const recording = new Audio.Recording();
-            await recording.prepareToRecordAsync(Audio.RecordingOptionsPresets.HighQuality);
-            recording.setOnRecordingStatusUpdate((status) => setDuration(status.durationMillis));
-            await recording.startAsync();
-            setRecording(recording);
-            setIsRecording(true);
+
+            console.log('Preparing to record...');
+            await audioRecorder.prepareToRecordAsync();
+            console.log('Starting recording...');
+            audioRecorder.record();
+            console.log('Recording started, isRecording:', audioRecorder.isRecording);
         } catch (err) {
             console.error('Failed to start recording', err);
+            Alert.alert('Erro', 'Falha ao iniciar gravação: ' + (err instanceof Error ? err.message : String(err)));
         }
     };
 
     const stopRecording = async () => {
-        if (!recording) return;
-        setIsRecording(false);
-        await recording.stopAndUnloadAsync();
-        const uri = recording.getURI();
-
-        if (uri) setSavedRecordings([...savedRecordings, uri]);
+        try {
+            await audioRecorder.stop();
+            const uri = audioRecorder.uri;
+            if (uri) {
+                setSavedRecordings([...savedRecordings, uri]);
+            }
+        } catch (err) {
+            console.error('Failed to stop recording', err);
+        }
     };
 
     const deleteRecording = useCallback(
@@ -81,26 +99,21 @@ const SAudioRecorder = ({
         [savedRecordings, setSavedRecordings],
     );
 
-    useEffect(() => {
-        return () => {
-            if (recording) {
-                recording.stopAndUnloadAsync();
-            }
-        };
-    }, [recording]);
-
     return (
         <View style={styles.container}>
             <SHStack mb={5} mt={8} width={'100%'} justifyContent={'space-between'} alignItems={'center'}>
                 <SLabel mb={0}>Gravar Áudio</SLabel>
-                <TouchableOpacity style={styles.recordButton} onPress={isRecording ? stopRecording : startRecording}>
+                <TouchableOpacity
+                    style={styles.recordButton}
+                    onPress={recorderState.isRecording ? stopRecording : startRecording}
+                >
                     <SHStack space={2}>
-                        {isRecording && (
+                        {recorderState.isRecording && (
                             <SText color="white" textAlign={'left'}>
-                                Gravando... {Math.floor((duration || 0) / 1000)} segundos
+                                Gravando... {Math.floor(recorderState.durationMillis / 1000)} segundos
                             </SText>
                         )}
-                        {isRecording ? (
+                        {recorderState.isRecording ? (
                             <Ionicons name={'stop-circle-outline'} size={20} color="white" />
                         ) : (
                             <FontAwesome name={'microphone'} size={18} color="white" />
@@ -140,87 +153,129 @@ const Recording = ({
     recordingUri: string;
     deleteRecording: (uri: string) => Promise<void>;
 }) => {
-    const [soundObject, setSoundObject] = useState<Audio.Sound | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [progress, setProgress] = useState(0);
+    const player = useAudioPlayer({ uri: recordingUri });
+    const status = useAudioPlayerStatus(player);
+    const [progress, setProgress] = useState<number>(0);
     const [currentPosition, setCurrentPosition] = useState('00:00');
     const [duration, setDuration] = useState('00:00');
+    const progressBarRef = useRef<View>(null);
 
-    const formatTime = (milliseconds: number) => {
-        const totalSeconds = Math.floor(milliseconds / 1000);
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    };
-
-    const playRecording = async (uri: string) => {
-        if (soundObject) {
-            const status = await soundObject.getStatusAsync();
-            if (status.isLoaded) {
-                if (status.isPlaying) {
-                    soundObject.pauseAsync();
-                    setIsPlaying(false);
-                } else {
-                    soundObject.playAsync();
-                    setIsPlaying(true);
-                }
-            }
-        } else {
-            const newSoundObject = new Audio.Sound();
-            try {
-                await Audio.setAudioModeAsync({
-                    allowsRecordingIOS: false,
-                });
-
-                await newSoundObject.loadAsync({ uri });
-                await newSoundObject.playAsync();
-                setSoundObject(newSoundObject);
-                setIsPlaying(true);
-
-                newSoundObject.setOnPlaybackStatusUpdate((status) => {
-                    if (status.isLoaded) {
-                        const progress = status.durationMillis ? status.positionMillis / status.durationMillis : 0;
-                        setProgress(progress * 100);
-                        setCurrentPosition(formatTime(status.positionMillis));
-                        setDuration(formatTime(status.durationMillis || 0));
-
-                        if (progress === 1) {
-                            setCurrentPosition('00:00');
-                            setIsPlaying(false);
-                            setSoundObject(null);
-                            setProgress(0);
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-            }
+    const formatTime = (seconds: number) => {
+        if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
+            return '00:00';
         }
+        const totalSeconds = Math.floor(Math.max(0, seconds));
+        const minutes = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
     useEffect(() => {
-        const first = async () => {
-            const newSoundObject = new Audio.Sound();
-            await Audio.setAudioModeAsync({
-                allowsRecordingIOS: false,
+        try {
+            if (status.duration && isFinite(status.duration) && status.duration > 0) {
+                setDuration(formatTime(status.duration));
+            }
+        } catch (e) {
+            // Ignore errors
+        }
+    }, [status.duration]);
+
+    useEffect(() => {
+        try {
+            if (
+                status.duration &&
+                isFinite(status.duration) &&
+                status.duration > 0 &&
+                status.currentTime !== undefined &&
+                isFinite(status.currentTime) &&
+                status.currentTime >= 0
+            ) {
+                // Calculate progress as a value between 0 and 100 (native-base Progress expects 0-100)
+                const progressValue = Math.min(100, Math.max(0, (status.currentTime / status.duration) * 100));
+
+                // Round to avoid precision issues
+                const roundedProgress = Math.round(progressValue * 100) / 100;
+
+                if (isFinite(roundedProgress)) {
+                    setProgress(roundedProgress);
+                    setCurrentPosition(formatTime(status.currentTime));
+
+                    if (roundedProgress >= 99.9 && status.playing) {
+                        setCurrentPosition('00:00');
+                        setProgress(0);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error updating progress:', e);
+        }
+    }, [status.currentTime, status.duration, status.playing]);
+
+    const playRecording = async () => {
+        try {
+            if (status.playing) {
+                player.pause();
+            } else {
+                player.play();
+            }
+        } catch (error) {
+            console.error('Error playing recording:', error);
+        }
+    };
+
+    const handleProgressBarTouch = (event: GestureResponderEvent) => {
+        try {
+            if (!status.duration || !isFinite(status.duration) || status.duration <= 0) {
+                return;
+            }
+
+            // Get the touch position relative to the progress bar
+            progressBarRef.current?.measure((_x, _y, width, _height, pageX, _pageY) => {
+                const touchX = event.nativeEvent.pageX - pageX;
+                const percentage = Math.max(0, Math.min(1, touchX / width));
+                const seekPosition = percentage * status.duration;
+
+                if (isFinite(seekPosition) && seekPosition >= 0 && seekPosition <= status.duration) {
+                    player.seekTo(seekPosition);
+
+                    // Update UI immediately for better feedback
+                    const newProgress = percentage * 100;
+                    setProgress(newProgress);
+                    setCurrentPosition(formatTime(seekPosition));
+                }
             });
+        } catch (error) {
+            console.error('Error seeking audio:', error);
+        }
+    };
 
-            await newSoundObject.loadAsync({ uri: recordingUri });
-            const status = await newSoundObject.getStatusAsync();
-
-            if (status.isLoaded) {
-                if (status.durationMillis) setDuration(formatTime(status.durationMillis));
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            try {
+                if (player && status.playing) {
+                    player.pause();
+                }
+            } catch (e) {
+                // Ignore cleanup errors
             }
         };
-        first();
-    }, [recordingUri]);
+    }, [player, status.playing]);
+
+    // Ensure progress is a safe value (0-100)
+    const safeProgress = isFinite(progress) && progress >= 0 && progress <= 100 ? progress : 0;
 
     return (
         <View style={styles.recordingItem}>
-            <TouchableOpacity onPress={() => playRecording(recordingUri)}>
-                <Ionicons name={isPlaying ? 'pause-circle' : 'play-circle'} size={32} color="black" />
+            <TouchableOpacity onPress={playRecording}>
+                <Ionicons name={status.playing ? 'pause-circle' : 'play-circle'} size={32} color="black" />
             </TouchableOpacity>
-            <Progress value={progress} style={styles.progressBar} />
+            {/* Custom progress bar with touch controls */}
+            <TouchableOpacity style={styles.progressBarContainer} activeOpacity={0.8} onPress={handleProgressBarTouch}>
+                <View ref={progressBarRef} style={styles.progressBarWrapper}>
+                    <View style={[styles.progressBarFill, { width: `${safeProgress}%` }]} />
+                </View>
+            </TouchableOpacity>
             <Text style={styles.time}>
                 {currentPosition} / {duration}
             </Text>
@@ -242,6 +297,23 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 4,
         marginHorizontal: 8,
+    },
+    progressBarContainer: {
+        flex: 1,
+        marginHorizontal: 8,
+        paddingVertical: 8, // Increase touch area
+    },
+    progressBarWrapper: {
+        height: 4,
+        backgroundColor: '#e0e0e0',
+        borderRadius: 2,
+        overflow: 'hidden',
+        width: '100%',
+    },
+    progressBarFill: {
+        height: '100%',
+        backgroundColor: theme.colors.primary[500],
+        borderRadius: 2,
     },
     recordButton: {
         backgroundColor: theme.colors.gray[400],

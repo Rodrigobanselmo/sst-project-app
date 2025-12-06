@@ -9,8 +9,11 @@ export const SProgressBar = ({ progress }: ISProgressBarProps) => {
     const animation = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
+        // Ensure progress is a safe value before animating
+        const safeProgress = isFinite(progress) && progress >= 0 && progress <= 100 ? progress : 0;
+
         Animated.timing(animation, {
-            toValue: progress,
+            toValue: safeProgress,
             duration: 500,
             useNativeDriver: false,
         }).start();

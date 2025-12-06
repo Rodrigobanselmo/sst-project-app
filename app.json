@@ -39,11 +39,12 @@
         }
       ],
       [
-        "expo-av",
+        "expo-audio",
         {
           "microphonePermission": "Permita que o APP SimpleSST acesse seu microfone."
         }
       ],
+      "expo-video",
       "expo-font",
       [
         "expo-camera",
