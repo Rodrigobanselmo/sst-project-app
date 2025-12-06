@@ -2,14 +2,8 @@ import { useDeviceRotation } from '@hooks/useDeviceRotation';
 import { useIsFocused } from '@react-navigation/core';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { PinchGestureHandlerGestureEvent } from 'react-native-gesture-handler';
-import {
-    Extrapolate,
-    interpolate,
-    useAnimatedGestureHandler,
-    useAnimatedProps,
-    useSharedValue,
-} from 'react-native-reanimated';
+import { PinchGestureHandlerGestureEvent, State } from 'react-native-gesture-handler';
+import { Extrapolate, interpolate, useAnimatedProps, useSharedValue } from 'react-native-reanimated';
 import { CameraRuntimeError, useCameraDevice, useCameraFormat } from 'react-native-vision-camera';
 import { MAX_ZOOM_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH } from '../../../constants/constants';
 import { useIsForeground } from './useIsForeground';
@@ -123,21 +117,28 @@ export const useCameraEffects = () => {
         zoom.value = neutralZoom;
     }, [neutralZoom, zoom]);
 
-    const onPinchGesture = useAnimatedGestureHandler<PinchGestureHandlerGestureEvent, { startZoom?: number }>({
-        onStart: (_, context) => {
-            context.startZoom = zoom.value;
+    const startZoom = useSharedValue(0);
+
+    const onPinchGesture = useCallback(
+        (event: PinchGestureHandlerGestureEvent['nativeEvent']) => {
+            'worklet';
+            const { state, scale: eventScale } = event;
+
+            if (state === State.BEGAN) {
+                startZoom.value = zoom.value;
+            } else if (state === State.ACTIVE) {
+                const start = startZoom.value ?? 0;
+                const scale = interpolate(
+                    eventScale,
+                    [1 - 1 / SCALE_FULL_ZOOM, 1, SCALE_FULL_ZOOM],
+                    [-1, 0, 1],
+                    Extrapolate.CLAMP,
+                );
+                zoom.value = interpolate(scale, [-1, 0, 1], [minZoom, start, maxZoom], Extrapolate.CLAMP);
+            }
         },
-        onActive: (event, context) => {
-            const startZoom = context.startZoom ?? 0;
-            const scale = interpolate(
-                event.scale,
-                [1 - 1 / SCALE_FULL_ZOOM, 1, SCALE_FULL_ZOOM],
-                [-1, 0, 1],
-                Extrapolate.CLAMP,
-            );
-            zoom.value = interpolate(scale, [-1, 0, 1], [minZoom, startZoom, maxZoom], Extrapolate.CLAMP);
-        },
-    });
+        [maxZoom, minZoom, startZoom, zoom],
+    );
 
     return {
         isActive,

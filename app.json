@@ -17,6 +17,16 @@
     },
     "plugins": [
       "./plugins/withCustomNativeConfig.js",
+      "expo-asset",
+      [
+        "expo-navigation-bar",
+        {
+          "position": "relative",
+          "visibility": "visible",
+          "behavior": "overlay-swipe",
+          "backgroundColor": "#ffffff"
+        }
+      ],
       [
         "expo-media-library",
         {

@@ -1,0 +1,13 @@
+diff --git a/node_modules/@baronha/react-native-photo-editor/android/src/main/java/com/reactnativephotoeditor/PhotoEditorModule.kt b/node_modules/@baronha/react-native-photo-editor/android/src/main/java/com/reactnativephotoeditor/PhotoEditorModule.kt
+index c1f46c9..8ae5b7d 100644
+--- a/node_modules/@baronha/react-native-photo-editor/android/src/main/java/com/reactnativephotoeditor/PhotoEditorModule.kt
++++ b/node_modules/@baronha/react-native-photo-editor/android/src/main/java/com/reactnativephotoeditor/PhotoEditorModule.kt
+@@ -21,7 +21,7 @@ class PhotoEditorModule(reactContext: ReactApplicationContext) : ReactContextBas
+   @ReactMethod
+   fun open(options: ReadableMap?, promise: Promise): Unit {
+     this.promise = promise
+-    val activity = currentActivity
++    val activity = reactApplicationContext.currentActivity
+     if (activity == null) {
+       promise.reject("ACTIVITY_DOES_NOT_EXIST", "Activity doesn't exist");
+       return;

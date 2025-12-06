@@ -16,9 +16,9 @@ import Reanimated, {
     useAnimatedStyle,
     withSpring,
     withTiming,
-    useAnimatedGestureHandler,
     useSharedValue,
     withRepeat,
+    runOnJS,
 } from 'react-native-reanimated';
 import type { Camera, PhotoFile, TakePhotoOptions, VideoFile } from 'react-native-vision-camera';
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../../constants/constants';
@@ -192,36 +192,41 @@ const _CaptureButton: React.FC<Props> = ({
     //#endregion
     //#region Pan handler
     const panHandler = useRef<PanGestureHandler>();
-    const onPanGestureEvent = useAnimatedGestureHandler<
-        PanGestureHandlerGestureEvent,
-        { offsetY?: number; startY?: number }
-    >({
-        onStart: (event, context) => {
-            context.startY = event.absoluteY;
-            const yForFullZoom = context.startY * 0.7;
-            const offsetYForFullZoom = context.startY - yForFullZoom;
+    const offsetY = useSharedValue(0);
+    const startY = useSharedValue(SCREEN_HEIGHT);
 
-            // extrapolate [0 ... 1] zoom -> [0 ... Y_FOR_FULL_ZOOM] finger position
-            context.offsetY = interpolate(
-                cameraZoom.value,
-                [minZoom, maxZoom],
-                [0, offsetYForFullZoom],
-                Extrapolate.CLAMP,
-            );
-        },
-        onActive: (event, context) => {
-            const offset = context.offsetY ?? 0;
-            const startY = context.startY ?? SCREEN_HEIGHT;
-            const yForFullZoom = startY * 0.7;
+    const onPanGestureEvent = useCallback(
+        (event: PanGestureHandlerGestureEvent['nativeEvent']) => {
+            'worklet';
+            const { state, absoluteY } = event;
 
-            cameraZoom.value = interpolate(
-                event.absoluteY - offset,
-                [yForFullZoom, startY],
-                [maxZoom, minZoom],
-                Extrapolate.CLAMP,
-            );
+            if (state === State.BEGAN) {
+                startY.value = absoluteY;
+                const yForFullZoom = startY.value * 0.7;
+                const offsetYForFullZoom = startY.value - yForFullZoom;
+
+                // extrapolate [0 ... 1] zoom -> [0 ... Y_FOR_FULL_ZOOM] finger position
+                offsetY.value = interpolate(
+                    cameraZoom.value,
+                    [minZoom, maxZoom],
+                    [0, offsetYForFullZoom],
+                    Extrapolate.CLAMP,
+                );
+            } else if (state === State.ACTIVE) {
+                const offset = offsetY.value ?? 0;
+                const start = startY.value ?? SCREEN_HEIGHT;
+                const yForFullZoom = start * 0.7;
+
+                cameraZoom.value = interpolate(
+                    absoluteY - offset,
+                    [yForFullZoom, start],
+                    [maxZoom, minZoom],
+                    Extrapolate.CLAMP,
+                );
+            }
         },
-    });
+        [cameraZoom, maxZoom, minZoom, offsetY, startY],
+    );
     //#endregion
 
     const shadowStyle = useAnimatedStyle(
