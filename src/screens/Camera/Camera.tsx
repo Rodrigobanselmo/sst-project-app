@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useCallback, useRef, useState } from 'react';
 import { StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { PinchGestureHandler, TapGestureHandler } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated from 'react-native-reanimated';
 import { Camera, PhotoFile, VideoFile } from 'react-native-vision-camera';
 import { CONTENT_SPACING, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from '../../constants/constants';
@@ -43,8 +43,8 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
         onInitialized,
         onFlipCameraPressed,
         onFlashPressed,
-        onDoubleTap,
-        onPinchGesture,
+        pinchGesture,
+        doubleTapGesture,
         setIsPressingButton,
         flash,
         enableNightMode,
@@ -157,32 +157,29 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
             <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
             <SBox width={width} height={height}>
                 {device != null && (
-                    <PinchGestureHandler onGestureEvent={onPinchGesture} enabled={isActive}>
+                    <GestureDetector gesture={Gesture.Simultaneous(pinchGesture, doubleTapGesture)}>
                         <Reanimated.View style={StyleSheet.absoluteFill}>
-                            <TapGestureHandler onEnded={onDoubleTap} numberOfTaps={2}>
-                                <ReanimatedCamera
-                                    ref={camera}
-                                    style={{
-                                        flex: 1,
-                                        backgroundColor: 'black',
-                                        aspectRatio: 9 / 16,
-                                    }}
-                                    format={format}
-                                    device={device}
-                                    lowLightBoost={device.supportsLowLightBoost && enableNightMode}
-                                    isActive={isActive}
-                                    onInitialized={onInitialized}
-                                    onError={onError}
-                                    enableZoomGesture={false}
-                                    animatedProps={cameraAnimatedProps}
-                                    photo={true}
-                                    video={false}
-                                    audio={false}
-                                    orientation={'portrait'}
-                                />
-                            </TapGestureHandler>
+                            <ReanimatedCamera
+                                ref={camera}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: 'black',
+                                    aspectRatio: 9 / 16,
+                                }}
+                                format={format}
+                                device={device}
+                                lowLightBoost={device.supportsLowLightBoost && enableNightMode}
+                                isActive={isActive}
+                                onInitialized={onInitialized}
+                                onError={onError}
+                                enableZoomGesture={false}
+                                animatedProps={cameraAnimatedProps}
+                                photo={true}
+                                video={false}
+                                audio={false}
+                            />
                         </Reanimated.View>
-                    </PinchGestureHandler>
+                    </GestureDetector>
                 )}
 
                 <CaptureButton
@@ -259,7 +256,18 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
                         showsHorizontalScrollIndicator={false}
                     />
                     {galleryImages.length > 2 && (
-                        <SCenter px={2} borderRadius={10} position={'absolute'} bottom={-30} mt={2} bg="#00000044">
+                        <SCenter
+                            px={2}
+                            borderRadius={10}
+                            position={'absolute'}
+                            bottom={-25}
+                            left={0}
+                            right={0}
+                            alignItems={'center'}
+                            bg="#00000044"
+                            alignSelf={'center'}
+                            width={GALLERY_IMAGE_Width}
+                        >
                             <SText fontSize={12} color="white">
                                 Total: {galleryImages.length}
                             </SText>

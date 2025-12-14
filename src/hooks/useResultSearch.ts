@@ -54,6 +54,9 @@ export const useResultSearch = <T>({
             searchValue = transformSearchTextBefore(searchValue);
         }
 
+        // Normalize search string to match data normalization (fixes iOS keyboard input issues)
+        searchValue = normalizeString(searchValue);
+
         const fuseResults = fuse.search(searchValue, { limit: 50 });
         const resultSearch = searchValue
             ? fuseResults.map((result) => result.item)

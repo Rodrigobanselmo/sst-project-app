@@ -1,22 +1,56 @@
-import { SBox, SHStack, SScrollView, SText } from '@components/core';
-import { SCREEN_WIDTH, pagePaddingPx } from '@constants/constants';
+import { SHStack, SText } from '@components/core';
+import { pagePaddingPx } from '@constants/constants';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { deleteImageOrVideoFromGallery, saveImageOrVideoToGallery } from '@utils/helpers/saveAsset';
+import { saveImageOrVideoToGallery } from '@utils/helpers/saveAsset';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { AudioModule } from 'expo-audio';
 import { Camera } from 'expo-camera';
+import { Paths, File } from 'expo-file-system/next';
 import { theme } from 'native-base';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Dimensions, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import ImagePicker from 'react-native-image-crop-picker';
+import React, { useCallback, useEffect } from 'react';
+import { Alert, FlatList, Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { SLabel } from '../SLabel';
 import { SNoContent } from '../SNoContent';
-import { SButton } from '../SButton';
-import { getAssetInfo } from '@utils/helpers/getAssetInfo';
-import { AssetInfo } from 'expo-media-library';
-import { calculateActualDimensions } from '@utils/helpers/calculateAspectRatio';
 
-export default function VideoRecorder({ videos, setVideos }: { setVideos: (arg: string[]) => void; videos: string[] }) {
+// Helper to copy video to app's document directory for reliable playback
+async function copyVideoToLocalStorage(sourceUri: string): Promise<string> {
+    const filename = `video_${Date.now()}.mov`;
+    const destUri = `${Paths.document.uri}/${filename}`;
+
+    try {
+        const sourceFile = new File(sourceUri);
+        const destFile = new File(destUri);
+        sourceFile.copy(destFile);
+        return destUri;
+    } catch (error) {
+        console.error('Error copying video:', error);
+        return sourceUri;
+    }
+}
+
+// Helper to delete video from local storage
+function deleteVideoFromLocalStorage(uri: string): void {
+    try {
+        const file = new File(uri);
+        if (file.exists) {
+            file.delete();
+        }
+    } catch (error) {
+        // Ignore file deletion errors - file may not exist
+        console.log('Video file deletion skipped (may not exist):', uri);
+    }
+}
+
+export default function VideoRecorder({
+    videos,
+    setVideos,
+    onDelete,
+}: {
+    setVideos: (arg: string[]) => void;
+    videos: string[];
+    onDelete?: () => void;
+}) {
     useEffect(() => {
         (async () => {
             const permissionResult = await Camera.requestCameraPermissionsAsync();
@@ -36,27 +70,39 @@ export default function VideoRecorder({ videos, setVideos }: { setVideos: (arg: 
     }, []);
 
     const startRecording = useCallback(async () => {
-        ImagePicker.openCamera({
-            mediaType: 'video',
-            compressVideoPreset: 'MediumQuality',
-            useFrontCamera: true,
-        }).then(async (image) => {
-            const asset = await saveImageOrVideoToGallery(image.path);
-            if (asset) {
-                setVideos([...videos, asset.uri]);
-            }
+        const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ['videos'],
+            videoQuality: ImagePicker.UIImagePickerControllerQualityType.Medium,
+            cameraType: ImagePicker.CameraType.front,
         });
+
+        if (!result.canceled && result.assets[0]) {
+            const originalUri = result.assets[0].uri;
+            console.log('🎬 Video recorded, original URI:', originalUri);
+
+            // Copy video to local storage for reliable playback
+            const localUri = await copyVideoToLocalStorage(originalUri);
+            console.log('🎬 Video copied to local storage:', localUri);
+
+            // Save to gallery as backup (fire and forget)
+            saveImageOrVideoToGallery(originalUri).catch((err) => {
+                console.warn('Failed to save video to gallery:', err);
+            });
+
+            // Use local file:// URI for preview
+            setVideos([...videos, localUri]);
+        }
     }, [setVideos, videos]);
 
     const deleteVideo = useCallback(
         async (uri: string) => {
             const action = async () => {
-                try {
-                    await deleteImageOrVideoFromGallery(uri);
-                    setVideos(videos.filter((recordingUri) => recordingUri !== uri));
-                } catch (error) {
-                    console.error(error);
-                }
+                // Try to delete the file, but don't fail if it doesn't exist
+                deleteVideoFromLocalStorage(uri);
+
+                // Always remove from list and save
+                setVideos(videos.filter((recordingUri) => recordingUri !== uri));
+                onDelete?.();
             };
 
             Alert.alert('Deletar Video', 'Você tem certeza que deseja deletar o video?', [
@@ -71,7 +117,7 @@ export default function VideoRecorder({ videos, setVideos }: { setVideos: (arg: 
                 },
             ]);
         },
-        [setVideos],
+        [setVideos, videos, onDelete],
     );
 
     return (
@@ -84,11 +130,10 @@ export default function VideoRecorder({ videos, setVideos }: { setVideos: (arg: 
                         <Ionicons name={'play-circle'} size={20} color="white" />
                     </SHStack>
                 </TouchableOpacity>
-                {/* <FontAwesome name={'microphone'} size={22} color="black" /> */}
             </SHStack>
 
             {!!videos.length && <VideoList savedVideos={videos} deleteVideo={deleteVideo} />}
-            {!videos.length && <SNoContent width={'100%'} my={'12px'} text="nenhuma video encontrado" />}
+            {!videos.length && <SNoContent width={'100%'} my={'12px'} text="nenhum video encontrado" />}
         </View>
     );
 }
@@ -101,86 +146,36 @@ const VideoList = ({
     deleteVideo: (uri: string) => Promise<void>;
 }) => {
     return (
-        <SBox mt={-3} mb={3} display="flex" flexDirection="row">
-            <SScrollView
-                horizontal
-                contentContainerStyle={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                {savedVideos.map((recordingUri, index) => (
-                    <VideoItem index={index} videoUri={recordingUri} deleteVideo={deleteVideo} key={recordingUri} />
-                ))}
-            </SScrollView>
-        </SBox>
+        <FlatList
+            data={savedVideos}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item}
+            contentContainerStyle={styles.listContent}
+            renderItem={({ item }) => <VideoItem videoUri={item} deleteVideo={deleteVideo} />}
+            ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
+        />
     );
 };
 
-const VideoItem = ({
-    videoUri,
-    deleteVideo,
-    index,
-}: {
-    videoUri: string;
-    deleteVideo: (uri: string) => Promise<void>;
-    index: number;
-}) => {
-    const [asset, setAsset] = useState<AssetInfo | null>(null);
-    const [videoSource, setVideoSource] = useState<string>('');
+// Fixed card size for consistent layout
+const CARD_WIDTH = 140;
+const CARD_HEIGHT = 200;
 
-    useEffect(() => {
-        const loadVideo = async () => {
-            const videoAsset = await getAssetInfo(videoUri);
-            setAsset(videoAsset);
-            const uri = videoAsset?.localUri || videoUri;
-            if (uri) setVideoSource(uri);
-        };
-
-        loadVideo();
-    }, [videoUri]);
-
-    const player = useVideoPlayer(videoSource, (player) => {
+const VideoItem = ({ videoUri, deleteVideo }: { videoUri: string; deleteVideo: (uri: string) => Promise<void> }) => {
+    const player = useVideoPlayer({ uri: videoUri }, (player) => {
         player.loop = true;
     });
 
-    const { height, width } = calculateActualDimensions({
-        aspectRatio: `${asset?.width || 9}:${asset?.height || 16}`,
-        maxWidth: SCREEN_WIDTH - 100,
-        maxHeight: 400,
-    });
-
     return (
-        <View
-            style={{ ...styles.item, width: width + 20, height: 490, justifyContent: 'center', alignItems: 'center' }}
-        >
-            <VideoView
-                player={player}
-                style={{
-                    width: width,
-                    height: height,
-                }}
-                nativeControls
-                contentFit="contain"
-            />
-            <SHStack
-                mt={6}
-                alignItems={'center'}
-                justifyContent={'space-between'}
-                display={'flex'}
-                space={4}
-                w={'100%'}
-            >
-                <SButton
-                    variant={'outline'}
-                    w={'100px'}
-                    h={'30px'}
-                    p={0}
-                    color={'error.500'}
-                    title="Deletar"
-                    onPress={() => deleteVideo(videoUri)}
-                />
-            </SHStack>
+        <View style={styles.item}>
+            <View style={styles.videoContainer}>
+                <VideoView player={player} style={styles.video} nativeControls contentFit="contain" />
+            </View>
+            <TouchableOpacity style={styles.deleteButton} onPress={() => deleteVideo(videoUri)}>
+                <Ionicons name="trash-outline" size={16} color={theme.colors.red[500]} />
+                <SText style={styles.deleteText}>Deletar</SText>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -191,19 +186,37 @@ const styles = StyleSheet.create({
         fontSize: 15,
     },
     container: {
-        alignItems: 'center',
         flex: 1,
-        justifyContent: 'center',
         marginHorizontal: pagePaddingPx,
+    },
+    deleteButton: {
+        alignItems: 'center',
+        borderColor: theme.colors.red[500],
+        borderRadius: 6,
+        borderWidth: 1,
+        flexDirection: 'row',
+        gap: 4,
+        justifyContent: 'center',
+        marginTop: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+    },
+    deleteText: {
+        color: theme.colors.red[500],
+        fontSize: 12,
+        fontWeight: '500',
     },
     item: {
         alignItems: 'center',
-        backgroundColor: theme.colors.gray[200],
-        borderRadius: 8,
-        marginBottom: 8,
-        marginRight: 10,
-        paddingHorizontal: 16,
-        paddingVertical: 16,
+        backgroundColor: theme.colors.gray[100],
+        borderColor: theme.colors.gray[300],
+        borderRadius: 12,
+        borderWidth: 1,
+        padding: 8,
+        width: CARD_WIDTH,
+    },
+    listContent: {
+        paddingVertical: 8,
     },
     recordButton: {
         backgroundColor: theme.colors.gray[400],
@@ -211,5 +224,17 @@ const styles = StyleSheet.create({
         fontSize: 15,
         paddingHorizontal: 10,
         paddingVertical: 6,
+    },
+    video: {
+        borderRadius: 8,
+        height: CARD_HEIGHT,
+        width: '100%',
+    },
+    videoContainer: {
+        backgroundColor: theme.colors.gray[800],
+        borderRadius: 8,
+        height: CARD_HEIGHT,
+        overflow: 'hidden',
+        width: '100%',
     },
 });

@@ -1,14 +1,11 @@
-import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { DBTablesEnum } from '@constants/enums/db-tables';
+import { HierarchyEnum } from '@constants/enums/hierarchy.enum';
 import { StatusEnum } from '@constants/enums/status.enum';
 import { Model } from '@nozbe/watermelondb';
-import { field, date, children, readonly, relation, lazy } from '@nozbe/watermelondb/decorators';
-import { CharacterizationPhotoModel } from './CharacterizationPhotoModel';
-import { CharacterizationModel } from './CharacterizationModel';
-import { CompanyModel } from './CompanyModel';
-import { HierarchyEnum } from '@constants/enums/hierarchy.enum';
-import { WorkspaceHierarchyModel } from './_MMModel/WorkspaceHierarchyModel';
+import { children, date, field, relation } from '@nozbe/watermelondb/decorators';
 import { CharacterizationHierarchyModel } from './_MMModel/CharacterizationHierarchyModel';
+import { WorkspaceHierarchyModel } from './_MMModel/WorkspaceHierarchyModel';
+import { CompanyModel } from './CompanyModel';
 
 class HierarchyModel extends Model {
     static table = DBTablesEnum.HIERARCHY;

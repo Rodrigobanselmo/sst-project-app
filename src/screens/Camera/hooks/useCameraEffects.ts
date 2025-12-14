@@ -2,7 +2,7 @@ import { useDeviceRotation } from '@hooks/useDeviceRotation';
 import { useIsFocused } from '@react-navigation/core';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { PinchGestureHandlerGestureEvent, State } from 'react-native-gesture-handler';
+import { Gesture } from 'react-native-gesture-handler';
 import { Extrapolate, interpolate, useAnimatedProps, useSharedValue } from 'react-native-reanimated';
 import { CameraRuntimeError, useCameraDevice, useCameraFormat } from 'react-native-vision-camera';
 import { MAX_ZOOM_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH } from '../../../constants/constants';
@@ -107,10 +107,6 @@ export const useCameraEffects = () => {
         setFlash((f) => (f === 'off' ? 'on' : 'off'));
     }, []);
 
-    const onDoubleTap = useCallback(() => {
-        onFlipCameraPressed();
-    }, [onFlipCameraPressed]);
-
     const neutralZoom = device?.neutralZoom ?? 1;
 
     useEffect(() => {
@@ -119,26 +115,27 @@ export const useCameraEffects = () => {
 
     const startZoom = useSharedValue(0);
 
-    const onPinchGesture = useCallback(
-        (event: PinchGestureHandlerGestureEvent['nativeEvent']) => {
-            'worklet';
-            const { state, scale: eventScale } = event;
+    const pinchGesture = Gesture.Pinch()
+        .onBegin(() => {
+            startZoom.value = zoom.value;
+        })
+        .onUpdate((event) => {
+            const start = startZoom.value ?? 0;
+            const scale = interpolate(
+                event.scale,
+                [1 - 1 / SCALE_FULL_ZOOM, 1, SCALE_FULL_ZOOM],
+                [-1, 0, 1],
+                Extrapolate.CLAMP,
+            );
+            zoom.value = interpolate(scale, [-1, 0, 1], [minZoom, start, maxZoom], Extrapolate.CLAMP);
+        });
 
-            if (state === State.BEGAN) {
-                startZoom.value = zoom.value;
-            } else if (state === State.ACTIVE) {
-                const start = startZoom.value ?? 0;
-                const scale = interpolate(
-                    eventScale,
-                    [1 - 1 / SCALE_FULL_ZOOM, 1, SCALE_FULL_ZOOM],
-                    [-1, 0, 1],
-                    Extrapolate.CLAMP,
-                );
-                zoom.value = interpolate(scale, [-1, 0, 1], [minZoom, start, maxZoom], Extrapolate.CLAMP);
-            }
-        },
-        [maxZoom, minZoom, startZoom, zoom],
-    );
+    const doubleTapGesture = Gesture.Tap()
+        .numberOfTaps(2)
+        .runOnJS(true)
+        .onEnd(() => {
+            onFlipCameraPressed();
+        });
 
     return {
         isActive,
@@ -148,8 +145,8 @@ export const useCameraEffects = () => {
         onInitialized,
         onFlipCameraPressed,
         onFlashPressed,
-        onDoubleTap,
-        onPinchGesture,
+        pinchGesture,
+        doubleTapGesture,
         isPressingButton,
         setIsPressingButton,
         cameraPosition,

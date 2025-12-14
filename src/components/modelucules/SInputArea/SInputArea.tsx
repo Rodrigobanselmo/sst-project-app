@@ -1,85 +1,76 @@
-import { ISTextareaProps, SBox, SFormControl, SText, STextarea } from '@components/core';
-import { useRef } from 'react';
+import { ISTextareaProps, STextarea } from '@components/core';
+import React, { useRef } from 'react';
+import { TextInput, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 
-interface ISInputAreaProps extends ISTextareaProps {
+export interface SInputAreaProps {
     errorMessage?: string | null;
     endAdornmentText?: React.ReactNode;
     startAdornmentText?: React.ReactNode;
-    inputProps?: ISTextareaProps & {
-        variant?: 'normal' | 'filled';
-    };
+    isDisabled?: boolean;
+    isInvalid?: boolean;
+    h?: number;
+    inputProps?: ISTextareaProps;
 }
 
-export function SInputArea({
-    errorMessage = null,
-    isInvalid,
-    variant,
-    endAdornmentText,
-    startAdornmentText,
-    inputProps,
-    ...props
-}: ISInputAreaProps) {
-    const invalid = !!errorMessage || isInvalid;
-    const ref = useRef(null);
+export const SInputArea = React.forwardRef<TextInput, SInputAreaProps>(
+    ({ isDisabled, startAdornmentText, errorMessage = null, isInvalid, endAdornmentText, h, inputProps }, refPass) => {
+        const refValue = useRef<TextInput>(null);
+        const invalid = !!errorMessage || isInvalid;
 
-    return (
-        <SFormControl isInvalid={invalid} mb={4}>
-            <STextarea
-                bg="background.default"
-                px={4}
-                autoCompleteType={'off'}
-                borderWidth={1}
-                ref={ref}
-                isInvalid={invalid}
-                {...(endAdornmentText && {
-                    InputRightElement: (
-                        <SText color={'text.light'} mr={3}>
-                            {endAdornmentText}
-                        </SText>
-                    ),
-                })}
-                {...(startAdornmentText && {
-                    InputLeftElement: (
-                        <SBox onTouchEnd={() => (ref as any).current?.focus()} h="100%" mr={-2} mt={3}>
-                            <SText color={'text.light'} ml={3}>
-                                {startAdornmentText}
-                            </SText>
-                        </SBox>
-                    ),
-                })}
-                fontSize="md"
-                color="text.main"
-                placeholderTextColor="text.placeholder"
-                fontFamily="body"
-                _invalid={{
-                    borderWidth: 1,
-                    borderColor: 'status.error',
-                }}
-                _focus={{
-                    bg: 'background.default',
-                    borderWidth: 1,
-                    borderColor: 'primary.main',
-                    ...(variant == 'filled' && {
-                        bg: 'background.paper',
-                        borderWidth: 1,
-                        borderColor: 'primary.main',
-                    }),
-                }}
-                {...(variant == 'filled' && {
-                    bg: 'background.paper',
-                    borderWidth: 0,
-                })}
-                {...props}
-                {...inputProps}
-            />
+        const ref = (refPass || refValue) as React.RefObject<TextInput>;
 
-            <SFormControl.ErrorMessage
-                _text={{
-                    color: 'status.error',
-                }}
-            >
-                {errorMessage}
-            </SFormControl.ErrorMessage>
-        </SFormControl>
-    );
-}
+        return (
+            <View style={styles.container}>
+                <STextarea
+                    ref={ref}
+                    isInvalid={invalid}
+                    isDisabled={isDisabled}
+                    h={h}
+                    InputLeftElement={
+                        startAdornmentText ? (
+                            <TouchableOpacity onPress={() => ref.current?.focus()} style={styles.adornmentLeft}>
+                                <Text style={styles.adornmentText}>{startAdornmentText}</Text>
+                            </TouchableOpacity>
+                        ) : undefined
+                    }
+                    InputRightElement={
+                        endAdornmentText ? (
+                            <View style={styles.adornmentRight}>
+                                <Text style={styles.adornmentText}>{endAdornmentText}</Text>
+                            </View>
+                        ) : undefined
+                    }
+                    {...inputProps}
+                />
+                {invalid && errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+            </View>
+        );
+    },
+);
+
+const styles = StyleSheet.create({
+    container: {
+        marginBottom: 16,
+    },
+    adornmentLeft: {
+        paddingRight: 8,
+        paddingTop: 2,
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+    },
+    adornmentRight: {
+        paddingLeft: 8,
+        paddingTop: 2,
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+    },
+    adornmentText: {
+        color: '#7C7C8A',
+        fontSize: 16,
+    },
+    errorText: {
+        color: '#F44336',
+        fontSize: 12,
+        marginTop: 4,
+    },
+});

@@ -10,7 +10,7 @@ import {
     useAudioPlayer,
     useAudioPlayerStatus,
 } from 'expo-audio';
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system/next';
 import { Box, theme } from 'native-base';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View, GestureResponderEvent } from 'react-native';
@@ -20,9 +20,13 @@ import { SNoContent } from '../SNoContent';
 const SAudioRecorder = ({
     audios: savedRecordings = [],
     setAudios: setSavedRecordings,
+    onRecordingStateChange,
+    onDelete,
 }: {
     setAudios: (arg: string[]) => void;
     audios: string[];
+    onRecordingStateChange?: (isRecording: boolean) => void;
+    onDelete?: () => void;
 }) => {
     const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
     const recorderState = useAudioRecorderState(audioRecorder, 100);
@@ -32,7 +36,8 @@ const SAudioRecorder = ({
             isRecording: recorderState.isRecording,
             durationMillis: recorderState.durationMillis,
         });
-    }, [recorderState.isRecording, recorderState.durationMillis]);
+        onRecordingStateChange?.(recorderState.isRecording);
+    }, [recorderState.isRecording, recorderState.durationMillis, onRecordingStateChange]);
 
     const startRecording = async () => {
         try {
@@ -65,6 +70,7 @@ const SAudioRecorder = ({
         try {
             await audioRecorder.stop();
             const uri = audioRecorder.uri;
+            console.log('🎤 Audio recording stopped, URI:', uri);
             if (uri) {
                 setSavedRecordings([...savedRecordings, uri]);
             }
@@ -76,12 +82,20 @@ const SAudioRecorder = ({
     const deleteRecording = useCallback(
         async (uri: string) => {
             const action = async () => {
+                // Try to delete the file, but don't fail if it doesn't exist
                 try {
-                    await FileSystem.deleteAsync(uri);
-                    setSavedRecordings(savedRecordings.filter((recordingUri) => recordingUri !== uri));
+                    const file = new File(uri);
+                    if (file.exists) {
+                        file.delete();
+                    }
                 } catch (error) {
-                    console.error(error);
+                    // Ignore file deletion errors - file may not exist
+                    console.log('File deletion skipped (may not exist):', uri);
                 }
+
+                // Always remove from list and save
+                setSavedRecordings(savedRecordings.filter((recordingUri) => recordingUri !== uri));
+                onDelete?.();
             };
 
             Alert.alert('Deletar Gravação', 'Você tem certeza que deseja deletar o aúdio?', [
@@ -96,7 +110,7 @@ const SAudioRecorder = ({
                 },
             ]);
         },
-        [savedRecordings, setSavedRecordings],
+        [savedRecordings, setSavedRecordings, onDelete],
     );
 
     return (

@@ -1,5 +1,5 @@
 import { SBox, SHStack, SScrollView, SVStack } from '@components/core';
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { CharacterizationFormProps } from '../../types';
 // import * as ImagePicker from 'expo-image-picker';
@@ -21,7 +21,7 @@ import { VideoForm } from './forms/VideoForm';
 type PageProps = {
     openCamera: () => void;
     onEditForm: (form: Partial<CharacterizationFormProps>) => void;
-    onSaveForm: () => Promise<any>;
+    onSaveForm: (options?: { skipGoBack?: boolean }) => Promise<any>;
     control: Control<ICharacterizationValues, any>;
     characterizationsProfiles?: CharacterizationModel[];
     principalProfileId?: string;
@@ -40,10 +40,20 @@ export function CharacterizationForm({
     onAddProfile,
 }: PageProps): React.ReactElement {
     const isPrincipalProfile = useCharacterizationFormStore((state) => state.getIsPrincipalProfile());
+    const [isRecording, setIsRecording] = useState(false);
 
-    const handleSave = () => {
+    const handleRecordingStateChange = useCallback((recording: boolean) => {
+        setIsRecording(recording);
+    }, []);
+
+    const handleSave = useCallback(() => {
         onSaveForm();
-    };
+    }, [onSaveForm]);
+
+    const handleMediaDelete = useCallback(() => {
+        // Save form after deleting media to persist the change and stay on same page
+        onSaveForm({ skipGoBack: true });
+    }, [onSaveForm]);
 
     const environments = [
         {
@@ -296,11 +306,20 @@ export function CharacterizationForm({
                         />
                     </SVStack>
 
-                    <VideoForm onEdit={onEditForm} />
-                    <AudioForm onEdit={onEditForm} />
+                    <VideoForm onEdit={onEditForm} onDelete={handleMediaDelete} />
+                    <AudioForm
+                        onEdit={onEditForm}
+                        onRecordingStateChange={handleRecordingStateChange}
+                        onDelete={handleMediaDelete}
+                    />
 
                     <SVStack mb={SAFE_AREA_PADDING.paddingBottom} mt={5} mx={pagePadding}>
-                        <SButton size={'sm'} title="Salvar" onPress={handleSave} />
+                        <SButton
+                            size={'sm'}
+                            title={isRecording ? 'Pare a gravação para salvar' : 'Salvar'}
+                            onPress={handleSave}
+                            isDisabled={isRecording}
+                        />
                     </SVStack>
                 </SScrollView>
             </SVStack>

@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback } from 'react';
 
 import Fuse, { FuseOptionKey, IFuseOptions } from 'fuse.js';
-import sortArray from 'sort-array';
-import { useDebouncedCallback } from 'use-debounce';
 import { normalizeString } from '@utils/helpers/normalizeString';
 
 interface IUseTableSearch<T> {
@@ -27,8 +25,6 @@ export const useFuseFuncSearch = <T>({
     keys,
     fuseOptions,
 }: IUseTableSearch<T>): IReturnUseFuseSearch<T> => {
-    const [fuse, setFuse] = useState<Fuse<T> | null>(null);
-
     const getFn = useCallback((obj: any, path: any) => {
         const value = Fuse.config.getFn(obj, path);
         if (Array.isArray(value)) {
@@ -40,12 +36,15 @@ export const useFuseFuncSearch = <T>({
 
     const getResult = useCallback(
         ({ data, search = '' }: { data: T[]; search: string }) => {
-            let fuseValue = fuse;
+            console.log(
+                '[useFuseFuncSearch] getResult called with:',
+                data?.length,
+                'items, search:',
+                JSON.stringify(search),
+            );
 
-            if (!fuseValue) {
-                fuseValue = new Fuse(data, { keys, ignoreLocation: true, threshold: 0.4, getFn, ...fuseOptions });
-                setFuse(fuseValue);
-            }
+            // Always create a new Fuse instance with the current data to ensure accurate search
+            const fuseValue = new Fuse(data, { keys, ignoreLocation: true, threshold: 0.4, getFn, ...fuseOptions });
 
             let searchValue = minLengthSearch && minLengthSearch > 0 && search.length < minLengthSearch ? '' : search;
 
@@ -53,7 +52,14 @@ export const useFuseFuncSearch = <T>({
                 searchValue = transformSearchTextBefore(searchValue);
             }
 
+            // Normalize search string to match data normalization (fixes iOS keyboard input issues)
+            searchValue = normalizeString(searchValue);
+
+            console.log('[useFuseFuncSearch] Normalized searchValue:', JSON.stringify(searchValue));
+
             const fuseResults = fuseValue.search(searchValue, { limit: 50 });
+            console.log('[useFuseFuncSearch] Fuse raw results:', fuseResults.length);
+
             const resultSearch = searchValue
                 ? fuseResults.map((result) => result.item)
                 : sortFunction
@@ -61,12 +67,12 @@ export const useFuseFuncSearch = <T>({
                       ? sortFunction(data)
                       : []
                   : data;
+
+            console.log('[useFuseFuncSearch] Final resultSearch:', resultSearch.length);
             return resultSearch;
         },
-        // remove fuse sate from dependencies
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [keys, minLengthSearch, sortFunction, transformSearchTextBefore, getFn],
+        [keys, minLengthSearch, sortFunction, transformSearchTextBefore, getFn, fuseOptions],
     );
 
-    return { getResult, fuse, isFuseReady: !!fuse };
+    return { getResult, fuse: null, isFuseReady: true };
 };

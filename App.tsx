@@ -6,6 +6,7 @@ import { isAndroid } from '@utils/helpers/getPlataform';
 import * as NavigationBar from 'expo-navigation-bar';
 import { NativeBaseProvider } from 'native-base';
 import { LogBox, StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { THEME } from './src/theme/theme';
 import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -44,15 +45,17 @@ export default function App() {
     }
 
     return (
-        <QueryClientProvider client={queryClient}>
-            <NativeBaseProvider theme={THEME}>
-                <SafeAreaProvider>
-                    <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-                    <AuthProvider>{fontsLoaded ? <Routes /> : <SLoading />}</AuthProvider>
-                    <SLoadingPagePubSub />
-                    <SModalProvider />
-                </SafeAreaProvider>
-            </NativeBaseProvider>
-        </QueryClientProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <QueryClientProvider client={queryClient}>
+                <NativeBaseProvider theme={THEME}>
+                    <SafeAreaProvider>
+                        <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+                        <AuthProvider>{fontsLoaded ? <Routes /> : <SLoading />}</AuthProvider>
+                        <SLoadingPagePubSub />
+                        <SModalProvider />
+                    </SafeAreaProvider>
+                </NativeBaseProvider>
+            </QueryClientProvider>
+        </GestureHandlerRootView>
     );
 }

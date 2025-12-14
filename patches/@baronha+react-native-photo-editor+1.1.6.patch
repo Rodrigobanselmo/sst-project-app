@@ -11,3 +11,18 @@ index c1f46c9..8ae5b7d 100644
      if (activity == null) {
        promise.reject("ACTIVITY_DOES_NOT_EXIST", "Activity doesn't exist");
        return;
+diff --git a/node_modules/@baronha/react-native-photo-editor/react-native-photo-editor.podspec b/node_modules/@baronha/react-native-photo-editor/react-native-photo-editor.podspec
+index 61bc5bc..5d29ac1 100644
+--- a/node_modules/@baronha/react-native-photo-editor/react-native-photo-editor.podspec
++++ b/node_modules/@baronha/react-native-photo-editor/react-native-photo-editor.podspec
+@@ -17,8 +17,8 @@ Pod::Spec.new do |s|
+   s.source_files = "ios/**/*.{h,m,mm,swift}"
+   
+   s.dependency "React-Core"
+-  s.dependency "SDWebImage", "~> 5.11.1"
+-  s.dependency 'SDWebImageWebPCoder', '~> 0.8.4'
++  s.dependency "SDWebImage", ">= 5.11.1"
++  s.dependency 'SDWebImageWebPCoder', '>= 0.8.4'
+ 
+   s.subspec 'ZLImageEditor' do |zl|
+     zl.name             = "ZLImageEditor"

@@ -67,7 +67,11 @@ export function SignIn() {
     }
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+        >
             <SVStack flex={1} px={10} pb={16}>
                 {/* <Image
 					source={BackgroundImg}
@@ -118,7 +122,6 @@ export function SignIn() {
                                     placeholder: 'Senha',
                                     variant: 'filled',
                                     autoCapitalize: 'none',
-                                    type: 'password',
                                     value,
                                     secureTextEntry: true,
                                     onChangeText: onChange,

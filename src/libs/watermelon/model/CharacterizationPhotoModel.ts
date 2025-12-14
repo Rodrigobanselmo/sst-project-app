@@ -1,6 +1,6 @@
 import { DBTablesEnum } from '@constants/enums/db-tables';
 import { Model } from '@nozbe/watermelondb';
-import { field, date, readonly, relation } from '@nozbe/watermelondb/decorators';
+import { date, field, relation } from '@nozbe/watermelondb/decorators';
 import { CharacterizationModel } from './CharacterizationModel';
 
 class CharacterizationPhotoModel extends Model {

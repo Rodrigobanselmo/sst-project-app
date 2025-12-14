@@ -62,9 +62,9 @@ export const usePersistedStateHierarchy = ({
 
                 if (hierarchies) setHierarchyList(hierarchyListParents(hierarchies));
             }
-
-            fetch();
         };
+
+        fetch();
     }, [autoFetch, companyId, setHierarchyList, workspaceId, fetchHierarchySync]);
 
     return { hierarchyList, setHierarchyList };

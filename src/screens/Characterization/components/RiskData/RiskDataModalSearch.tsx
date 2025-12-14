@@ -73,19 +73,19 @@ export function RiskDataModalSearch({ onEditForm, form, risk, modalRef }: PagePr
     });
 
     const engsSearch = useFuseFuncSearch<DataProps>({
-        keys: ['medName'],
+        keys: ['name'],
         fuseOptions: { threshold: 0.6 },
         sortFunction: sortFunctionRecMec,
     });
 
     const admsSearch = useFuseFuncSearch<DataProps>({
-        keys: ['medName'],
+        keys: ['name'],
         fuseOptions: { threshold: 0.6 },
         sortFunction: sortFunctionRecMec,
     });
 
     const recsSearch = useFuseFuncSearch<DataProps>({
-        keys: ['recName'],
+        keys: ['name'],
         fuseOptions: { threshold: 0.6 },
         sortFunction: sortFunctionRecMec,
     });
@@ -149,9 +149,18 @@ export function RiskDataModalSearch({ onEditForm, form, risk, modalRef }: PagePr
         async (search: string, options: { key: keyof RiskModel; fuseSearch: IReturnUseFuseSearch<DataProps> }) => {
             let results: DataProps[] = [];
 
+            console.log('[onGetRiskRelations] Called with search:', JSON.stringify(search), 'key:', options.key);
+            console.log(
+                '[onGetRiskRelations] risk exists:',
+                !!risk,
+                'risk[key] exists:',
+                !!(risk && risk[options.key]),
+            );
+
             if (risk && risk[options.key]) {
                 try {
                     const data: GenerateSourceModel[] | RecMedModel[] = await (risk[options.key] as any)?.fetch();
+                    console.log('[onGetRiskRelations] Fetched data count:', data?.length);
                     if (data) {
                         const isGenerateSource = options.key === 'allGenerateSources';
                         const isRecName = options.key === 'allRec';
@@ -163,10 +172,15 @@ export function RiskDataModalSearch({ onEditForm, form, risk, modalRef }: PagePr
                             id: item.id,
                         }));
 
-                        results = options.fuseSearch.getResult({ data: removeDuplicatesAndOrder(resultData), search });
+                        console.log('[onGetRiskRelations] resultData sample:', resultData.slice(0, 3));
+                        const dedupedData = removeDuplicatesAndOrder(resultData);
+                        console.log('[onGetRiskRelations] After dedup:', dedupedData.length, 'items');
+
+                        results = options.fuseSearch.getResult({ data: dedupedData, search });
+                        console.log('[onGetRiskRelations] After fuse search:', results.length, 'results');
                     }
                 } catch (e) {
-                    console.error(e);
+                    console.error('[onGetRiskRelations] Error:', e);
                     /* empty */
                 }
             }

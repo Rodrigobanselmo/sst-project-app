@@ -1,15 +1,8 @@
-import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { DBTablesEnum } from '@constants/enums/db-tables';
-import { StatusEnum } from '@constants/enums/status.enum';
 import { Model } from '@nozbe/watermelondb';
-import { field, date, children, readonly, relation, lazy } from '@nozbe/watermelondb/decorators';
-import { CharacterizationPhotoModel } from './CharacterizationPhotoModel';
-import { CharacterizationModel } from './CharacterizationModel';
-import { CompanyModel } from './CompanyModel';
-import { HierarchyEnum } from '@constants/enums/hierarchy.enum';
-import { WorkspaceHierarchyModel } from './_MMModel/WorkspaceHierarchyModel';
-import { CharacterizationHierarchyModel } from './_MMModel/CharacterizationHierarchyModel';
+import { children, date, field, relation } from '@nozbe/watermelondb/decorators';
 import { CharacterizationEmployeeModel } from './_MMModel/CharacterizationEmployeeModel';
+import { CompanyModel } from './CompanyModel';
 import { HierarchyModel } from './HierarchyModel';
 
 class EmployeeModel extends Model {

@@ -11,6 +11,10 @@ export function useSync() {
     const synchronizing = useRef<Record<string, boolean>>({});
     const { user } = useAuth();
 
+    // Store netInfo.isConnected in a ref to avoid recreating callbacks on every network change
+    const isConnectedRef = useRef(netInfo.isConnected);
+    isConnectedRef.current = netInfo.isConnected;
+
     const offlineSynchronize = useCallback(
         async (options?: { companyStartIds?: string[] }) => {
             try {
@@ -42,7 +46,7 @@ export function useSync() {
 
     const syncChanges = useCallback(
         async (options?: { companyStartIds?: string[] }) => {
-            if (netInfo.isConnected && !synchronizing.current[getSyncChanges.name]) {
+            if (isConnectedRef.current && !synchronizing.current[getSyncChanges.name]) {
                 synchronizing.current[getSyncChanges.name] = true;
 
                 try {
@@ -54,7 +58,7 @@ export function useSync() {
                 }
             }
         },
-        [netInfo.isConnected, offlineSynchronize],
+        [offlineSynchronize],
     );
 
     return { syncChanges, offlineSynchronize };

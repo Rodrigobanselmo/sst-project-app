@@ -1,8 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { RiskModel } from '@libs/watermelon/model/RiskModel';
-import { RiskRepository } from '@repositories/riskRepository';
-import { Model } from '@nozbe/watermelondb';
 import { unstable_batchedUpdates } from 'react-native';
 
 interface IUseGetRiskDatabase<T> {

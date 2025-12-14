@@ -2,7 +2,7 @@
   "expo": {
     "name": "SimpleSST",
     "slug": "SimpleSST",
-    "version": "1.0.15",
+    "version": "1.0.16",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -44,7 +44,6 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "A aplicação acessa suas fotos para permitir que você as compartilhe com o banco de dados de imagens do Projeto SST.",
           "cameraPermission": "A aplicação acessa sua camera para permitir enviar fotos ao banco de imagens do Projeto SST."
         }
       ],
@@ -75,7 +74,7 @@
     "jsEngine": "hermes",
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "0e57b451-4ed8-42f2-8e83-3f877b434c4a"
       }
     },
     "ios": {
@@ -85,6 +84,7 @@
       "bundleIdentifier": "com.simplesst.app",
       "deploymentTarget": "13.4",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryAddUsageDescription": "Dar permissão ao SimpleSST para salvar fotos em seu album.",
         "NSCameraUsageDescription": "Dar permissão ao SimpleSST para acessar sua camera",
         "NSMicrophoneUsageDescription": "Dar permissão ao SimpleSST para acessar o audio do seu despositivo",
@@ -110,7 +110,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "versionCode": 16,
+      "versionCode": 18,
       "package": "com.simplesst.app",
       "minSdkVersion": 24,
       "targetSdkVersion": 35,

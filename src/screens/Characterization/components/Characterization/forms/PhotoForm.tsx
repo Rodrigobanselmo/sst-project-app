@@ -1,17 +1,16 @@
 import { SBox, SCenter, SFlatList, SHStack, SText } from '@components/core';
 import React from 'react';
-import { Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { Alert, Platform, StyleSheet, TouchableOpacity } from 'react-native';
 import { CharacterizationFormProps } from '../../../types';
-// import * as ImagePicker from 'expo-image-picker';
 import PhotoEditor from '@baronha/react-native-photo-editor';
 import { SButton } from '@components/index';
 import { SLabel } from '@components/modelucules/SLabel';
 import { SCREEN_WIDTH, pagePadding, pagePaddingPx } from '@constants/constants';
 import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
 import { deleteImageOrVideoFromGallery } from '@utils/helpers/saveAsset';
-import * as ImagePickerExpo from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { Orientation } from 'expo-screen-orientation';
-import ImagePicker from 'react-native-image-crop-picker';
 import { PhotoComponent } from '../PhotoComponent';
 
 type FormProps = {
@@ -24,44 +23,59 @@ export function PhotoForm({ openCamera, onEdit }: FormProps): React.ReactElement
 
     const handlePickImage = async () => {
         try {
-            const permissionResult = await ImagePickerExpo.requestMediaLibraryPermissionsAsync();
+            // Android 13+ (API 33+) usa Photo Picker que NÃO requer permissões
+            // Android 12 e inferior ainda precisa de permissões
+            const needsPermission = Platform.OS === 'android' && Platform.Version < 33;
 
-            if (permissionResult.granted === false) {
-                alert(
-                    'Você recusou acesso a sua galeria de fotos! Para abilitar acesse as configurações -> Simplesst --> Fotos',
-                );
+            if (needsPermission) {
+                const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+                if (permissionResult.granted === false) {
+                    alert(
+                        'Você recusou acesso a sua galeria de fotos! Para abilitar acesse as configurações -> Simplesst --> Fotos',
+                    );
+                    return;
+                }
+            }
+
+            // Usar expo-image-picker com allowsMultipleSelection
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsMultipleSelection: true,
+                quality: 0.8,
+                selectionLimit: 10, // Limite de 10 fotos
+            });
+
+            if (result.canceled) {
                 return;
             }
 
-            const images = await ImagePicker.openPicker({
-                cropping: false,
-                mediaType: 'photo',
-                multiple: true,
-            });
-
             const results: CharacterizationFormProps['photos'] = [...(photos || [])];
-            for await (const image of images) {
-                const img = await ImagePicker.openCropper({
-                    mediaType: 'photo',
-                    cropping: true,
-                    path: image.path,
-                    compressImageQuality: 0.6,
-                    ...(image.height > image.width
-                        ? {
-                              width: (1200 * 9) / 16,
-                              height: 1200,
-                              compressImageMaxWidth: 900,
-                          }
-                        : {
-                              width: 1200,
-                              height: (1200 * 9) / 16,
-                              compressImageMaxWidth: 1200,
-                          }),
+
+            // Processar cada imagem selecionada
+            for (const asset of result.assets) {
+                const { width, height, uri } = asset;
+
+                // Determinar orientação
+                const isPortrait = height > width;
+                const targetWidth = isPortrait ? (1200 * 9) / 16 : 1200;
+                const targetHeight = isPortrait ? 1200 : (1200 * 9) / 16;
+
+                // Fazer crop e compressão usando expo-image-manipulator
+                const context = ImageManipulator.manipulate(uri);
+                context.resize({
+                    width: targetWidth,
+                    height: targetHeight,
+                });
+                const image = await context.renderAsync();
+                const manipulatedImage = await image.saveAsync({
+                    compress: 0.6,
+                    format: SaveFormat.JPEG,
                 });
 
                 results.push({
-                    uri: img.path,
-                    orientation: image.height > image.width ? Orientation.PORTRAIT_UP : Orientation.LANDSCAPE_LEFT,
+                    uri: manipulatedImage.uri,
+                    orientation: isPortrait ? Orientation.PORTRAIT_UP : Orientation.LANDSCAPE_LEFT,
                 });
             }
 
@@ -146,7 +160,7 @@ export function PhotoForm({ openCamera, onEdit }: FormProps): React.ReactElement
                             />
                         )}
                         horizontal
-                        keyExtractor={(item, index) => index.toString()}
+                        keyExtractor={(_item, index) => index.toString()}
                         showsVerticalScrollIndicator={false}
                         showsHorizontalScrollIndicator={false}
                     />

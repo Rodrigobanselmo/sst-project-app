@@ -1,10 +1,8 @@
 import { SText, SVStack } from '@components/core';
 import { SRowCard } from '@components/modelucules/SRowCard';
 import { SSearchModal } from '@components/organisms/SSearchModal';
-import { useGetDatabase } from '@hooks/database/useGetDatabase';
-import { addDotsText } from '@utils/helpers/addDotsText';
-import React, { useEffect } from 'react';
-import { useCallback, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { unstable_batchedUpdates } from 'react-native';
 
 export function SSearchSimpleModal<T>({
     showModal,
@@ -34,24 +32,44 @@ export function SSearchSimpleModal<T>({
     placeholder?: string;
 }) {
     const [search, setSearch] = useState('');
+    const [data, setData] = useState<(T & { id: any })[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     const searchRef = React.useRef<any>(null);
-
-    const fetch = useCallback(() => {
-        return onFetchFunction(search);
-    }, [onFetchFunction, search]);
-
-    const {
-        data,
-        isLoading,
-        fetch: fetchFunction,
-    } = useGetDatabase({
-        onFetchFunction: fetch,
-    });
+    const onFetchFunctionRef = useRef(onFetchFunction);
+    onFetchFunctionRef.current = onFetchFunction;
 
     useEffect(() => {
-        fetchFunction();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [fetch]);
+        if (!showModal) {
+            return;
+        }
+
+        let cancelled = false;
+        setIsLoading(true);
+
+        console.log('[SSearchSimpleModal] Fetching with search:', JSON.stringify(search));
+
+        onFetchFunctionRef
+            .current(search)
+            .then((result) => {
+                console.log('[SSearchSimpleModal] Fetch result:', result?.length, 'items', result?.slice(0, 3));
+                if (!cancelled) {
+                    unstable_batchedUpdates(() => {
+                        setData(result || []);
+                        setIsLoading(false);
+                    });
+                }
+            })
+            .catch((error) => {
+                if (!cancelled) {
+                    console.error('[SSearchSimpleModal] Fetch error:', error);
+                    setIsLoading(false);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [search, showModal]);
 
     const handlePress = (data: T) => {
         setShowModal(false);
@@ -59,13 +77,17 @@ export function SSearchSimpleModal<T>({
     };
 
     const handleConfirm = () => {
-        const value = searchRef.current.value;
-        onConfirm?.(value);
+        const value = searchRef.current?.value || search;
+        if (value && value.trim()) {
+            onConfirm?.(value.trim());
+        }
     };
 
     const handleConfirmInput = () => {
-        const value = searchRef.current.value;
-        onConfirmInput?.(value);
+        const value = searchRef.current?.value || search;
+        if (value && value.trim()) {
+            onConfirmInput?.(value.trim());
+        }
     };
 
     useEffect(() => {

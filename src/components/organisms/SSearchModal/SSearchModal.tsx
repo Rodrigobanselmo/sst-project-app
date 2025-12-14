@@ -50,9 +50,14 @@ export const SSearchModal = <T,>({
     loadingRef,
     disableNoInternetContent,
 }: MyComponentProps<T>) => {
-    const handleSearchChange = useDebouncedCallback((value: string) => {
-        onSearch?.(value);
-    }, debounceTime);
+    const handleSearchChange = useDebouncedCallback(
+        (value: string) => {
+            console.log('[SSearchModal] Debounced onSearch called with:', JSON.stringify(value));
+            onSearch?.(value);
+        },
+        debounceTime,
+        { leading: false, trailing: true },
+    );
 
     return (
         <SModal isOpen={showModal} height={SCREEN_HEIGHT} px={2} onClose={() => onShowModal(false)} size="full">
@@ -81,26 +86,32 @@ export const SSearchModal = <T,>({
                                     {searchLabel && <SFormControl.Label>{searchLabel}</SFormControl.Label>}
                                     <SInput
                                         ref={searchRef}
-                                        placeholder={placeholder}
-                                        onChangeText={(v) => {
-                                            handleSearchChange(v);
-                                            if (searchRef?.current) {
-                                                searchRef.current.value = v;
-                                            }
+                                        inputProps={{
+                                            placeholder: placeholder,
+                                            onChangeText: (v: string) => {
+                                                console.log(
+                                                    '[SSearchModal] onChangeText called with:',
+                                                    JSON.stringify(v),
+                                                );
+                                                handleSearchChange(v);
+                                                if (searchRef?.current) {
+                                                    searchRef.current.value = v;
+                                                }
+                                            },
+                                            ...(onConfirmInput && {
+                                                InputRightElement: (
+                                                    <SButton
+                                                        title="adicionar"
+                                                        autoWidth
+                                                        addColor
+                                                        onPress={() => {
+                                                            onShowModal(false);
+                                                            onConfirmInput();
+                                                        }}
+                                                    />
+                                                ),
+                                            }),
                                         }}
-                                        {...(onConfirmInput && {
-                                            InputRightElement: (
-                                                <SButton
-                                                    title="adicionar"
-                                                    autoWidth
-                                                    addColor
-                                                    onPress={() => {
-                                                        onShowModal(false);
-                                                        onConfirmInput();
-                                                    }}
-                                                />
-                                            ),
-                                        })}
                                     />
                                 </SFormControl>
                             )}

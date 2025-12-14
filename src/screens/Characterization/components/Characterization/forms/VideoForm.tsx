@@ -5,15 +5,17 @@ import { useCharacterizationFormStore } from '@libs/storage/state/characterizati
 
 type FormProps = {
     onEdit: (form: Partial<CharacterizationFormProps>) => void;
+    onDelete?: () => void;
 };
 
-export function VideoForm({ onEdit }: FormProps): React.ReactElement {
+export function VideoForm({ onEdit, onDelete }: FormProps): React.ReactElement {
     const videos = useCharacterizationFormStore((state) => state.form?.videos);
 
     return (
         <SVideoRecorder
             videos={videos?.map((video) => video.uri) || []}
             setVideos={(videos) => onEdit({ videos: videos.map((video) => ({ uri: video })) })}
+            onDelete={onDelete}
         />
     );
 }

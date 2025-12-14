@@ -16,7 +16,7 @@ interface ISTabView {
     // renderScene: (props: SceneRendererProps & { route: any; setIndex: (index: number) => void }) => React.ReactNode;
     routes: { label: string; component: React.JSX.Element }[];
     renderTabBar?: (props: any) => React.ReactNode;
-    tabsRef?: React.RefObject<ISTabViewRefProps>;
+    tabsRef?: React.RefObject<ISTabViewRefProps | null>;
 }
 
 // eslint-disable-next-line react/prop-types

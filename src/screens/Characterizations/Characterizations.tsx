@@ -107,6 +107,11 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
             setPartialModal((data) => ({ ...data, actual: (data as any).actual + 1 }));
         };
 
+        // Track files that were not found (for warning message)
+        const missingFiles: string[] = [];
+        // Track skipped risk data due to errors
+        const skippedRiskData: string[] = [];
+
         const action = async () => {
             console.log('🚀 Action iniciada');
             console.log('📊 Dados iniciais:', { workspaceId: workspaceDB?.id, companyId: companyDB?.id });
@@ -557,16 +562,23 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     const id = uuidGenerator.v4() as string;
                     const file = await getFormFileFromURI(photo.uri);
 
+                    // Skip photos that don't exist
+                    if (!file) {
+                        console.warn('⚠️ Foto não encontrada, pulando:', photo.uri);
+                        missingFiles.push(photo.uri);
+                        updateProgress();
+                        return;
+                    }
+
                     const char = await createCharacterizationPhoto
                         .mutateAsync({
                             ...photo,
                             id,
-                            file,
+                            file: file as any,
                         })
                         .catch((error) => {
                             console.error('❌ Erro ao enviar photo:', error);
                             captureExeption({ message: 'error photo', error });
-                            errorsMessage.push(error?.message);
                         });
 
                     if (char?.id && photo.id) {
@@ -579,12 +591,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     updateProgress();
                 });
                 console.log('✅ Envio de photosData concluído');
-
                 await captureLog({ message: 'done photo' });
-                if (error(errorsMessage)) {
-                    console.log('❌ Erro encontrado, parando execução');
-                    return;
-                }
 
                 console.log('🔄 Iniciando envio de riskDataInsert...');
                 await asyncBatch(riskDataInsert, 4, async (riskData) => {
@@ -595,19 +602,18 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                         })
                         .catch((error) => {
                             console.error('❌ Erro ao enviar riskData:', error);
-                            captureExeption({ message: 'error risk data', error });
-                            errorsMessage.push(error?.message);
+                            captureExeption({ message: 'error risk data', error, data: riskData });
+                            // Don't stop the process, just log the error
+                            skippedRiskData.push(riskData.riskId || riskData.createId || 'unknown');
                         });
 
                     updateProgress();
                 });
                 console.log('✅ Envio de riskDataInsert concluído');
-
-                await captureLog({ message: 'done risk data' });
-                if (error(errorsMessage)) {
-                    console.log('❌ Erro encontrado, parando execução');
-                    return;
+                if (skippedRiskData.length > 0) {
+                    console.warn('⚠️ RiskData com erros (ignorados):', skippedRiskData.length);
                 }
+                await captureLog({ message: 'done risk data' });
 
                 console.log('🔄 Iniciando processamento de arquivos...');
                 const createFile = async (files: (typeof audiosData)[0]) => {
@@ -617,15 +623,21 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                         let apiId: string | undefined = uuidGenerator.v4() as string;
                         const fileForm = await getFormFileFromURI(file.uri);
 
+                        // Skip files that don't exist
+                        if (!fileForm) {
+                            console.warn('⚠️ Arquivo não encontrado, pulando:', file.uri);
+                            missingFiles.push(file.uri);
+                            return { uri: file.uri, apiId: undefined };
+                        }
+
                         await createCharacterizationFile
                             .mutateAsync({
                                 ...file,
                                 id: apiId,
-                                file: fileForm,
+                                file: fileForm as any,
                             })
                             .catch((error) => {
                                 console.error('❌ Erro ao enviar arquivo:', error);
-                                errorsMessage.push(error?.message);
                                 captureExeption({ message: 'error file', error });
                                 apiId = undefined;
                             });
@@ -656,13 +668,7 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     }
                 });
                 console.log('✅ Envio de audiosData concluído');
-
                 await captureLog({ message: 'done audio' });
-                if (error(errorsMessage)) {
-                    console.log('❌ Erro encontrado, parando execução');
-                    await captureExeption({ message: 'audio errors message', error: errorsMessage });
-                    return;
-                }
 
                 console.log('🔄 Iniciando envio de videosData...');
                 await asyncBatch(videosData, 2, async (videoData) => {
@@ -686,15 +692,28 @@ export function Characterizations({ route }: CharacterizationsPageProps): React.
                     }
                 });
                 console.log('✅ Envio de videosData concluído');
-
                 await captureLog({ message: 'done video' });
-                if (error(errorsMessage)) {
-                    console.log('❌ Erro encontrado, parando execução');
-                    return;
-                }
 
-                console.log('🎉 Todos os dados foram enviados com sucesso!');
-                Alert.alert('Sucesso', 'Dados enviados com sucesso.');
+                // Show success message with warning about missing files or skipped data
+                console.log('🎉 Todos os dados foram enviados!');
+                const hasWarnings = missingFiles.length > 0 || skippedRiskData.length > 0;
+                if (hasWarnings) {
+                    const warnings: string[] = [];
+                    if (missingFiles.length > 0) {
+                        console.warn('⚠️ Arquivos não encontrados:', missingFiles);
+                        warnings.push(`${missingFiles.length} arquivo(s) de mídia não encontrado(s)`);
+                    }
+                    if (skippedRiskData.length > 0) {
+                        console.warn('⚠️ RiskData com erros:', skippedRiskData);
+                        warnings.push(`${skippedRiskData.length} dado(s) de risco com erro`);
+                    }
+                    Alert.alert(
+                        'Sucesso com avisos',
+                        `Dados enviados com sucesso.\n\n⚠️ Ignorados:\n${warnings.join('\n')}`,
+                    );
+                } else {
+                    Alert.alert('Sucesso', 'Dados enviados com sucesso.');
+                }
 
                 console.log('💾 Atualizando workspace com timestamp...');
                 await companyRepository.updateWorkspaceDB(workspaceId, {

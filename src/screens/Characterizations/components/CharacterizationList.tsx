@@ -69,7 +69,7 @@ export function CharacterizationList({ characterizations, workspace }: Props): R
 
     return (
         <>
-            <SInputSearch mb={-1} mx={'pagePaddingPx'} onSearchChange={handleSearchChange} />
+            <SInputSearch mb={-1} mx={pagePaddingPx} onSearchChange={handleSearchChange} />
             <SHorizontalMenu
                 mb={4}
                 onChange={(value) => setActiveType(value.type)}
@@ -108,7 +108,9 @@ export function CharacterizationList({ characterizations, workspace }: Props): R
                 />
             )}
             {!characterizationsFiltered?.length && <SNoContent mx="pagePaddingPx" />}
-            <SText ml={4}>Total: {results.length}</SText>
+            <SText ml={4} mb={SAFE_AREA_PADDING.paddingBottom}>
+                Total: {results.length}
+            </SText>
         </>
     );
 }

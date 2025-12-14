@@ -131,3 +131,15 @@ docs/pages/versions/*/react-native/*.diff
 
 # iOS
 **/ios/.xcode.env.local
+
+# EAS / Expo credentials
+google-service-account.json
+credentials.json
+*.p12
+*.mobileprovision
+*.cer
+*.certSigningRequest
+
+# Keystores - IMPORTANT: Keep my-upload-key.keystore backed up safely!
+# Uncomment the line below if you want to keep keystore out of git:
+# my-upload-key.keystore

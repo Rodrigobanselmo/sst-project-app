@@ -1,124 +1,88 @@
-import { ISInputProps, SBox, SCenter, SFormControl, Input as SI, SIcon, SSpinner, SText } from '@components/core';
-import React from 'react';
-import { useRef } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { ISInputProps, Input as SI, SIcon, SText } from '@components/core';
+import React, { useRef } from 'react';
+import { TextInput, TouchableOpacity, View, StyleSheet } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
-export interface SInputProps extends ISInputProps {
+export interface SInputProps {
     errorMessage?: string | null;
     endAdornmentText?: React.ReactNode;
     startAdornmentText?: React.ReactNode;
     isLoading?: boolean;
+    isDisabled?: boolean;
+    isInvalid?: boolean;
     inputProps?: ISInputProps & {
-        variant?: 'normal' | 'filled';
         clearButton?: boolean;
         clearButtonAction?: () => void;
     };
 }
 
-export const SInput = React.forwardRef<any, SInputProps>(
+export const SInput = React.forwardRef<TextInput, SInputProps>(
     (
-        {
-            isLoading,
-            isDisabled,
-            startAdornmentText,
-            errorMessage = null,
-            isInvalid,
-            endAdornmentText,
-            inputProps,
-            ...props
-        },
+        { isLoading, isDisabled, startAdornmentText, errorMessage = null, isInvalid, endAdornmentText, inputProps },
         refPass,
     ) => {
-        const refValue = useRef(null);
+        const refValue = useRef<TextInput>(null);
         const invalid = !!errorMessage || isInvalid;
 
-        const ref = refPass || refValue;
+        const ref = (refPass || refValue) as React.RefObject<TextInput>;
+
+        const { clearButton, clearButtonAction, ...restInputProps } = inputProps || {};
 
         return (
-            <SFormControl isDisabled={isDisabled} isReadOnly={isDisabled} isInvalid={invalid} mb={4}>
+            <View style={styles.container}>
                 <SI
-                    bg="background.default"
-                    h={12}
-                    px={4}
-                    borderWidth={1}
-                    isInvalid={invalid}
                     ref={ref}
-                    {...(inputProps?.clearButton &&
-                        (ref as any)?.current && {
-                            InputRightElement: (
-                                <>
-                                    {isLoading && <SSpinner color={'primary.main'} size={22} />}
-                                    <TouchableOpacity
-                                        style={{ paddingHorizontal: 10 }}
-                                        onPress={() => {
-                                            (ref as any)?.current?.clear();
-                                            inputProps?.clearButtonAction?.();
-                                        }}
-                                    >
-                                        <SIcon as={MaterialIcons} name="close" color="text.light" size={5} />
-                                    </TouchableOpacity>
-                                </>
-                            ),
-                        })}
-                    {...(endAdornmentText && {
-                        InputRightElement: (
-                            <>
-                                {isLoading && <SSpinner color={'primary.main'} size={22} />}
-                                <SText color={'text.light'} mr={3}>
-                                    {endAdornmentText}
-                                </SText>
-                            </>
-                        ),
-                    })}
-                    {...(startAdornmentText && {
-                        InputLeftElement: (
-                            <SCenter onTouchEnd={() => (ref as any).current?.focus()} h="100%" mr={-1}>
-                                <SText color={'text.light'} ml={3} mr={-1}>
-                                    {startAdornmentText}
-                                </SText>
-                            </SCenter>
-                        ),
-                    })}
-                    fontSize="md"
-                    color="text.main"
-                    placeholderTextColor="text.placeholder"
-                    fontFamily="body"
-                    _invalid={{
-                        borderWidth: 1,
-                        borderColor: 'status.error',
-                    }}
-                    _disabled={{
-                        opacity: 1,
-                        color: 'text.disabled',
-                    }}
-                    _focus={{
-                        bg: 'background.default',
-                        borderWidth: 1,
-                        borderColor: 'primary.main',
-                        ...(inputProps?.variant == 'filled' && {
-                            bg: 'input.paper',
-                            borderWidth: 1,
-                            borderColor: 'primary.main',
-                        }),
-                    }}
-                    {...(inputProps?.variant == 'filled' && {
-                        bg: 'input.paper',
-                        borderWidth: 0,
-                    })}
-                    {...props}
-                    {...inputProps}
-                    clearButtonMode="always"
+                    isInvalid={invalid}
+                    isDisabled={isDisabled}
+                    isLoading={isLoading}
+                    InputLeftElement={
+                        startAdornmentText ? (
+                            <TouchableOpacity onPress={() => ref.current?.focus()} style={styles.adornment}>
+                                <SText color="text.light">{startAdornmentText}</SText>
+                            </TouchableOpacity>
+                        ) : undefined
+                    }
+                    InputRightElement={
+                        <>
+                            {clearButton && (
+                                <TouchableOpacity
+                                    style={styles.adornment}
+                                    onPress={() => {
+                                        ref.current?.clear();
+                                        clearButtonAction?.();
+                                    }}
+                                >
+                                    <SIcon as={MaterialIcons} name="close" color="text.light" size={5} />
+                                </TouchableOpacity>
+                            )}
+                            {endAdornmentText && !clearButton && (
+                                <View style={styles.adornment}>
+                                    <SText color="text.light">{endAdornmentText}</SText>
+                                </View>
+                            )}
+                        </>
+                    }
+                    {...restInputProps}
                 />
 
-                <SFormControl.ErrorMessage
-                    _text={{
-                        color: 'status.error',
-                    }}
-                >
-                    {errorMessage}
-                </SFormControl.ErrorMessage>
-            </SFormControl>
+                {errorMessage && (
+                    <SText color="status.error" fontSize="xs" mt={1}>
+                        {errorMessage}
+                    </SText>
+                )}
+            </View>
         );
     },
 );
+
+const styles = StyleSheet.create({
+    container: {
+        width: '100%',
+        marginBottom: 16,
+    },
+    adornment: {
+        paddingHorizontal: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+});
