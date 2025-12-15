@@ -32,7 +32,7 @@
         {
           "photosPermission": "Allow SimpleSST to access your photos.",
           "savePhotosPermission": "Allow SimpleSST to save photos.",
-          "isAccessMediaLocationEnabled": true
+          "isAccessMediaLocationEnabled": false
         }
       ],
       [
@@ -80,7 +80,7 @@
     "ios": {
       "requireFullScreen": true,
       "supportsTablet": true,
-      "buildNumber": "1",
+      "buildNumber": "2",
       "bundleIdentifier": "com.simplesst.app",
       "deploymentTarget": "13.4",
       "infoPlist": {
@@ -89,6 +89,7 @@
         "NSCameraUsageDescription": "Dar permissão ao SimpleSST para acessar sua camera",
         "NSMicrophoneUsageDescription": "Dar permissão ao SimpleSST para acessar o audio do seu despositivo",
         "NSPhotoLibraryUsageDescription": "Dar permissão ao SimpleSST para ter acesso as fotos em seu album",
+        "NSLocationWhenInUseUsageDescription": "O SimpleSST não coleta sua localização. Esta permissão é necessária apenas para acessar metadados de fotos.",
         "UILaunchStoryboardName": "SplashScreen",
         "UIStatusBarStyle": "UIStatusBarStyleDefault",
         "UISupportedInterfaceOrientations": [
