@@ -15,6 +15,7 @@ import NetInfo from '@react-native-community/netinfo';
 import { onlineManager } from '@tanstack/react-query';
 import { SLoadingPagePubSub } from '@components/organisms/SLoadingPage/SLoadingPagePubSub';
 import { SModalProvider } from '@components/organisms/SModal/SModalProvider';
+import { useTrackingPermission } from '@hooks/useTrackingPermission';
 
 LogBox.ignoreLogs([
     'In React 18, SSRProvider is not necessary and is a noop. You can remove it from your app.',
@@ -38,6 +39,9 @@ export default function App() {
         Roboto_400Regular,
         Roboto_700Bold,
     });
+
+    // Request tracking permission on iOS (required by App Store guidelines)
+    useTrackingPermission();
 
     if (isAndroid()) {
         NavigationBar.setBackgroundColorAsync('white');

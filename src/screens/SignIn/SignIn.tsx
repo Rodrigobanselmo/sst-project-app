@@ -1,18 +1,15 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 
 import { useAuth } from '@hooks/useAuth';
-
 import { AppError } from '@utils/errors';
 
 import LogoSvg from '@assets/brand/logoSimple.svg';
 import { LogoTextFull } from '@assets/brand/logoTextFull';
 import { SCenter, SHStack, SHeading, SVStack, useSToast } from '@components/core';
 import { SButton, SInput } from '@components/index';
-import { AuthNavigatorRoutesProps } from '@routes/auth/AuthRoutesProps';
 import { ScrollView } from 'react-native';
 
 type FormDataProps = {
@@ -22,16 +19,13 @@ type FormDataProps = {
 
 const signInSchema = yup.object({
     email: yup.string().required('Informe o e-mail.').email('E-mail inválido.'),
-    password: yup.string().required('Informe a senha.').min(6, 'A senha deve ter pelo menos 6 dígitos.'),
+    password: yup.string().required('Informe a senha.').min(8, 'A senha deve ter pelo menos 8 dígitos.'),
 });
 
 export function SignIn() {
     const [isLoading, setIsLoading] = useState(false);
 
     const { signIn } = useAuth();
-
-    const navigation = useNavigation<AuthNavigatorRoutesProps>();
-
     const toast = useSToast();
 
     const {
@@ -40,6 +34,7 @@ export function SignIn() {
         formState: { errors },
     } = useForm<FormDataProps>({
         resolver: yupResolver(signInSchema),
+        mode: 'onBlur',
     });
 
     async function handleSignIn({ email, password }: FormDataProps) {
@@ -60,10 +55,6 @@ export function SignIn() {
                 bgColor: 'status.error',
             });
         }
-    }
-
-    function handleNewAccount() {
-        navigation.navigate('signUp');
     }
 
     return (

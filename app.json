@@ -90,6 +90,7 @@
         "NSMicrophoneUsageDescription": "Dar permissão ao SimpleSST para acessar o audio do seu despositivo",
         "NSPhotoLibraryUsageDescription": "Dar permissão ao SimpleSST para ter acesso as fotos em seu album",
         "NSLocationWhenInUseUsageDescription": "O SimpleSST não coleta sua localização. Esta permissão é necessária apenas para acessar metadados de fotos.",
+        "NSUserTrackingUsageDescription": "Seus dados são usados apenas para melhorar a experiência do aplicativo e não são compartilhados com terceiros.",
         "UILaunchStoryboardName": "SplashScreen",
         "UIStatusBarStyle": "UIStatusBarStyleDefault",
         "UISupportedInterfaceOrientations": [
