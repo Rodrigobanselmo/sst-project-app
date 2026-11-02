@@ -18,9 +18,10 @@ import { workspaceHierarchySchema } from './_MMSchema/workspaceHierarchySchema';
 import { characterizationHierarchySchema } from './_MMSchema/characterizationHierarchySchema';
 import { characterizationEmployeeSchema } from './_MMSchema/characterizationEmployeeSchema';
 import { employeeSchema } from './employeeSchema';
+import { syncOperationSchema } from './syncOperationSchema';
 
 const schemas = appSchema({
-    version: 44,
+    version: 45,
     tables: [
         companySchema,
         workspaceSchema,
@@ -41,6 +42,7 @@ const schemas = appSchema({
         characterizationHierarchySchema,
         characterizationEmployeeSchema,
         employeeSchema,
+        syncOperationSchema,
     ],
 });
 

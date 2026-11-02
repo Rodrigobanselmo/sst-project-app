@@ -1,0 +1,37 @@
+appId: com.simplesst.app
+name: Reinício com API indisponível preserva a edição local
+---
+- startRecording: 04-restart-unavailable
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - setAirplaneMode: enabled
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: .*${WORKSPACE_NAME}.*
+    timeout: 45000
+- tapOn: .*${WORKSPACE_NAME}.*
+- extendedWaitUntil:
+    visible: Continuar com os dados locais
+    timeout: 45000
+- tapOn: Continuar com os dados locais
+- scrollUntilVisible:
+    element: .*${EDITED_NAME}.*
+    direction: DOWN
+- assertVisible: .*${EDITED_NAME}.*
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          notVisible: 'Connect to Metro to develop JavaScript\.'
+          timeout: 20000
+- takeScreenshot: 04-edicao-local-apos-reinicio-sem-api
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - setAirplaneMode: disabled
+- stopRecording

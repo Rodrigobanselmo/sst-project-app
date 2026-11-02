@@ -17,11 +17,16 @@ export function RiskTab({ onSave, onAddRisk, onClickRisk }: PageProps) {
     const riskIds = useCharacterizationFormStore(
         useShallow((state) => state.form?.riskData?.map((risk) => risk.riskId)),
     );
+    const riskData = useCharacterizationFormStore((state) => state.form?.riskData);
+    const catalogByRiskId = React.useMemo(() => Object.fromEntries(
+        (riskData || []).map((row) => [row.riskId, row.catalogRisk]),
+    ), [riskData]);
 
     return (
         <>
             <RiskTable
                 riskIds={riskIds || []}
+                catalogByRiskId={catalogByRiskId}
                 onClickRisk={onClickRisk}
                 onSaveForm={onSave}
                 renderRightElement={(risk, selected) => {

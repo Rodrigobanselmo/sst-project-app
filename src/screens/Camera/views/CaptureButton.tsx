@@ -20,6 +20,7 @@ import Reanimated, {
     withRepeat,
     runOnJS,
 } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 import type { Camera, PhotoFile, TakePhotoOptions, VideoFile } from 'react-native-vision-camera';
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../../constants/constants';
 import { SBox } from '@components/core';
@@ -41,7 +42,7 @@ interface Props extends ViewProps {
 
     minZoom: number;
     maxZoom: number;
-    cameraZoom: Reanimated.SharedValue<number>;
+    cameraZoom: SharedValue<number>;
     orientation: Orientation;
 
     flash: 'off' | 'on';
@@ -129,7 +130,7 @@ const _CaptureButton: React.FC<Props> = ({
     //#endregion
 
     //#region Tap handler
-    const tapHandler = useRef<TapGestureHandler>();
+    const tapHandler = useRef<TapGestureHandler>(null);
     const onHandlerStateChanged = useCallback(
         async ({ nativeEvent: event }: TapGestureHandlerStateChangeEvent) => {
             // This is the gesture handler for the circular "shutter" button.
@@ -191,12 +192,12 @@ const _CaptureButton: React.FC<Props> = ({
     );
     //#endregion
     //#region Pan handler
-    const panHandler = useRef<PanGestureHandler>();
+    const panHandler = useRef<PanGestureHandler>(null);
     const offsetY = useSharedValue(0);
     const startY = useSharedValue(SCREEN_HEIGHT);
 
     const onPanGestureEvent = useCallback(
-        (event: PanGestureHandlerGestureEvent['nativeEvent']) => {
+        ({ nativeEvent: event }: PanGestureHandlerGestureEvent) => {
             'worklet';
             const { state, absoluteY } = event;
 

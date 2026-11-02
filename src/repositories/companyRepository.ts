@@ -86,6 +86,10 @@ export class CompanyRepository {
     async create(data: ICompanyCreate) {
         await database.write(async () => {
             const companyTable = database.get<CompanyModel>(DBTablesEnum.COMPANY);
+            if (data.apiId) {
+                const existing = await companyTable.query(Q.where('id', data.apiId)).fetch();
+                if (existing.some((row) => row.userId !== String(data.userId))) throw new Error('Esta empresa possui uma coleta de outro usuário neste aparelho. Entre com o usuário original para sincronizar ou exportar os dados antes de trocar a conta.');
+            }
 
             const newCompany = await companyTable.create((company) => {
                 if (data.apiId) company._raw.id = data.apiId;
@@ -114,6 +118,7 @@ export class CompanyRepository {
                 return newCompany;
             } catch (error) {
                 console.error(2, error);
+                throw error;
             }
         });
     }
@@ -124,6 +129,7 @@ export class CompanyRepository {
 
             try {
                 const company = await companyTable.find(id);
+                if (data.userId !== undefined && company.userId !== String(data.userId)) throw new Error('Os dados locais pertencem a outro usuário e foram preservados.');
                 const newCompany = await company.update((company) => {
                     if (data.apiId) company.apiId = data.apiId;
                     if (data.name) company.name = data.name;
@@ -150,9 +156,11 @@ export class CompanyRepository {
                     return newCompany;
                 } catch (error) {
                     console.error(error);
+                throw error;
                 }
             } catch (error) {
                 console.error(error);
+                throw error;
             }
         });
     }
@@ -233,7 +241,7 @@ export class CompanyRepository {
 
     async updateWorkspaceDB(id: string, data: Partial<IWorkspaceCreate>) {
         await database.write(async () => {
-            this.updateWorkspace(id, data);
+            await this.updateWorkspace(id, data);
         });
     }
 
@@ -267,14 +275,17 @@ export class CompanyRepository {
             return newWorkspace;
         } catch (error) {
             console.error(error);
+                throw error;
         }
     }
 
-    async getAll(workspaceId: string) {
+    async getAll(workspaceId: string, userId: number) {
+        return database.read(async () => {
         const riskDataRepository = new RiskDataRepository();
         const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
 
-        const characterizationsModel = await characterizationCollection.query(Q.where('workspaceId', workspaceId));
+        const characterizationsModel = await characterizationCollection.query(
+            Q.where('workspaceId', workspaceId), Q.where('user_id', String(userId)));
 
         const characterizations = await Promise.all(
             characterizationsModel.map(async (characterization) => {
@@ -306,6 +317,7 @@ export class CompanyRepository {
                             activities: riskDataModel.activities
                                 ? (JSON.parse(riskDataModel.activities) as IRiskDataActivities)
                                 : undefined,
+                            deleted_at: riskDataModel.deleted_at,
                         };
                         return riskDataAll;
                     }),
@@ -319,11 +331,18 @@ export class CompanyRepository {
                 ) as CharacterizationFormProps['videos'];
 
                 return {
-                    characterization,
+                    characterization: {
+                        id: characterization.id, apiId: characterization.apiId, name: characterization.name,
+                        description: characterization.description, type: characterization.type, status: characterization.status,
+                        luminosity: characterization.luminosity, noiseValue: characterization.noiseValue,
+                        moisturePercentage: characterization.moisturePercentage, temperature: characterization.temperature,
+                        profileName: characterization.profileName, profileParentId: characterization.profileParentId,
+                        done_at: characterization.done_at, updated_at: characterization.updated_at,
+                    },
                     riskData,
-                    photos: photosModel,
-                    hierarchies: hierarchiesModel,
-                    employees: employeesModel,
+                    photos: photosModel.filter((photo) => !photo.deleted_at).map((photo) => ({ id: photo.id, apiId: photo.apiId, name: photo.name, photoUrl: photo.photoUrl })),
+                    hierarchies: hierarchiesModel.map((h) => ({ id: h.id, apiId: h.apiId })),
+                    employees: employeesModel.map((e) => ({ id: e.id, apiId: e.apiId, hierarchyId: e.hierarchyId })),
                     audios,
                     videos,
                 };
@@ -331,5 +350,6 @@ export class CompanyRepository {
         );
 
         return { characterizations };
+        });
     }
 }

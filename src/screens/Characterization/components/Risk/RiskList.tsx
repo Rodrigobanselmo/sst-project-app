@@ -47,7 +47,7 @@ export const RiskList = memo(
             !checkArrayEqual({
                 arr1: prevProps.risks || [],
                 arr2: nextProps.risks || [],
-                getProperty: (r) => r.id,
+                getProperty: (r) => `${r.id}:${r.name}:${r.type}`,
             })
         )
             return false;

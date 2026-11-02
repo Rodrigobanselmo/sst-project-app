@@ -54,7 +54,8 @@ class CharacterizationModel extends Model {
     @relation(DBTablesEnum.COMPANY, 'companyId') Company?: CompanyModel;
     @relation(DBTablesEnum.WORKSPACE, 'workspaceId') Workspace?: WorkspaceModel;
 
-    @children(DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO) photos?: CharacterizationPhotoModel[];
+    @lazy photos = this.collections.get<CharacterizationPhotoModel>(DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO)
+        .query(Q.where('companyCharacterizationId', this.id), Q.where('deleted_at', null));
     @children(DBTablesEnum.RISK_DATA) riskData?: RiskDataModel[];
 
     @children(DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY)

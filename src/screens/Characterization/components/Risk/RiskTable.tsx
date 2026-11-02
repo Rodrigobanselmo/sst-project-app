@@ -15,15 +15,17 @@ import sortArray from 'sort-array';
 import { RiskList } from './RiskList';
 import { SInputLoadingSearch } from '@components/modelucules/SInputSearch/SInputLoadingSearch';
 import { useResultSearch } from '@hooks/useResultSearch';
+import type { AssessmentCatalogRisk } from '@libs/sync/assessmentCatalog';
 
 type PageProps = {
     riskIds?: string[];
+    catalogByRiskId?: Record<string, AssessmentCatalogRisk | undefined>;
     onSaveForm?: () => Promise<void>;
     onClickRisk?: (risk: RiskModel) => Promise<void>;
     renderRightElement?: (risk: RiskModel, selected: boolean) => React.ReactElement;
 };
 
-export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm }: PageProps): React.ReactElement {
+export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm, catalogByRiskId }: PageProps): React.ReactElement {
     const [search, setSearch] = React.useState<string>('');
     const inputRef = React.useRef<any>(null);
 
@@ -38,12 +40,18 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
     };
 
     const risks = React.useMemo(() => {
-        let risks = risksAll || [];
+        // The selected assessment keeps its own labels. New catalogue choices
+        // continue to use the current global row, without rewriting that row.
+        let risks = (risksAll || []).map((risk) => {
+            const pin = catalogByRiskId?.[risk.id];
+            return pin && pin.id === risk.id ? { ...risk, id: risk.id,
+                name: pin.name ?? risk.name, type: pin.type ?? risk.type } as RiskModel : risk;
+        });
         if (!search) {
             risks = risks?.filter((risk) => riskIds?.includes(risk.id));
         }
         return filterRisks(risks || [], activeType);
-    }, [risksAll, search, activeType, riskIds]);
+    }, [risksAll, search, activeType, riskIds, catalogByRiskId]);
 
     const { results } = useResultSearch({
         data: risks,
@@ -59,9 +67,9 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
 
     const handleClickRisk = useCallback(
         async (risk: RiskModel) => {
-            if (onClickRisk) await onClickRisk(risk);
+            if (onClickRisk) await onClickRisk(risksAll?.find((row) => row.id === risk.id) || risk);
         },
-        [onClickRisk],
+        [onClickRisk, risksAll],
     );
 
     return (
@@ -71,7 +79,7 @@ export function RiskTable({ onClickRisk, renderRightElement, riskIds, onSaveForm
                 style={{ flex: 1, paddingBottom: 10 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             >
-                <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                <TouchableWithoutFeedback accessible={false} onPress={() => Keyboard.dismiss()}>
                     <SVStack flex={1} mt={4}>
                         <SInputLoadingSearch ref={inputRef} mb={-1} mx={'pagePaddingPx'} onSearchChange={setSearch} />
                         <SHorizontalMenu

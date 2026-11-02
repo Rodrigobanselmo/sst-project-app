@@ -15,7 +15,7 @@ export function AudioForm({ onEdit, onRecordingStateChange, onDelete }: FormProp
     return (
         <SAudioRecorder
             audios={audios?.map((audio) => audio.uri) || []}
-            setAudios={(audios) => onEdit({ audios: audios.map((audio) => ({ uri: audio })) })}
+            setAudios={(uris) => onEdit({ audios: uris.map((uri) => ({ ...audios?.find((audio) => audio.uri === uri), uri })) })}
             onRecordingStateChange={onRecordingStateChange}
             onDelete={onDelete}
         />

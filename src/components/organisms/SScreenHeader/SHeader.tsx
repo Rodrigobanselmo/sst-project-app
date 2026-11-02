@@ -77,6 +77,8 @@ export function SHeader({
             {backButton && (
                 <SBox position={'absolute'} left={0} top={0}>
                     <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel="Voltar"
                         style={{
                             paddingHorizontal: 16,
                             paddingTop: pdTop,
@@ -103,6 +105,8 @@ export function SHeader({
             {onDelete && (
                 <SBox position={'absolute'} right={0} top={0}>
                     <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel="Excluir cadastro"
                         onPress={handleDelete}
                         style={{
                             paddingHorizontal: 16,

@@ -10,7 +10,7 @@ import {
     useAudioPlayer,
     useAudioPlayerStatus,
 } from 'expo-audio';
-import { File } from 'expo-file-system/next';
+import { persistVisitMedia } from '@utils/helpers/durableMedia';
 import { Box, theme } from 'native-base';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View, GestureResponderEvent } from 'react-native';
@@ -70,30 +70,27 @@ const SAudioRecorder = ({
         try {
             await audioRecorder.stop();
             const uri = audioRecorder.uri;
-            console.log('🎤 Audio recording stopped, URI:', uri);
             if (uri) {
+                // Keep the recording in the form even if disk is full. A later
+                // save/sync can retry preservation without recording it again.
                 setSavedRecordings([...savedRecordings, uri]);
+                try {
+                    const stableUri = await persistVisitMedia(uri, 'audio');
+                    setSavedRecordings([...savedRecordings, stableUri]);
+                } catch {
+                    Alert.alert('Áudio aguardando armazenamento', 'A gravação foi mantida. Libere espaço e salve novamente antes de fechar o app.');
+                }
             }
         } catch (err) {
-            console.error('Failed to stop recording', err);
+            Alert.alert('Não foi possível concluir a gravação', 'Mantenha esta tela aberta e tente parar a gravação novamente.');
         }
     };
 
     const deleteRecording = useCallback(
         async (uri: string) => {
             const action = async () => {
-                // Try to delete the file, but don't fail if it doesn't exist
-                try {
-                    const file = new File(uri);
-                    if (file.exists) {
-                        file.delete();
-                    }
-                } catch (error) {
-                    // Ignore file deletion errors - file may not exist
-                    console.log('File deletion skipped (may not exist):', uri);
-                }
-
-                // Always remove from list and save
+                // Remove only the form reference. Pending uploads may still
+                // need the original binary; cleanup requires a durable receipt.
                 setSavedRecordings(savedRecordings.filter((recordingUri) => recordingUri !== uri));
                 onDelete?.();
             };

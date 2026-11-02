@@ -14,7 +14,7 @@ export function VideoForm({ onEdit, onDelete }: FormProps): React.ReactElement {
     return (
         <SVideoRecorder
             videos={videos?.map((video) => video.uri) || []}
-            setVideos={(videos) => onEdit({ videos: videos.map((video) => ({ uri: video })) })}
+            setVideos={(uris) => onEdit({ videos: uris.map((uri) => ({ ...videos?.find((video) => video.uri === uri), uri })) })}
             onDelete={onDelete}
         />
     );

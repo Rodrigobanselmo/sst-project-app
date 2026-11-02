@@ -2,7 +2,7 @@ import { SFlatList, SFloatingButton, SIcon, SText } from '@components/core';
 // import * as ImagePicker from 'expo-image-picker';
 import { SInputSearch, SNoContent } from '@components/modelucules';
 import { SHorizontalMenu } from '@components/modelucules/SHorizontalMenu';
-import { SAFE_AREA_PADDING, pagePaddingPx } from '@constants/constants';
+import { pagePaddingPx } from '@constants/constants';
 import { CharacterizationTypeEnum } from '@constants/enums/characterization-type.enum';
 import { characterizationOptionsList } from '@constants/maps/characterization-options.map';
 import { characterizationMap } from '@constants/maps/characterization.map';
@@ -13,17 +13,20 @@ import { WorkspaceModel } from '@libs/watermelon/model/WorkspaceModel';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigatorRoutesProps } from '@routes/app/AppRoutesProps';
-import { useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import sortArray from 'sort-array';
 import EnhancedCharacterizationCard from './CharacterizationCard';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
     characterizations?: CharacterizationModel[];
     workspace: WorkspaceModel;
+    listHeader?: ReactNode;
 };
 
-export function CharacterizationList({ characterizations, workspace }: Props): React.ReactElement {
+export function CharacterizationList({ characterizations, workspace, listHeader }: Props): React.ReactElement {
+    const insets = useSafeAreaInsets();
     const [page, setPage] = useState(1);
     const { navigate } = useNavigation<AppNavigatorRoutesProps>();
     const [activeType, setActiveType] = useState<CharacterizationTypeEnum | null>(null);
@@ -69,16 +72,6 @@ export function CharacterizationList({ characterizations, workspace }: Props): R
 
     return (
         <>
-            <SInputSearch mb={-1} mx={pagePaddingPx} onSearchChange={handleSearchChange} />
-            <SHorizontalMenu
-                mb={4}
-                onChange={(value) => setActiveType(value.type)}
-                options={characterizationOptionsList}
-                getKeyExtractor={(item) => item.value}
-                getLabel={(item) => item.label}
-                getIsActive={(item) => item.type === activeType}
-            />
-
             <SFloatingButton
                 renderInPortal={false}
                 shadow={2}
@@ -88,29 +81,38 @@ export function CharacterizationList({ characterizations, workspace }: Props): R
                 _pressed={{ bg: 'green.700' }}
                 icon={<SIcon color="white" as={MaterialIcons} name="add" size="4" />}
                 label="Adicionar"
-                bottom={SAFE_AREA_PADDING.paddingBottom}
+                bottom={`${insets.bottom + 16}px`}
                 onPress={() => handleCreateCharacterization()}
             />
 
-            {!!characterizationsFiltered?.length && (
-                <SFlatList
-                    data={resultsFiltered}
-                    keyExtractor={(item) => item.id}
-                    // keyboardShouldPersistTaps={'handled'}
-                    renderItem={({ item }) => <EnhancedCharacterizationCard characterization={item} />}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ flexGrow: 1, paddingHorizontal: pagePaddingPx, paddingBottom: 50 }}
-                    onEndReached={loadMoreData}
-                    onEndReachedThreshold={0.5}
-                    ListFooterComponent={
-                        resultsFiltered.length != results?.length ? <ActivityIndicator size="large" /> : null
-                    }
-                />
-            )}
-            {!characterizationsFiltered?.length && <SNoContent mx="pagePaddingPx" />}
-            <SText ml={4} mb={SAFE_AREA_PADDING.paddingBottom}>
-                Total: {results.length}
-            </SText>
+            <SFlatList
+                style={styles.list}
+                data={resultsFiltered}
+                keyExtractor={(item) => item.id}
+                keyboardShouldPersistTaps="handled"
+                renderItem={({ item }) => <View style={styles.row}><EnhancedCharacterizationCard characterization={item} /></View>}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 96 }]}
+                onEndReached={loadMoreData}
+                onEndReachedThreshold={0.5}
+                ListHeaderComponent={<>
+                    {listHeader}
+                    <SInputSearch mb={-1} mx={pagePaddingPx} onSearchChange={handleSearchChange} />
+                    <SHorizontalMenu
+                        mb={4}
+                        onChange={(value) => setActiveType(value.type)}
+                        options={characterizationOptionsList}
+                        getKeyExtractor={(item) => item.value}
+                        getLabel={(item) => item.label}
+                        getIsActive={(item) => item.type === activeType}
+                    />
+                </>}
+                ListEmptyComponent={<SNoContent mx="pagePaddingPx" />}
+                ListFooterComponent={<View style={styles.footer}>
+                    {resultsFiltered.length !== results.length && <ActivityIndicator size="large" />}
+                    <SText>Total: {results.length}</SText>
+                </View>}
+            />
         </>
     );
 }
@@ -132,9 +134,9 @@ const enhance = withObservables(['workspace'], ({ workspace }) => {
 
 const EnhancedCharacterizationList = enhance(CharacterizationList);
 
-export function RenderEnhancedCharacterizationList({ workspace }: { workspace?: WorkspaceModel }) {
+export function RenderEnhancedCharacterizationList({ workspace, listHeader }: { workspace?: WorkspaceModel; listHeader?: ReactNode }) {
     try {
-        if (workspace) return <EnhancedCharacterizationList workspace={workspace} />;
+        if (workspace) return <EnhancedCharacterizationList workspace={workspace} listHeader={listHeader} />;
         return null;
     } catch (e) {
         return null;
@@ -142,3 +144,10 @@ export function RenderEnhancedCharacterizationList({ workspace }: { workspace?: 
 }
 
 export default RenderEnhancedCharacterizationList;
+
+const styles = StyleSheet.create({
+    list: { flex: 1 },
+    content: { flexGrow: 1 },
+    row: { paddingHorizontal: pagePaddingPx },
+    footer: { paddingHorizontal: pagePaddingPx, paddingTop: 12 },
+});

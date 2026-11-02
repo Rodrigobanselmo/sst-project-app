@@ -1,0 +1,52 @@
+appId: com.simplesst.app
+name: Login real e download da visita
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- startRecording: 01-login-download
+- runFlow:
+    when:
+      visible: Pedir ao App para Não Rastrear
+    commands:
+      - tapOn: Pedir ao App para Não Rastrear
+- extendedWaitUntil:
+    visible: Acesse sua conta
+    timeout: 60000
+- tapOn: E-mail
+- inputText: ${EMAIL}
+- tapOn: Senha
+- inputText: ${PASSWORD}
+- tapOn: Acessar
+- extendedWaitUntil:
+    visible: .*Nova Caracterização.*
+    timeout: 90000
+- tapOn: .*Nova Caracterização.*
+- extendedWaitUntil:
+    visible: Selecionar Empresa
+    timeout: 30000
+- tapOn: .*${COMPANY_NAME}.*
+- extendedWaitUntil:
+    visible: Selecionar Estabelecimento
+    timeout: 30000
+- tapOn: .*${WORKSPACE_NAME}.*
+- extendedWaitUntil:
+    visible: Cadastro atualizado no aparelho
+    timeout: 90000
+- takeScreenshot: 01-visita-atualizada
+# Start the vertical gesture beside the floating actions and horizontal filters.
+# iOS otherwise may send scrollUntilVisible's first gesture to those nested controls.
+- swipe:
+    start: "15%,75%"
+    end: "15%,30%"
+    duration: 650
+- scrollUntilVisible:
+    element: .*${CHARACTERIZATION_NAME}.*
+    direction: DOWN
+    timeout: 30000
+    centerElement: true
+    speed: 40
+- assertVisible: .*${CHARACTERIZATION_NAME}.*
+- takeScreenshot: 01-cadastros-baixados
+- stopRecording

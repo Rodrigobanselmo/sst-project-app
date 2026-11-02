@@ -49,12 +49,18 @@ export const RiskDataModal = ({ onRiskDataSave }: MyComponentProps) => {
 
     return (
         <SFullPageModal open={open} onClose={onClose}>
-            <RiskDataPage
-                onSaveForm={onRiskDataSave}
-                onGoBack={onClose}
-                isEdit={!!characterizationId}
-                onDeleteForm={onRiskDataDelete}
-            />
+            {/* The native overlay keeps hidden children mounted. Load the form
+                only after selecting a risk, so an existing assessment retains
+                its ID instead of being saved as a new local assessment. */}
+            {open && (
+                <RiskDataPage
+                    key={`${characterizationId || ''}:${riskId}`}
+                    onSaveForm={onRiskDataSave}
+                    onGoBack={onClose}
+                    isEdit={!!characterizationId}
+                    onDeleteForm={onRiskDataDelete}
+                />
+            )}
         </SFullPageModal>
     );
 };

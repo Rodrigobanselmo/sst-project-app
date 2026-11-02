@@ -64,7 +64,7 @@ export function EmployeesTable({ onClick, renderRightElement, onSave }: PageProp
                 style={{ flex: 1, paddingBottom: 10 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             >
-                <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                <TouchableWithoutFeedback accessible={false} onPress={() => Keyboard.dismiss()}>
                     <SVStack flex={1} mt={4}>
                         <SInputLoadingSearch ref={inputRef} mb={-1} mx={'pagePaddingPx'} onSearchChange={setSearch} />
                         {isLoading && <SSpinner color={'primary.main'} size={32} />}

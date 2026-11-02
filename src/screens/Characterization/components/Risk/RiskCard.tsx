@@ -36,6 +36,7 @@ export const RiskCard = memo(
     (prevProps, nextProps) => {
         if (prevProps.selected != nextProps.selected) return false;
         if (prevProps.risk.id != nextProps.risk.id) return false;
+        if (prevProps.risk.name != nextProps.risk.name || prevProps.risk.type != nextProps.risk.type) return false;
         return true;
     },
 );

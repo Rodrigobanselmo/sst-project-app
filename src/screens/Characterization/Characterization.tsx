@@ -25,7 +25,8 @@ import { CameraPage } from '@screens/Camera';
 import { IImageGallery } from '@screens/Camera/types';
 import { PubSubEventsEnum, pubSub } from '@utils/helpers/pubSub';
 import { useForm } from 'react-hook-form';
-import { Alert, Linking, StyleSheet } from 'react-native';
+import { Alert, Linking, Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Camera } from 'react-native-vision-camera';
 import { CharacterizationTabView } from './components/Characterization/CharacterizationTabView';
@@ -33,6 +34,7 @@ import { getRiskDataFormActivities, RiskDataPage } from './components/RiskData/R
 import { ICharacterizationValues, characterizationSchema } from './schemas';
 import uuidGenerator from 'react-native-uuid';
 import { IRiskDataActivities } from '@libs/watermelon/model/RiskDataModel';
+import { assessmentCatalog } from '@libs/sync/assessmentCatalog';
 
 const Stack = createNativeStackNavigator<FormCharacterizationRoutesProps>();
 
@@ -41,6 +43,7 @@ export const GALLERY_IMAGE_PORTRAIT_WIDTH = (((GALLERY_IMAGE_Width * 9) / 16) * 
 export const GALLERY_IMAGE_HEIGHT = (GALLERY_IMAGE_Width * 9) / 16;
 
 export function Characterization({ navigation, route }: CharacterizationPageProps): React.ReactElement {
+    const insets = useSafeAreaInsets();
     const [isLoading, setIsLoading] = useState(true);
     const saveRef = useRef(false);
 
@@ -138,6 +141,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                 }
             } catch (error) {
                 console.error(error);
+                Alert.alert('Não foi possível salvar', 'Os dados continuam nesta tela. Confira o espaço disponível no aparelho e tente salvar novamente.');
             }
 
             saveRef.current = false;
@@ -206,6 +210,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                 useCharacterizationFormStore.getState().addFormRiskData(formValues);
             } catch (error) {
                 console.error(error);
+                throw error;
             }
         },
         [characterizationId, user.id],
@@ -353,6 +358,13 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                     setValue('moisturePercentage', characterization.moisturePercentage || '');
                     setValue('description', characterization.description || '');
 
+                    const riskForms = await Promise.all(riskData.map(async (rd) => ({
+                        id: rd.id,
+                        riskId: rd.riskId,
+                        probability: rd.probability,
+                        probabilityAfter: rd.probabilityAfter,
+                        catalogRisk: (await assessmentCatalog(rd))?.risk,
+                    })));
                     setForm({
                         id: characterization.id,
                         profileParentId: characterization.profileParentId,
@@ -364,12 +376,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
                         profileName: characterization.profileName,
                         audios: characterization.audios ? JSON.parse(characterization.audios) : [],
                         videos: characterization.videos ? JSON.parse(characterization.videos) : [],
-                        riskData: riskData.map((rd) => ({
-                            id: rd.id,
-                            riskId: rd.riskId,
-                            probability: rd.probability,
-                            probabilityAfter: rd.probabilityAfter,
-                        })),
+                        riskData: riskForms,
                         hierarchies: hierarchies.map((h) => ({ id: h.id })),
                         employees: employees.map((h) => ({ id: h.id })),
                     });
@@ -497,7 +504,7 @@ export function Characterization({ navigation, route }: CharacterizationPageProp
 
     return (
         <>
-            <GestureHandlerRootView style={styles.root}>
+            <GestureHandlerRootView style={[styles.root, { paddingBottom: Platform.OS === 'android' ? insets.bottom : 0 }]}>
                 <Stack.Navigator initialRouteName="formCharacterization">
                     <Stack.Screen name="formCharacterization" options={{ headerShown: false }}>
                         {({ navigation }: FormCharacterizationScreenProps) => (

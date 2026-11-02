@@ -1,7 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import * as yup from 'yup';
 
 import { useAuth } from '@hooks/useAuth';
 import { AppError } from '@utils/errors';
@@ -12,15 +11,8 @@ import { SCenter, SHStack, SHeading, SVStack, useSToast } from '@components/core
 import { SButton, SInput } from '@components/index';
 import { ScrollView } from 'react-native';
 
-type FormDataProps = {
-    email: string;
-    password: string;
-};
-
-const signInSchema = yup.object({
-    email: yup.string().required('Informe o e-mail.').email('E-mail inválido.'),
-    password: yup.string().required('Informe a senha.').min(8, 'A senha deve ter pelo menos 8 dígitos.'),
-});
+import { signInDefaultValues, signInSchema } from './schemas';
+import { SignInFormProps } from './types';
 
 export function SignIn() {
     const [isLoading, setIsLoading] = useState(false);
@@ -32,12 +24,13 @@ export function SignIn() {
         control,
         handleSubmit,
         formState: { errors },
-    } = useForm<FormDataProps>({
+    } = useForm<SignInFormProps>({
         resolver: yupResolver(signInSchema),
+        defaultValues: signInDefaultValues,
         mode: 'onBlur',
     });
 
-    async function handleSignIn({ email, password }: FormDataProps) {
+    async function handleSignIn({ email, password }: SignInFormProps) {
         try {
             setIsLoading(true);
 
@@ -96,6 +89,10 @@ export function SignIn() {
                                     keyboardType: 'email-address',
                                     variant: 'filled',
                                     autoCapitalize: 'none',
+                                    autoComplete: 'off',
+                                    autoCorrect: false,
+                                    importantForAutofill: 'no',
+                                    textContentType: 'none',
                                     value,
                                     onChangeText: onChange,
                                 }}
@@ -113,6 +110,10 @@ export function SignIn() {
                                     placeholder: 'Senha',
                                     variant: 'filled',
                                     autoCapitalize: 'none',
+                                    autoComplete: 'off',
+                                    autoCorrect: false,
+                                    importantForAutofill: 'no',
+                                    textContentType: 'none',
                                     value,
                                     secureTextEntry: true,
                                     onChangeText: onChange,

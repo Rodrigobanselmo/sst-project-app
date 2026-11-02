@@ -1,0 +1,97 @@
+appId: com.simplesst.app
+name: Recuperação excepcional recebe a visita inteira
+---
+- startRecording: 06-recovery
+- runFlow:
+    when:
+      visible: Tentar novamente
+    commands:
+      - tapOn: OK
+- runFlow:
+    when:
+      visible: Recuperar visita
+    commands:
+      - tapOn: Voltar
+- runFlow:
+    when:
+      visible: Sincronização concluída
+    commands:
+      - tapOn: OK
+- scrollUntilVisible:
+    element:
+      text: .*(${EDITED_NAME}|${RECOVERY_DRAFT_NAME}).*
+      below:
+        text: Todos
+    direction: DOWN
+- tapOn:
+    text: .*(${EDITED_NAME}|${RECOVERY_DRAFT_NAME}).*
+    below:
+      text: Todos
+- extendedWaitUntil:
+    visible: Nome do ambiente ou atividade
+    timeout: 15000
+- tapOn: Nome do ambiente ou atividade
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          text: Nome do ambiente ou atividade
+          point: "95%,50%"
+- eraseText
+- inputText: ${RECOVERY_DRAFT_NAME}
+- assertVisible:
+    text: ${RECOVERY_DRAFT_NAME}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          text: ${RECOVERY_DRAFT_NAME}
+          focused: true
+- hideKeyboard
+- scrollUntilVisible:
+    element: Salvar
+    direction: DOWN
+- tapOn: Salvar
+- extendedWaitUntil:
+    visible: Ambientes / Atividades
+    timeout: 15000
+- scrollUntilVisible:
+    element: Sincronizar / tentar pendentes
+    direction: UP
+- tapOn: Sincronizar / tentar pendentes
+- extendedWaitUntil:
+    notVisible: Sincronizando…
+    timeout: 90000
+- runFlow:
+    when:
+      visible: Coleta preservada
+    commands:
+      - tapOn: OK
+- tapOn: Preciso de ajuda para enviar
+- assertVisible: Recuperar visita
+- runFlow:
+    when:
+      visible: Preparar outra cópia
+    commands:
+      - tapOn: Preparar outra cópia
+- scrollUntilVisible:
+    element: .*Descrição do problema de sincronização.*
+    direction: DOWN
+- tapOn: .*Descrição do problema de sincronização.*
+- inputText: Verificacao nativa automatizada com dados sinteticos
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- assertVisible: .*Verificacao nativa automatizada com dados sinteticos.*
+- tapOn: Enviar visita para recuperação
+- extendedWaitUntil:
+    visible: Visita recebida para recuperação
+    timeout: 90000
+- assertVisible: Código de recuperação
+- takeScreenshot: 06-visita-recebida-para-recuperacao
+- tapOn: Concluir
+- stopRecording

@@ -13,7 +13,8 @@
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleDebug"
-      }
+      },
+      "node": "22.21.1"
     },
     "preview": {
       "distribution": "internal",
@@ -23,7 +24,8 @@
       },
       "android": {
         "buildType": "apk"
-      }
+      },
+      "node": "22.21.1"
     },
     "production": {
       "autoIncrement": true,
@@ -34,7 +36,8 @@
         "buildType": "app-bundle",
         "gradleCommand": ":app:bundleRelease",
         "credentialsSource": "local"
-      }
+      },
+      "node": "22.21.1"
     }
   },
   "submit": {
@@ -51,4 +54,3 @@
     }
   }
 }
-

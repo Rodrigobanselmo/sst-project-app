@@ -4,7 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { PHOTO_SIZE } from './constants';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useAuth } from '@hooks/useAuth';
 import { IProfileFormProps } from './types';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -97,7 +97,7 @@ export const Profile = () => {
 
             const [image] = photoSelected.assets;
             if (image.uri) {
-                const photoInfo = await FileSystem.getInfoAsync(image.uri, { size: true });
+                const photoInfo = await FileSystem.getInfoAsync(image.uri);
 
                 if ('size' in photoInfo && photoInfo.size / 1024 / 1024 > 5) {
                     toast.show({

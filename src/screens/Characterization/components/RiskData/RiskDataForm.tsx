@@ -135,7 +135,7 @@ export function RiskDataForm({ onEditForm, onSaveForm, form, control, risk }: Pa
                                     />
                                     <RiskOcupacionalTag
                                         mb={8}
-                                        severity={risk?.severity || 0}
+                                        severity={form.catalogRisk?.severity ?? risk?.severity ?? 0}
                                         probability={field.value || 0}
                                     />
                                 </SVStack>

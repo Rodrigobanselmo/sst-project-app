@@ -119,6 +119,7 @@ export function CharacterizationForm({
                             render={({ field: { onChange, value }, formState: { errors } }) => (
                                 <SInput
                                     inputProps={{
+                                        accessibilityLabel: 'Nome do ambiente ou atividade',
                                         placeholder: '',
                                         keyboardType: 'default',
                                         autoCapitalize: 'sentences',
@@ -293,6 +294,7 @@ export function CharacterizationForm({
                             render={({ field: { onChange, value }, formState: { errors } }) => (
                                 <SInputArea
                                     inputProps={{
+                                        accessibilityLabel: 'Anotações da visita',
                                         placeholder: '',
                                         keyboardType: 'default',
                                         value,

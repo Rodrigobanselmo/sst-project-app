@@ -49,7 +49,8 @@ class WorkspaceModel extends Model {
     @lazy
     characterizationsList = this.collections
         .get(DBTablesEnum.COMPANY_CHARACTERIZATION)
-        .query(Q.where('workspaceId', this.id), Q.where('profileParentId', Q.eq(null)));
+        .query(Q.where('workspaceId', this.id), Q.where('profileParentId', Q.eq(null)),
+            Q.where('status', Q.notEq(StatusEnum.INACTIVE)), Q.where('user_id', this.userId));
 
     @lazy
     hierarchies = this.collections

@@ -143,3 +143,5 @@ credentials.json
 # Keystores - IMPORTANT: Keep my-upload-key.keystore backed up safely!
 # Uncomment the line below if you want to keep keystore out of git:
 # my-upload-key.keystore
+# Local validation and device evidence
+.diag-tmp/

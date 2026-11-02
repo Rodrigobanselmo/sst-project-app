@@ -22,6 +22,12 @@ import {
     RiskDataFormSelectedProps,
 } from '@screens/Characterization/types';
 import uuidGenerator from 'react-native-uuid';
+import { journalForSource } from '@libs/sync/sourceContext';
+import { prepareDeletion } from '@libs/sync/storage';
+import { baseKey } from '@libs/sync/journal';
+import { riskFingerprint } from '@libs/sync/sourceFingerprint';
+import { pickEpiAnswers } from '@libs/sync/epiAnswers';
+import { assessmentCatalog } from '@libs/sync/assessmentCatalog';
 
 export interface IRiskDataCreate extends RiskDataFormRelationsDeletionsProps, RiskDataFormRelationsProps {
     id?: string;
@@ -48,7 +54,7 @@ interface IGenerateSourceCreate {
     riskId: string;
 }
 
-const formatActivities = (data: Pick<IRiskDataCreate, 'activities' | 'realActivity'>) => {
+export const formatActivities = (data: Pick<IRiskDataCreate, 'activities' | 'realActivity'>) => {
     const activities = data.activities?.map<RiskDataFormActivitySelectedProps>((activity) => {
         return {
             description: activity.name,
@@ -90,6 +96,7 @@ export class RiskDataRepository {
                 riskData.map(async (_riskData) => {
                     const newRiskData = await riskDataTable.create((newRiskData) => {
                         newRiskData._raw.id = _riskData.id || (uuidGenerator.v4() as string);
+                        newRiskData.apiId = _riskData.apiId;
                         newRiskData.characterizationId = characterizationId;
                         newRiskData.riskId = _riskData.riskId;
                         newRiskData.probability = _riskData.probability;
@@ -110,6 +117,7 @@ export class RiskDataRepository {
             );
         } catch (error) {
             console.error(error);
+                throw error;
         }
     }
 
@@ -163,7 +171,7 @@ export class RiskDataRepository {
                                     newEpi.ca = epi.description as string;
                                     newEpi.epiId = Number(epi.id);
                                     newEpi.riskDataId = riskDataId;
-                                    newEpi.efficientlyCheck = epi.efficientlyCheck;
+                                    Object.assign(newEpi, pickEpiAnswers(epi));
                                     newEpi.userId = String(userId);
                                     newEpi.created_at = new Date();
                                     newEpi.updated_at = new Date();
@@ -171,7 +179,11 @@ export class RiskDataRepository {
                             } else {
                                 const epiMM = await MMEpisTable.find(epi.m2mId);
                                 await epiMM.update(() => {
-                                    epiMM.efficientlyCheck = epi.efficientlyCheck;
+                                    // Pull owns these explicit effective labels. Normal edits
+                                    // keep them unless a new label was actually supplied.
+                                    if (epi.name !== undefined) epiMM.description = epi.name;
+                                    if (epi.description !== undefined) epiMM.ca = epi.description;
+                                    Object.assign(epiMM, pickEpiAnswers(epi));
                                     epiMM.updated_at = new Date();
                                 });
                             }
@@ -218,7 +230,7 @@ export class RiskDataRepository {
                             } else {
                                 const engMM = await MMEngsTable.find(eng.m2mId);
                                 await engMM.update(() => {
-                                    engMM.efficientlyCheck = eng.efficientlyCheck;
+                                    if (eng.efficientlyCheck !== undefined) engMM.efficientlyCheck = eng.efficientlyCheck;
                                     engMM.updated_at = new Date();
                                 });
                             }
@@ -307,6 +319,7 @@ export class RiskDataRepository {
             await Promise.all(promisses);
         } catch (error) {
             console.error(error);
+                throw error;
         }
     }
 
@@ -408,26 +421,32 @@ export class RiskDataRepository {
             }
         } catch (error) {
             console.error(error);
+                throw error;
         }
 
         return riskData;
     }
 
-    async update(id: string, data: Partial<IRiskDataCreate> & { riskId: string; updatedAt?: Date }) {
-        await database.write(async () => {
+    async update(id: string, data: Partial<IRiskDataCreate> & { riskId: string; updatedAt?: Date }, expectedFingerprint?: string) {
+        return database.write(async () => {
             const riskDataCollection = database.get<RiskDataModel>(DBTablesEnum.RISK_DATA);
 
             try {
                 const riskData = await riskDataCollection.find(id);
+                if (expectedFingerprint !== undefined && await riskFingerprint(riskData) !== expectedFingerprint) return undefined;
                 const newRiskData = await riskData.update(() => {
-                    if (data.exposure) riskData.exposure = data.exposure;
-                    if (data.probability) riskData.probability = data.probability;
-                    if (data.probabilityAfter) riskData.probabilityAfter = data.probabilityAfter;
+                    if (data.exposure !== undefined) riskData.exposure = data.exposure;
+                    if (data.probability !== undefined) riskData.probability = data.probability;
+                    if (data.probabilityAfter !== undefined) riskData.probabilityAfter = data.probabilityAfter;
                     if (data.apiId) riskData.apiId = data.apiId;
 
-                    const activitiesString = formatActivities(data);
-                    if (activitiesString) {
-                        riskData.activities = activitiesString;
+                    if ('activities' in data || 'realActivity' in data) {
+                        const previous = riskData.activities ? JSON.parse(riskData.activities) : { activities: [] };
+                        const incoming = JSON.parse(formatActivities(data));
+                        riskData.activities = JSON.stringify({
+                            activities: 'activities' in data ? incoming.activities : previous.activities,
+                            realActivity: 'realActivity' in data ? data.realActivity : previous.realActivity,
+                        });
                     }
 
                     riskData.updated_at = data.updatedAt || new Date();
@@ -441,11 +460,13 @@ export class RiskDataRepository {
                 return newRiskData;
             } catch (error) {
                 console.error(error);
+                throw error;
             }
         });
     }
 
     async getRiskDataInfo(riskData: RiskDataModel) {
+        const catalog = await assessmentCatalog(riskData);
         const [recsToRiskData, admsToRiskData, engsToRiskData, generateSourcesToRiskData, episToRiskData] =
             await Promise.all([
                 (riskData?.recsToRiskData as any)?.fetch() as Promise<RecsRiskDataModel[]>,
@@ -460,7 +481,7 @@ export class RiskDataRepository {
                 try {
                     const recMed = await ((recsMM.RecMed as any).fetch() as Promise<RecMedModel>);
                     return {
-                        name: recMed.recName,
+                        name: catalog?.recMeds?.[recMed.id]?.recName ?? recMed.recName,
                         apiId: recMed.apiId,
                         riskId: recMed.riskId,
                         id: recMed.id,
@@ -484,7 +505,7 @@ export class RiskDataRepository {
                 try {
                     const adm = await ((admsMM.RecMed as any).fetch() as Promise<RecMedModel>);
                     return {
-                        name: adm.medName,
+                        name: catalog?.recMeds?.[adm.id]?.medName ?? adm.medName,
                         id: adm.id,
                         apiId: adm.apiId,
                         riskId: adm.riskId,
@@ -508,7 +529,7 @@ export class RiskDataRepository {
                 try {
                     const eng = await ((engsMM.RecMed as any).fetch() as Promise<RecMedModel>);
                     return {
-                        name: eng.medName,
+                        name: catalog?.recMeds?.[eng.id]?.medName ?? eng.medName,
                         apiId: eng.apiId,
                         riskId: eng.riskId,
                         id: eng.id,
@@ -561,13 +582,15 @@ export class RiskDataRepository {
             ]);
 
         return {
+            catalogRisk: catalog?.risk,
             recsToRiskData: recsToRiskDataWithRecs.filter(Boolean),
             admsToRiskData: admsToRiskDataWithRecs.filter(Boolean),
             engsToRiskData: engsToRiskDataWithRecs.filter(Boolean),
             generateSourcesToRiskData: gsToRiskDataWithGS.filter(Boolean),
             episToRiskData: episToRiskData.map((episMM) => ({
-                name: episMM.description,
-                description: episMM.ca,
+                ...pickEpiAnswers(episMM),
+                name: catalog?.epis?.[String(episMM.epiId)]?.equipment ?? episMM.description,
+                description: catalog?.epis?.[String(episMM.epiId)]?.ca ?? episMM.ca,
                 id: episMM.epiId,
                 m2mId: episMM.id,
                 efficientlyCheck: episMM.efficientlyCheck,
@@ -576,11 +599,26 @@ export class RiskDataRepository {
     }
 
     async delete(id: string) {
+        const { riskData } = await this.findOne(id);
+        if (!riskData.characterizationId) throw new Error('O risco não possui uma caracterização. Os dados foram preservados.');
+        const parent = await database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION).find(riskData.characterizationId);
+        const journal = await journalForSource(parent.workspaceId, Number(riskData.userId));
+        const doc = await journal.read();
+        const sourceSnapshot = { ...riskData._raw, relations: await this.getRiskDataInfo(riskData) };
         await database.write(async () => {
-            const riskDataTable = database.get<RiskDataModel>(DBTablesEnum.RISK_DATA);
-            const riskData = await riskDataTable.find(id);
+            const prepared = await prepareDeletion(journal, { kind: 'RISK_DATA_DELETE', entityId: id,
+                payload: { id, sourceSnapshot }, baseSnapshotHash: doc.bases[baseKey('RISK_DATA', id)]?.baseSnapshotHash });
+            await database.batch(...prepared, riskData.prepareUpdate((row) => { row.deleted_at = new Date(); row.updated_at = new Date(); }));
+        });
+    }
 
-            await riskData?.destroyPermanently();
+    /** Server-confirmed closure from a full snapshot; keep the original row, never emit a client deletion. */
+    async hideRemote(id: string, expectedFingerprint: string) {
+        return database.write(async () => {
+            const row = await database.get<RiskDataModel>(DBTablesEnum.RISK_DATA).find(id);
+            if (await riskFingerprint(row) !== expectedFingerprint) return false;
+            await row.update((risk) => { risk.deleted_at = new Date(); });
+            return true;
         });
     }
 }
