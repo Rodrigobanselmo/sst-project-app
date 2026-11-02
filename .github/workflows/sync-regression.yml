@@ -1,0 +1,28 @@
+name: Offline visit sync regression
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sync-regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.0'
+      - name: Enable the project package manager
+        run: corepack enable && corepack prepare yarn@1.22.22 --activate
+      - name: Install locked dependencies
+        run: yarn install --frozen-lockfile
+      - name: Preserve offline data across failures, retries and SQLite upgrades
+        run: yarn test:sync
+      - name: Check application types
+        run: yarn tsc --noEmit
