@@ -6,6 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { IFileCharacterization } from '@repositories/characterizationRepository';
 import { AppRoutesProps } from '@routes/app/AppRoutesProps';
 import { Orientation } from 'expo-screen-orientation';
+import type { EpiAnswers } from '@libs/sync/epiAnswers';
 
 export interface CharacterizationImageGalleryProps {
     uri: string;
@@ -43,6 +44,7 @@ export type RiskDataFormSelectedProps = {
     m2mId?: string;
 };
 export type RiskDataFormActivitySelectedProps = { description: string; subActivity?: string };
+export type RiskDataFormEpiSelectedProps = RiskDataFormSelectedProps & Omit<EpiAnswers, 'efficientlyCheck'>;
 
 export type RiskDataFormRelationsProps = {
     activities?: RiskDataFormSelectedProps[];
@@ -50,7 +52,7 @@ export type RiskDataFormRelationsProps = {
     admsToRiskData?: RiskDataFormSelectedProps[];
     engsToRiskData?: RiskDataFormSelectedProps[];
     generateSourcesToRiskData?: RiskDataFormSelectedProps[];
-    episToRiskData?: RiskDataFormSelectedProps[];
+    episToRiskData?: RiskDataFormEpiSelectedProps[];
 };
 
 export type RiskDataFormRelationsDeletionsProps = {
@@ -58,6 +60,8 @@ export type RiskDataFormRelationsDeletionsProps = {
 };
 
 export type RiskDataFormProps = {
+    /** Read-only metadata of this assessment; never sent by the sync planner. */
+    catalogRisk?: import('@libs/sync/assessmentCatalog').AssessmentCatalogRisk;
     id?: string;
     realActivity?: string;
     exposure?: string;

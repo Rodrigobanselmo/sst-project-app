@@ -61,7 +61,7 @@ export const SSearchModal = <T,>({
 
     return (
         <SModal isOpen={showModal} height={SCREEN_HEIGHT} px={2} onClose={() => onShowModal(false)} size="full">
-            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+            <TouchableWithoutFeedback accessible={false} onPress={() => Keyboard.dismiss()}>
                 <SModal.Content h={SCREEN_HEIGHT}>
                     <SModal.CloseButton />
                     <SModal.Header>

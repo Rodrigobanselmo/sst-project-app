@@ -1,0 +1,14 @@
+appId: com.simplesst.app
+name: Sincronizar aplica a coleta na API real
+---
+- startRecording: 05-sync-pending
+- scrollUntilVisible:
+    element: Sincronizar / tentar pendentes
+    direction: UP
+- tapOn: Sincronizar / tentar pendentes
+- extendedWaitUntil:
+    notVisible: Sincronizando…
+    timeout: 90000
+- assertVisible: .*aplicado.*
+- takeScreenshot: 05-coleta-sincronizada
+- stopRecording

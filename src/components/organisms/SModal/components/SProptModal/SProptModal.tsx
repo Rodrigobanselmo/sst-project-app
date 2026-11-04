@@ -60,18 +60,16 @@ export const SProptModal = ({
                                 {subtitle && <SText fontSize={14}>{subtitle}</SText>}
                                 <SFormControl>
                                     {searchLabel && <SFormControl.Label>{searchLabel}</SFormControl.Label>}
-                                    <SInput
-                                        mt={3}
-                                        autoFocus
-                                        ref={searchRef}
-                                        placeholder={placeholder}
-                                        onChangeText={(v) => {
-                                            handleSearchChange(v);
-                                            if (searchRef?.current) {
-                                                searchRef.current.value = v;
-                                            }
-                                        }}
-                                    />
+                                    <SBox mt={3}>
+                                        <SInput ref={searchRef} inputProps={{
+                                            autoFocus: true,
+                                            placeholder,
+                                            onChangeText: (value) => {
+                                                handleSearchChange(value);
+                                                if (searchRef.current) searchRef.current.value = value;
+                                            },
+                                        }} />
+                                    </SBox>
                                 </SFormControl>
                                 {isLoading && <SSpinner color={'primary.main'} size={32} />}
                             </SBox>

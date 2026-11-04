@@ -5,42 +5,13 @@ import { saveImageOrVideoToGallery } from '@utils/helpers/saveAsset';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { AudioModule } from 'expo-audio';
 import { Camera } from 'expo-camera';
-import { Paths, File } from 'expo-file-system/next';
+import { persistVisitMedia } from '@utils/helpers/durableMedia';
 import { theme } from 'native-base';
 import React, { useCallback, useEffect } from 'react';
 import { Alert, FlatList, Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { SLabel } from '../SLabel';
 import { SNoContent } from '../SNoContent';
-
-// Helper to copy video to app's document directory for reliable playback
-async function copyVideoToLocalStorage(sourceUri: string): Promise<string> {
-    const filename = `video_${Date.now()}.mov`;
-    const destUri = `${Paths.document.uri}/${filename}`;
-
-    try {
-        const sourceFile = new File(sourceUri);
-        const destFile = new File(destUri);
-        sourceFile.copy(destFile);
-        return destUri;
-    } catch (error) {
-        console.error('Error copying video:', error);
-        return sourceUri;
-    }
-}
-
-// Helper to delete video from local storage
-function deleteVideoFromLocalStorage(uri: string): void {
-    try {
-        const file = new File(uri);
-        if (file.exists) {
-            file.delete();
-        }
-    } catch (error) {
-        // Ignore file deletion errors - file may not exist
-        console.log('Video file deletion skipped (may not exist):', uri);
-    }
-}
 
 export default function VideoRecorder({
     videos,
@@ -70,37 +41,32 @@ export default function VideoRecorder({
     }, []);
 
     const startRecording = useCallback(async () => {
-        const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ['videos'],
-            videoQuality: ImagePicker.UIImagePickerControllerQualityType.Medium,
-            cameraType: ImagePicker.CameraType.front,
-        });
-
-        if (!result.canceled && result.assets[0]) {
-            const originalUri = result.assets[0].uri;
-            console.log('🎬 Video recorded, original URI:', originalUri);
-
-            // Copy video to local storage for reliable playback
-            const localUri = await copyVideoToLocalStorage(originalUri);
-            console.log('🎬 Video copied to local storage:', localUri);
-
-            // Save to gallery as backup (fire and forget)
-            saveImageOrVideoToGallery(originalUri).catch((err) => {
-                console.warn('Failed to save video to gallery:', err);
+        try {
+            const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ['videos'],
+                videoQuality: ImagePicker.UIImagePickerControllerQualityType.Medium,
+                cameraType: ImagePicker.CameraType.front,
             });
-
-            // Use local file:// URI for preview
-            setVideos([...videos, localUri]);
+            if (result.canceled || !result.assets[0]) return;
+            const originalUri = result.assets[0].uri;
+            setVideos([...videos, originalUri]);
+            try {
+                const localUri = await persistVisitMedia(originalUri, 'video');
+                setVideos([...videos, localUri]);
+                // An optional gallery backup must never block collection storage.
+                void saveImageOrVideoToGallery(localUri).catch(() => undefined);
+            } catch {
+                Alert.alert('Vídeo aguardando armazenamento', 'O vídeo foi mantido. Libere espaço e salve novamente antes de fechar o app.');
+            }
+        } catch {
+            Alert.alert('Não foi possível gravar', 'Tente abrir a câmera novamente. Os vídeos anteriores foram mantidos.');
         }
     }, [setVideos, videos]);
 
     const deleteVideo = useCallback(
         async (uri: string) => {
             const action = async () => {
-                // Try to delete the file, but don't fail if it doesn't exist
-                deleteVideoFromLocalStorage(uri);
-
-                // Always remove from list and save
+                // Retain the binary while a queued operation may reference it.
                 setVideos(videos.filter((recordingUri) => recordingUri !== uri));
                 onDelete?.();
             };

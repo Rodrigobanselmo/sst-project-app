@@ -36,6 +36,7 @@ export class GenerateSourceRepository {
                 return newGenerateSource;
             } catch (error) {
                 console.error(error);
+                throw error;
             }
         });
     }

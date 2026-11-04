@@ -1,0 +1,67 @@
+appId: com.simplesst.app
+name: Atualização lenta permite continuar e editar a coleta
+---
+- startRecording: 03-continue-without-refresh
+- tapOn: Atualizar novamente
+- tapOn:
+    text: Continuar sem atualizar
+    index: 0
+- assertVisible: Continuar sem atualizar?
+- assertVisible: .*valores locais podem estar desatualizados.*
+- tapOn:
+    text: Continuar sem atualizar
+    index: 0
+- assertVisible: Atualização não confirmada
+- scrollUntilVisible:
+    element: .*${CHARACTERIZATION_NAME}.*
+    direction: DOWN
+- tapOn: .*${CHARACTERIZATION_NAME}.*
+- extendedWaitUntil:
+    visible: Nome do ambiente ou atividade
+    timeout: 15000
+- tapOn: Nome do ambiente ou atividade
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          text: Nome do ambiente ou atividade
+          point: "95%,50%"
+- eraseText
+- inputText: ${EDITED_NAME}
+- assertVisible:
+    text: ${EDITED_NAME}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          text: ${EDITED_NAME}
+          focused: true
+- hideKeyboard
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - scrollUntilVisible:
+          element: Salvar
+          direction: DOWN
+          centerElement: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - scrollUntilVisible:
+          element: Salvar
+          direction: DOWN
+- takeScreenshot: 03-salvar-acima-da-navegacao
+- tapOn: Salvar
+- extendedWaitUntil:
+    visible: Ambientes / Atividades
+    timeout: 15000
+- scrollUntilVisible:
+    element: .*${EDITED_NAME}.*
+    direction: DOWN
+- assertVisible: .*${EDITED_NAME}.*
+- takeScreenshot: 03-coleta-permitida-sem-atualizar
+- stopRecording

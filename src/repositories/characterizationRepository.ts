@@ -20,9 +20,15 @@ import { IRiskDataCreate, RiskDataRepository } from './riskDataRepository';
 import { IHierarchyCreate } from './hierarchyRepository';
 import { CharacterizationHierarchyModel } from '@libs/watermelon/model/_MMModel/CharacterizationHierarchyModel';
 import { HierarchyModel } from '@libs/watermelon/model/HierarchyModel';
-import { Q } from '@nozbe/watermelondb';
+import { Model, Q } from '@nozbe/watermelondb';
 import { CharacterizationEmployeeModel } from '@libs/watermelon/model/_MMModel/CharacterizationEmployeeModel';
 import { EmployeeModel } from '@libs/watermelon/model/EmployeeModel';
+import { journalForSource } from '@libs/sync/sourceContext';
+import { prepareDeletion } from '@libs/sync/storage';
+import { baseKey } from '@libs/sync/journal';
+import { parentFingerprint, parentTreeFingerprint } from '@libs/sync/sourceFingerprint';
+import { SyncJournal } from '@libs/sync/journal';
+import { SyncOperationModel } from '@libs/watermelon/model/SyncOperationModel';
 
 interface IRecMedCreate {
     recName?: string;
@@ -42,6 +48,7 @@ interface IGenerateSourceCreate {
 export interface IFileCharacterization {
     uri: string;
     apiId?: string;
+    id?: string;
 }
 
 export interface ICharacterizationPhoto {
@@ -73,6 +80,7 @@ export interface ICharacterizationCreate {
     updatedAt?: Date;
     createdAt?: Date;
     done_at?: Date;
+    status?: StatusEnum;
 }
 
 export class CharacterizationRepository {
@@ -97,7 +105,7 @@ export class CharacterizationRepository {
     async findList({ workspaceId }: { workspaceId: string }) {
         const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
         const characterizations = await characterizationCollection
-            .query(Q.where('profileParentId', Q.eq(null)), Q.where('workspaceId', workspaceId))
+            .query(Q.where('profileParentId', Q.eq(null)), Q.where('workspaceId', workspaceId), Q.where('status', Q.notEq(StatusEnum.INACTIVE)))
             .fetch();
 
         return { characterizations };
@@ -114,7 +122,7 @@ export class CharacterizationRepository {
 
     async findByProfileId({ profileId }: { profileId: string }) {
         const characterizationCollection = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
-        const characterizations = await characterizationCollection.query(Q.where('profileParentId', profileId)).fetch();
+        const characterizations = await characterizationCollection.query(Q.where('profileParentId', profileId), Q.where('status', Q.notEq(StatusEnum.INACTIVE))).fetch();
 
         return { characterizations };
     }
@@ -136,7 +144,7 @@ export class CharacterizationRepository {
             (characterization?.employees as any)?.fetch(),
         ]);
 
-        return { characterization, photos, riskData, hierarchies, employees };
+        return { characterization, photos: photos.filter((photo) => !photo.deleted_at), riskData: riskData.filter((risk) => !risk.deleted_at), hierarchies, employees };
     }
 
     async create(data: ICharacterizationCreate) {
@@ -170,8 +178,8 @@ export class CharacterizationRepository {
                 characterization.created_at = data.createdAt || new Date();
                 characterization.updated_at = data.updatedAt || new Date();
                 characterization.done_at = data.done_at ? new Date(data.done_at) : undefined;
-                characterization.audios = JSON.stringify(data.audios);
-                characterization.videos = JSON.stringify(data.videos);
+                characterization.audios = JSON.stringify(data.audios?.map((file) => ({ ...file, id: file.id || String(uuidGenerator.v4()) })));
+                characterization.videos = JSON.stringify(data.videos?.map((file) => ({ ...file, id: file.id || String(uuidGenerator.v4()) })));
             });
 
             try {
@@ -190,6 +198,7 @@ export class CharacterizationRepository {
                     );
             } catch (error) {
                 console.error(error);
+                throw error;
             }
 
             if (data.riskData) {
@@ -206,7 +215,10 @@ export class CharacterizationRepository {
         });
     }
 
-    async update(id: string, data: Partial<ICharacterizationCreate>) {
+    async update(id: string, data: Partial<ICharacterizationCreate>, expectedFingerprint?: string) {
+        const source = await database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION).find(id);
+        const mediaJournal = data.photos || data.audios || data.videos ? await journalForSource(source.workspaceId, Number(source.userId)) : undefined;
+        const mediaDocument = mediaJournal ? await mediaJournal.read() : undefined;
         return await database.write(async () => {
             const characterizationTable = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
             const characterizationPhotoTable = database.get<CharacterizationPhotoModel>(
@@ -215,101 +227,104 @@ export class CharacterizationRepository {
 
             try {
                 const characterization = await characterizationTable.find(id);
-                const newCharacterization = await characterization.update(() => {
-                    console.log(1, data.done_at, data.done_at ? new Date(data.done_at) : null);
+                if (expectedFingerprint !== undefined && await parentFingerprint(characterization) !== expectedFingerprint) return undefined;
+                const prepared: Model[] = [];
+                let tombstones = 0;
+                const removeMedia = async (kind: 'PHOTO_DELETE' | 'FILE_DELETE', mediaId: string, snapshot: Record<string, any>) => {
+                    if (!mediaJournal) throw new Error('Não foi possível preservar a remoção deste arquivo.');
+                    const dependency = [...(mediaDocument?.entries || [])].reverse().find((entry) =>
+                        ['PHOTO', 'AUDIO', 'VIDEO'].includes(entry.operation.kind) && entry.operation.entityId === mediaId);
+                    prepared.push(...await prepareDeletion(mediaJournal, { kind, entityId: mediaId,
+                        payload: { characterizationId: id, sourceSnapshot: snapshot },
+                        dependsOn: dependency ? [dependency.operation.operationId] : [] }, tombstones++));
+                };
+                for (const kind of ['audios', 'videos'] as const) if (data[kind]) {
+                    const previous = JSON.parse(characterization[kind] || '[]') as IFileCharacterization[];
+                    for (const file of previous) if (!data[kind]?.some((current) =>
+                        (file.id && current.id === file.id) || current.uri === file.uri)) {
+                        const existing = [...(mediaDocument?.entries || [])].reverse().find((entry) =>
+                            entry.operation.payload.uri === file.uri && entry.operation.payload.characterizationId === id);
+                        await removeMedia('FILE_DELETE', file.apiId || file.id || existing?.operation.entityId || String(uuidGenerator.v4()), { ...file });
+                    }
+                }
+                prepared.push(characterization.prepareUpdate(() => {
                     if (data.apiId) characterization.apiId = data.apiId;
-                    if (data.name) characterization.name = data.name;
-                    if (data.profileName) characterization.profileName = data.profileName;
-                    if (data.description) characterization.description = data.description;
+                    if (data.name !== undefined) characterization.name = data.name;
+                    if (data.profileName !== undefined) characterization.profileName = data.profileName;
+                    if (data.profileParentId !== undefined) characterization.profileParentId = data.profileParentId;
+                    if (data.description !== undefined) characterization.description = data.description;
                     if (data.type) characterization.type = data.type;
-                    if (data.noiseValue) characterization.noiseValue = data.noiseValue;
-                    if (data.temperature) characterization.temperature = data.temperature;
-                    if (data.luminosity) characterization.luminosity = data.luminosity;
-                    if (data.moisturePercentage) characterization.moisturePercentage = data.moisturePercentage;
-                    if (data.audios) characterization.audios = JSON.stringify(data.audios);
-                    if (data.videos) characterization.videos = JSON.stringify(data.videos);
+                    if (data.status !== undefined) characterization.status = data.status;
+                    if (data.noiseValue !== undefined) characterization.noiseValue = data.noiseValue;
+                    if (data.temperature !== undefined) characterization.temperature = data.temperature;
+                    if (data.luminosity !== undefined) characterization.luminosity = data.luminosity;
+                    if (data.moisturePercentage !== undefined) characterization.moisturePercentage = data.moisturePercentage;
+                    if (data.audios) characterization.audios = JSON.stringify(data.audios.map((file) => ({ ...file, id: file.id || String(uuidGenerator.v4()) })));
+                    if (data.videos) characterization.videos = JSON.stringify(data.videos.map((file) => ({ ...file, id: file.id || String(uuidGenerator.v4()) })));
                     if (data.done_at !== undefined)
                         characterization.done_at = data.done_at ? new Date(data.done_at) : null;
 
                     characterization.updated_at = data.updatedAt || new Date();
-                });
-
-                const photos = data.photos;
-
-                if (photos) {
-                    const beforePhotos: CharacterizationPhotoModel[] | undefined = await (
-                        characterization as any
-                    )?.photos?.fetch();
-
-                    const imagesToDelete = beforePhotos?.filter(
-                        (beforePhoto) => !photos || !photos.find((formPhoto) => formPhoto.id === beforePhoto.id),
-                    );
-
-                    const imagesToCreate = photos?.filter((formPhoto) => !formPhoto.id);
-
-                    const imagesToUpdate = photos?.filter(
-                        (formPhoto) =>
-                            formPhoto.id &&
-                            beforePhotos &&
-                            !!beforePhotos.find((beforePhoto) => beforePhoto.id === formPhoto.id),
-                    );
-
-                    if (imagesToDelete) {
-                        await Promise.all(
-                            imagesToDelete.map(async (photo) => {
-                                if (photo.id) {
-                                    const photoToDelete = await characterizationPhotoTable.find(photo.id);
-                                    await photoToDelete.destroyPermanently();
-                                }
-                            }),
-                        );
+                }));
+                if (data.photos) {
+                    const beforePhotos = (await (characterization.photos as any).fetch() as CharacterizationPhotoModel[]).filter((photo) => !photo.deleted_at);
+                    for (const photo of beforePhotos) if (!data.photos.some((current) => current.id === photo.id)) {
+                        await removeMedia('PHOTO_DELETE', photo.apiId || photo.id, { ...photo._raw, uri: photo.photoUrl });
+                        prepared.push(photo.prepareUpdate((row) => { row.deleted_at = new Date(); row.updated_at = new Date(); }));
                     }
-
-                    if (imagesToCreate) {
-                        await Promise.all(
-                            imagesToCreate.map(async (photo) => {
-                                await characterizationPhotoTable.create((newPhoto) => {
-                                    newPhoto.companyCharacterizationId = newCharacterization.id;
-                                    newPhoto.name = newCharacterization.name;
-                                    newPhoto.photoUrl = photo.photoUrl;
-                                    newPhoto.created_at = new Date();
-                                    newPhoto.updated_at = new Date();
-                                });
-                            }),
-                        );
-                    }
-
-                    if (imagesToUpdate) {
-                        await Promise.all(
-                            imagesToUpdate.map(async (photo) => {
-                                if (photo.id) {
-                                    const photoToUpdate = await characterizationPhotoTable.find(photo.id);
-
-                                    await photoToUpdate.update(() => {
-                                        photoToUpdate.name = newCharacterization.name;
-                                        photoToUpdate.photoUrl = photo.photoUrl;
-                                        photoToUpdate.updated_at = new Date();
-                                    });
-                                }
-                            }),
-                        );
+                    for (const photo of data.photos) {
+                        const previous = beforePhotos.find((row) => row.id === photo.id);
+                        if (previous && previous.photoUrl === photo.photoUrl) continue;
+                        if (previous) {
+                            await removeMedia('PHOTO_DELETE', previous.apiId || previous.id, { ...previous._raw, uri: previous.photoUrl });
+                            prepared.push(previous.prepareUpdate((row) => { row.deleted_at = new Date(); row.updated_at = new Date(); }));
+                        }
+                        prepared.push(characterizationPhotoTable.prepareCreate((row) => {
+                            row._raw.id = String(uuidGenerator.v4()); row.companyCharacterizationId = id;
+                            row.name = characterization.name; row.photoUrl = photo.photoUrl;
+                            row.created_at = new Date(); row.updated_at = new Date();
+                        }));
                     }
                 }
+                await database.batch(...prepared);
 
+                if (data.hierarchiesIds) {
+                    const collection = database.get<CharacterizationHierarchyModel>(DBTablesEnum.MM_CHARACTERIZATION_HIERARCHY);
+                    const before = await collection.query(Q.where('characterizationId', id)).fetch();
+                    for (const relation of before) if (!data.hierarchiesIds.includes(relation.hierarchyId)) await relation.destroyPermanently();
+                    const missing = data.hierarchiesIds.filter((hierarchyId) => !before.some((relation) => relation.hierarchyId === hierarchyId));
+                    await this.createMMHierarchy(missing, id, Number(characterization.userId));
+                }
                 return characterization;
             } catch (error) {
                 console.error(error);
+                throw error;
             }
         });
     }
 
-    async delete(id: string) {
-        await this.update(id, { name: 'delete', photos: [] });
-        await database.write(async () => {
-            const characterizationTable = database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION);
-            const characterization = await characterizationTable.find(id);
+    /** Compare descendants within the same writer that would hide the entire visit. */
+    async hideRemote(id: string, expectedFingerprint: string, updatedAt?: Date) {
+        return database.write(async () => {
+            const row = await database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION).find(id);
+            if (await parentTreeFingerprint(row) !== expectedFingerprint) return false;
+            await row.update((parent) => { parent.status = StatusEnum.INACTIVE; parent.updated_at = updatedAt || new Date(); });
+            return true;
+        });
+    }
 
-            await characterization?.destroyPermanently();
+    async delete(id: string) {
+        const { characterization, photos, riskData } = await this.findOne(id);
+        const journal = await journalForSource(characterization.workspaceId, Number(characterization.userId));
+        const doc = await journal.read();
+        const sourceSnapshot = { ...characterization._raw, photos: photos.map((p) => ({ ...p._raw })),
+            riskData: riskData.map((r) => ({ ...r._raw })) };
+        await database.write(async () => {
+            const prepared = await prepareDeletion(journal, { kind: 'CHARACTERIZATION_DELETE', entityId: id,
+                payload: { id, sourceSnapshot }, baseSnapshotHash: doc.bases[baseKey('CHARACTERIZATION', id)]?.baseSnapshotHash });
+            await database.batch(...prepared, characterization.prepareUpdate((row) => {
+                row.status = StatusEnum.INACTIVE; row.updated_at = new Date();
+            }));
         });
     }
 
@@ -331,6 +346,7 @@ export class CharacterizationRepository {
             );
         } catch (error) {
             console.error(error);
+                throw error;
         }
     }
 
@@ -366,6 +382,7 @@ export class CharacterizationRepository {
             );
         } catch (error) {
             console.error(error);
+                throw error;
         }
     }
 
@@ -383,7 +400,7 @@ export class CharacterizationRepository {
         });
     }
 
-    async updatePhoto(id: string, data: Partial<ICharacterizationPhoto>) {
+    async updatePhoto(id: string, data: Partial<ICharacterizationPhoto>, expectedUri?: string) {
         await database.write(async () => {
             const characterizationPhotoTable = database.get<CharacterizationPhotoModel>(
                 DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO,
@@ -391,6 +408,7 @@ export class CharacterizationRepository {
 
             try {
                 const characterizationPhoto = await characterizationPhotoTable.find(id);
+                if (expectedUri !== undefined && characterizationPhoto.photoUrl !== expectedUri) return undefined;
                 const newRecMed = await characterizationPhoto.update((photo) => {
                     if (data.apiId) photo.apiId = data.apiId;
                     if (data.photoUrl) photo.photoUrl = data.photoUrl;
@@ -401,7 +419,93 @@ export class CharacterizationRepository {
                 return newRecMed;
             } catch (error) {
                 console.error(error);
+                throw error;
             }
+        });
+    }
+
+    async relocateFile(id: string, kind: 'audios' | 'videos', oldUri: string, newUri: string, fileId: string) {
+        return database.write(async () => {
+            const row = await database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION).find(id);
+            const files = JSON.parse(row[kind] || '[]') as IFileCharacterization[];
+            if (!files.some((file) => file.uri === oldUri)) return false;
+            await row.update(() => { row[kind] = JSON.stringify(files.map((file) => file.uri === oldUri ?
+                { ...file, uri: newUri, id: file.id || fileId } : file)); });
+            return true;
+        });
+    }
+
+    /** Merge stable server identifiers while retaining every local pending file and local offline URI. */
+    async mergeRemoteMedia(id: string, photos: any[] = [], files: any[] = [], journal: SyncJournal) {
+        await database.write(async () => {
+            const parent = await database.get<CharacterizationModel>(DBTablesEnum.COMPANY_CHARACTERIZATION).find(id);
+            const photoTable = database.get<CharacterizationPhotoModel>(DBTablesEnum.COMPANY_CHARACTERIZATION_PHOTO);
+            const localPhotos = await photoTable.query(Q.where('companyCharacterizationId', id)).fetch();
+            const syncTable = database.get<SyncOperationModel>('SyncOperation');
+            const records = await syncTable.query(Q.where('context_key', journal.key)).fetch();
+            const operations = records.filter((row) => row.recordType === 'OPERATION').map((row) => JSON.parse(row.data));
+            const latest = new Map<string, any>(); operations.forEach((entry) => latest.set(entry.operation.entityId, entry));
+            const pending = (entityId: string) => latest.has(entityId) && latest.get(entityId).receipt.state !== 'APPLIED';
+            const removed = new Set(operations.filter((entry) =>
+                ['PHOTO_DELETE', 'FILE_DELETE'].includes(entry.operation.kind)).map((entry) => entry.operation.entityId));
+            const prepared: Model[] = [];
+            const archive = (entityId: string, snapshot: any) => {
+                const key = `MEDIA_ARCHIVE:${entityId}`;
+                if (records.some((row) => row.recordType === 'BASE' && row.entityKey === key)) return;
+                prepared.push(syncTable.prepareCreate((row) => {
+                    row._raw.id = String(uuidGenerator.v4()); row.contextKey = journal.key; row.recordType = 'BASE'; row.entityKey = key;
+                    row.data = JSON.stringify({ snapshot });
+                }));
+            };
+            for (const photo of photos) {
+                if (!photo.id) continue;
+                const local = localPhotos.find((row) => row.id === photo.id || row.apiId === photo.id);
+                if (photo.deleted_at) {
+                    if (local && !local.deleted_at && local.apiId && !pending(local.id)) {
+                        archive(local.id, { ...local._raw, uri: local.photoUrl });
+                        prepared.push(local.prepareUpdate((row) => { row.deleted_at = new Date(photo.deleted_at); }));
+                    }
+                    continue;
+                }
+                if (removed.has(photo.id)) continue;
+                if (local?.deleted_at) continue;
+                if (local) {
+                    if (local.apiId === photo.id && !/^https?:/.test(local.photoUrl)) continue;
+                    prepared.push(local.prepareUpdate((row) => {
+                        row.apiId = photo.id;
+                        if (/^https?:/.test(row.photoUrl)) row.photoUrl = photo.photoUrl;
+                    }));
+                } else prepared.push(photoTable.prepareCreate((row) => {
+                    row._raw.id = photo.id; row.apiId = photo.id; row.companyCharacterizationId = id;
+                    row.name = photo.name || parent.name; row.photoUrl = photo.photoUrl;
+                    row.created_at = new Date(photo.created_at || Date.now()); row.updated_at = new Date(photo.updated_at || Date.now());
+                }));
+            }
+            const audios = JSON.parse(parent.audios || '[]') as IFileCharacterization[];
+            const videos = JSON.parse(parent.videos || '[]') as IFileCharacterization[];
+            const remoteDeleted = new Set<string>();
+            for (const file of files) {
+                if (!file.id) continue;
+                if (file.deleted_at) {
+                    const local = [...audios, ...videos].find((f) => f.apiId === file.id);
+                    if (local && !pending(local.id || file.id)) { archive(file.id, local); remoteDeleted.add(file.id); }
+                    continue;
+                }
+                if (removed.has(file.id)) continue;
+                const extension = /\.([a-zA-Z0-9]+)(?:[?#]|$)/.exec(file.url || '')?.[1]?.toLowerCase();
+                const list = ['mp3', 'm4a', 'aac', 'wav', 'caf', 'ogg'].includes(extension || '') ? audios : videos;
+                const existing = [...audios, ...videos].find((local) => local.apiId === file.id || local.id === file.id);
+                if (existing) {
+                    existing.apiId = file.id;
+                    if (/^https?:/.test(existing.uri)) existing.uri = file.url;
+                } else list.push({ id: file.id, apiId: file.id, uri: file.url });
+            }
+            const audioString = JSON.stringify(audios.filter((file) => !remoteDeleted.has(file.apiId || '')));
+            const videoString = JSON.stringify(videos.filter((file) => !remoteDeleted.has(file.apiId || '')));
+            if (parent.audios !== audioString || parent.videos !== videoString) prepared.push(parent.prepareUpdate((row) => {
+                row.audios = audioString; row.videos = videoString;
+            }));
+            if (prepared.length) await database.batch(...prepared);
         });
     }
 
@@ -436,8 +540,8 @@ export class CharacterizationRepository {
                 });
 
                 const newCharacterization = await characterization.update(() => {
-                    if (data.audios) characterization.audios = JSON.stringify(data.audios);
-                    if (data.videos) characterization.videos = JSON.stringify(data.videos);
+                    if (data.audios) characterization.audios = JSON.stringify(audios);
+                    if (data.videos) characterization.videos = JSON.stringify(videos);
 
                     characterization.updated_at = new Date();
                 });
@@ -445,6 +549,7 @@ export class CharacterizationRepository {
                 return newCharacterization;
             } catch (error) {
                 console.error(error);
+                throw error;
             }
         });
     }

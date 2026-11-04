@@ -64,6 +64,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         try {
             setIsLoadingUserStorageData(true);
             setUser({} as IUser);
+            delete api.defaults.headers.common.Authorization;
             await storageAuthTokenRemove();
             await storageUserRemove();
         } catch (error) {

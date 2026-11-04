@@ -1,5 +1,5 @@
 import { Database } from '@nozbe/watermelondb';
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
+import { PreservingSQLiteAdapter } from './PreservingSQLiteAdapter';
 
 import { CharacterizationModel } from './model/CharacterizationModel';
 import { CharacterizationPhotoModel } from './model/CharacterizationPhotoModel';
@@ -22,10 +22,11 @@ import { CharacterizationHierarchyModel } from './model/_MMModel/Characterizatio
 import { CharacterizationEmployeeModel } from './model/_MMModel/CharacterizationEmployeeModel';
 import { EmployeeModel } from './model/EmployeeModel';
 import { migrations } from './migrations';
+import { SyncOperationModel } from './model/SyncOperationModel';
 
-const adapter = new SQLiteAdapter({
+const adapter = new PreservingSQLiteAdapter({
     schema: schemas,
-    // migrations: migrations,
+    migrations,
 });
 
 export const database = new Database({
@@ -51,5 +52,6 @@ export const database = new Database({
         CharacterizationHierarchyModel,
         CharacterizationEmployeeModel,
         EmployeeModel,
+        SyncOperationModel,
     ],
 });

@@ -7,7 +7,7 @@ import { SButton } from '@components/index';
 import { SLabel } from '@components/modelucules/SLabel';
 import { SCREEN_WIDTH, pagePadding, pagePaddingPx } from '@constants/constants';
 import { useCharacterizationFormStore } from '@libs/storage/state/characterization/characterization.store';
-import { deleteImageOrVideoFromGallery } from '@utils/helpers/saveAsset';
+import { persistVisitMedia } from '@utils/helpers/durableMedia';
 import * as ImagePicker from 'expo-image-picker';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { Orientation } from 'expo-screen-orientation';
@@ -52,57 +52,61 @@ export function PhotoForm({ openCamera, onEdit }: FormProps): React.ReactElement
 
             const results: CharacterizationFormProps['photos'] = [...(photos || [])];
 
-            // Processar cada imagem selecionada
+            let failed = 0;
             for (const asset of result.assets) {
-                const { width, height, uri } = asset;
-
-                // Determinar orientação
-                const isPortrait = height > width;
-                const targetWidth = isPortrait ? (1200 * 9) / 16 : 1200;
-                const targetHeight = isPortrait ? 1200 : (1200 * 9) / 16;
-
-                // Fazer crop e compressão usando expo-image-manipulator
-                const context = ImageManipulator.manipulate(uri);
-                context.resize({
-                    width: targetWidth,
-                    height: targetHeight,
-                });
-                const image = await context.renderAsync();
-                const manipulatedImage = await image.saveAsync({
-                    compress: 0.6,
-                    format: SaveFormat.JPEG,
-                });
-
-                results.push({
-                    uri: manipulatedImage.uri,
-                    orientation: isPortrait ? Orientation.PORTRAIT_UP : Orientation.LANDSCAPE_LEFT,
-                });
+                try {
+                    const isPortrait = asset.height > asset.width;
+                    // Preserve the original before compression; gallery permission is
+                    // independent from saving this visit in the app.
+                    const originalUri = await persistVisitMedia(asset.uri, 'photo');
+                    let uri = originalUri;
+                    try {
+                        const context = ImageManipulator.manipulate(originalUri);
+                        context.resize({
+                            width: isPortrait ? (1200 * 9) / 16 : 1200,
+                            height: isPortrait ? 1200 : (1200 * 9) / 16,
+                        });
+                        const image = await context.renderAsync();
+                        const compressed = await image.saveAsync({ compress: 0.6, format: SaveFormat.JPEG });
+                        uri = await persistVisitMedia(compressed.uri, 'photo');
+                    } catch {
+                        // Compression is optional; keep the intact original.
+                    }
+                    results.push({ uri, orientation: isPortrait ? Orientation.PORTRAIT_UP : Orientation.LANDSCAPE_LEFT });
+                    onEdit({ photos: [...results] });
+                } catch {
+                    failed += 1;
+                }
             }
-
-            onEdit({ photos: results });
-        } catch (error) {
-            console.info('Error', error);
+            if (failed) Alert.alert('Algumas fotos não foram adicionadas',
+                `${failed} foto(s) não puderam ser guardadas. As demais foram mantidas. Verifique o espaço disponível e selecione as que faltaram novamente.`);
+        } catch {
+            Alert.alert('Não foi possível adicionar as fotos', 'As fotos anteriores foram mantidas. Verifique o espaço disponível e tente novamente.');
         }
     };
 
     const handleEditImage = async (uri: string) => {
-        const resultEdit = await PhotoEditor.open({ path: uri, stickers: [] });
-
-        if (!resultEdit) return;
-
-        const updatedImages = [...(photos || [])];
-        const index = updatedImages.findIndex((image) => image.uri === uri);
-        updatedImages[index] = { ...updatedImages[index], uri: resultEdit as string };
-
-        onEdit({ photos: updatedImages });
+        try {
+            // The editor may modify its input file in place. Use a new copy so
+            // an older pending operation still has its original evidence.
+            const draft = await persistVisitMedia(uri, 'photo', { forceCopy: true });
+            const resultEdit = await PhotoEditor.open({ path: draft, stickers: [] });
+            if (!resultEdit) return;
+            const updatedImages = [...(photos || [])];
+            const index = updatedImages.findIndex((image) => image.uri === uri);
+            if (index < 0) return;
+            updatedImages[index] = { ...updatedImages[index], uri: await persistVisitMedia(resultEdit as string, 'photo') };
+            onEdit({ photos: updatedImages });
+        } catch {
+            Alert.alert('Não foi possível guardar a edição', 'A foto original foi mantida. Verifique o espaço disponível e tente novamente.');
+        }
     };
 
     const handleDeleteImage = (index: number) => {
         const deleteImage = () => {
             const updatedImages = [...(photos || [])];
-            const image = updatedImages.splice(index, 1);
-
-            if (image[0].uri) deleteImageOrVideoFromGallery(image[0].uri);
+            updatedImages.splice(index, 1);
+            // Keep the binary: an already queued operation may still need it.
 
             onEdit({ photos: updatedImages });
         };

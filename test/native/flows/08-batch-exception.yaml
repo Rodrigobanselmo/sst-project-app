@@ -1,0 +1,100 @@
+appId: com.simplesst.app
+name: Uma data comum e uma exceção preservam os períodos
+---
+- startRecording: 08-batch-exception
+- tapOn: .*Revisar 2 alteração\(ões\) em conjunto.*
+- assertVisible: Revisar alterações
+- tapOn: Selecionar todas
+- scrollUntilVisible:
+    element: 'Ajustar Risco: ${RISK_2}'
+    direction: DOWN
+- tapOn: 'Ajustar Risco: ${RISK_2}'
+- assertVisible: Ajustar esta alteração
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: visit-effective-date
+          direction: DOWN
+          centerElement: true
+- tapOn:
+    id: visit-effective-date
+- eraseText
+- inputText: ${EXCEPTION_DATE_DIGITS}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+      - scrollUntilVisible:
+          element:
+            id: visit-effective-date
+          direction: DOWN
+          centerElement: true
+- assertVisible:
+    id: visit-effective-date
+    text: ${EXCEPTION_DATE}
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - swipe:
+          start: "15%,45%"
+          end: "15%,25%"
+          duration: 600
+- scrollUntilVisible:
+    element:
+      id: visit-preference-reason
+    direction: DOWN
+    centerElement: true
+    speed: 40
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: visit-preference-reason
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: visit-preference-reason
+          point: "95%,95%"
+- eraseText
+- inputText: Segunda atividade mudou em outra data
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- assertVisible:
+    id: visit-preference-reason
+    text: Segunda atividade mudou em outra data
+- tapOn: Salvar exceção
+- extendedWaitUntil:
+    notVisible: Ajustar esta alteração
+    timeout: 15000
+- assertVisible: Exceção · ${EXCEPTION_DATE}
+- takeScreenshot: 08-excecao-por-item
+- tapOn: Conferir 2 alteração\(ões\)
+- assertVisible: Conferir alterações
+- assertVisible: ${COMMON_DATE}
+- assertVisible: ${EXCEPTION_DATE}
+- takeScreenshot: 08-confirmacao-duas-vigencias
+- tapOn: Confirmar e sincronizar
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible: Sincronização concluída
+          timeout: 90000
+      - tapOn: OK
+- extendedWaitUntil:
+    visible: Ambientes / Atividades
+    timeout: 90000
+- takeScreenshot: 08-periodos-sincronizados
+- stopRecording

@@ -1,12 +1,9 @@
-import { DBTablesEnum } from '@constants/enums/db-tables';
-import { addColumns, Migration, schemaMigrations } from '@nozbe/watermelondb/Schema/migrations';
+import { createTable, Migration } from '@nozbe/watermelondb/Schema/migrations';
+import { syncOperationSchema } from '../../schema/syncOperationSchema';
 
 export const migration45: Migration = {
     toVersion: 45,
     steps: [
-        addColumns({
-            table: DBTablesEnum.COMPANY_CHARACTERIZATION,
-            columns: [{ name: 'doneAt', type: 'number', isOptional: true }],
-        }),
+        createTable({ name: syncOperationSchema.name, columns: Object.values(syncOperationSchema.columns) }),
     ],
 };

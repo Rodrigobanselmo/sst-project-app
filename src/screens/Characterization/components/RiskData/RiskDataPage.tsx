@@ -11,9 +11,10 @@ import { RiskDataForm } from './RiskDataForm';
 import { IRiskDataValues } from './schemas';
 import { SHeader } from '@components/organisms/SScreenHeader/SHeader';
 import { IRiskDataActivities } from '@libs/watermelon/model/RiskDataModel';
+import { Alert } from 'react-native';
 
 type PageProps = {
-    onSaveForm: (form: RiskDataFormProps) => void;
+    onSaveForm: (form: RiskDataFormProps) => void | Promise<void>;
     onGoBack: () => void;
     onDeleteForm?: (form: RiskDataFormProps) => Promise<void>;
     isEdit?: boolean;
@@ -51,7 +52,7 @@ export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...pro
     const onSave = useCallback(async () => {
         const { probability, probabilityAfter, realActivity, exposure } = getValues();
 
-        onSaveForm({
+        try { await onSaveForm({
             ...form,
             riskId,
             probability,
@@ -61,6 +62,9 @@ export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...pro
         });
 
         onGoBack();
+        } catch (error: any) {
+            Alert.alert('Não foi possível salvar', error?.message || 'Mantenha esta tela aberta e tente novamente. Seus dados não foram descartados.');
+        }
     }, [getValues, onSaveForm, riskId, form, onGoBack]);
 
     const handleDelete = useCallback(async () => {
@@ -104,9 +108,9 @@ export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...pro
 
                 setForm(data);
 
-                if (data.probability) setValue('probability', data.probability);
+                if (data.probability !== undefined && data.probability !== null) setValue('probability', data.probability);
                 if (data.exposure) setValue('exposure', data.exposure);
-                if (data.probabilityAfter) setValue('probabilityAfter', data.probabilityAfter);
+                if (data.probabilityAfter !== undefined && data.probabilityAfter !== null) setValue('probabilityAfter', data.probabilityAfter);
                 if (data.realActivity) setValue('realActivity', data.realActivity);
             }
         } catch (e) {
@@ -129,7 +133,7 @@ export function RiskDataPage({ title, onSaveForm, onDeleteForm, onGoBack, ...pro
         <>
             <SHeader
                 isAlert={true}
-                title={title || risk?.name || (!props.isEdit ? 'Adicionar' : 'Editar')}
+                title={title || form.catalogRisk?.name || risk?.name || (!props.isEdit ? 'Adicionar' : 'Editar')}
                 onDelete={onDeleteForm ? () => handleDelete() : undefined}
                 backButton
                 navidateFn={onGoBack}

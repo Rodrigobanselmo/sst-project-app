@@ -31,15 +31,15 @@ export function SearchDropDown<T extends { name: string; id: any }>({ onSearch }
 
     return (
         <SBox>
-            <SInput
-                placeholder="Search..."
-                value={searchText}
-                onChangeText={(text) => {
+            <SInput inputProps={{
+                placeholder: 'Pesquisar...',
+                value: searchText,
+                onChangeText: (text) => {
                     setSearchText(text);
                     handleSearch(); // Start searching as user types
-                }}
-                onBlur={() => setShowDropdown(false)} // Hide dropdown on blur
-            />
+                },
+                onBlur: () => setShowDropdown(false),
+            }} />
             {showDropdown && ( // Conditional rendering for dropdown
                 <SBox style={styles.dropdownContainer}>
                     <FlatList

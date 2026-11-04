@@ -6,6 +6,7 @@ import { Center } from 'native-base';
 import { useEffect, useRef } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback } from 'react-native';
 import { useDebouncedCallback } from 'use-debounce';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type MyComponentProps = {
     open: boolean;
@@ -14,13 +15,14 @@ type MyComponentProps = {
 };
 
 export const SFullPageModal = ({ open, onClose, children }: MyComponentProps) => {
+    const insets = useSafeAreaInsets();
     return (
         <SModal isOpen={open} height={'100%'} onClose={() => onClose()} size="full">
             <SModal.Content
                 h={'100%'}
                 maxH={'100%'}
                 pt={SAFE_AREA_PADDING.paddingTop}
-                pb={SAFE_AREA_PADDING.paddingBottom}
+                pb={Platform.OS === 'android' ? `${SAFE_AREA_PADDING.paddingBottom + insets.bottom}px` : SAFE_AREA_PADDING.paddingBottom}
             >
                 {children}
             </SModal.Content>

@@ -39,9 +39,9 @@ interface IResponse {
     };
 }
 
-export const getSyncChanges = async (query: IQuerySync) => {
+export const getSyncChanges = async (query: IQuerySync, signal?: AbortSignal) => {
     const queries = queryString.stringify({ ...query });
-    const response = await api.get<IResponse>(`${ApiRoutesEnum.SYNC}?${queries}`);
+    const response = await api.get<IResponse>(`${ApiRoutesEnum.SYNC}?${queries}`, { signal });
 
     return response.data;
 };

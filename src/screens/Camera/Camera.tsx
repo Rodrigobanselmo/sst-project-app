@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useCallback, useRef, useState } from 'react';
-import { StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated from 'react-native-reanimated';
 import { Camera, PhotoFile, VideoFile } from 'react-native-vision-camera';
@@ -10,7 +10,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { calculateActualDimensions } from '@utils/helpers/calculateAspectRatio';
 import { isAndroid } from '@utils/helpers/getPlataform';
 import { saveImageOrVideoToGallery } from '@utils/helpers/saveAsset';
-import { ImageResult, manipulateAsync } from 'expo-image-manipulator';
+import { manipulateAsync } from 'expo-image-manipulator';
+import { persistVisitMedia } from '@utils/helpers/durableMedia';
 import { Orientation } from 'expo-screen-orientation';
 import { SBox, SCenter, SFlatList, SIcon, SImage, SSpinner, SText, useSToast } from '@components/core';
 import { useCameraEffects } from './hooks/useCameraEffects';
@@ -66,74 +67,51 @@ export function CameraPage({ onSave, onCancel }: CameraPageProps): React.ReactEl
 
     const onMediaCaptured = useCallback(
         async (media: PhotoFile | VideoFile, options: { type: 'photo' | 'video'; orientation: Orientation }) => {
-            const uri = isAndroid() ? 'file://' + media.path : media.path;
+            const uri = media.path.startsWith('/') ? `file://${media.path}` : media.path;
             setGalleryImages((prev) => [...prev, { uri, orientation: options.orientation }]);
+            try {
+                const stableUri = await persistVisitMedia(uri, options.type);
+                setGalleryImages((prev) => prev.map((image) => image.uri === uri ? { ...image, uri: stableUri } : image));
+            } catch {
+                Alert.alert('Foto aguardando armazenamento', 'A captura foi mantida nesta tela. Libere espaço e tente salvar novamente antes de fechar o app.');
+            }
         },
         [],
     );
 
     const handleSave = useCallback(async () => {
         setIsLoading(true);
-        const saveImages: IImageGallery[] = [];
-
         try {
-            await Promise.all(
-                galleryImages.map(async (image) => {
-                    const uri = image.uri;
-
-                    const isLandscape = [Orientation.LANDSCAPE_LEFT, Orientation.LANDSCAPE_RIGHT].includes(
-                        image.orientation,
-                    );
-
-                    const { height, width } = calculateActualDimensions({
-                        aspectRatio: '9:16',
-                        maxWidth: 900,
-                        maxHeight: 1200,
-                        ...(isLandscape && {
-                            aspectRatio: '16:9',
-                            maxWidth: 1200,
-                            maxHeight: 900,
-                        }),
-                    });
-
-                    let manipResult: ImageResult;
-                    if (image.orientation === Orientation.LANDSCAPE_RIGHT) {
-                        manipResult = await manipulateAsync(uri, [{ rotate: -90 }, { resize: { height, width } }], {
-                            compress: 0.6,
-                        });
-                    } else if (image.orientation === Orientation.LANDSCAPE_LEFT) {
-                        manipResult = await manipulateAsync(uri, [{ rotate: 90 }, { resize: { height, width } }], {
-                            compress: 0.6,
-                        });
-                    } else {
-                        manipResult = await manipulateAsync(uri, [{ resize: { height, width } }], {
-                            compress: 0.6,
-                        });
-                    }
-
-                    const asset = await saveImageOrVideoToGallery(manipResult.uri);
-
-                    if (asset) {
-                        saveImages.push({
-                            uri: asset.uri,
-                            orientation: image.orientation,
-                        });
-                    }
-                }),
-            );
-        } catch (error) {
-            // TODO
-            // toast.show({
-            //     placement: 'top',
-            //     title: 'Erro ao salvar imagem',
-            //     bgColor: 'status.error',
-            //     description: 'Ocorreu um erro ao salvar a imagem, tente novamente.',
-            // });
+            const saveImages: IImageGallery[] = [];
+            for (const image of galleryImages) {
+                const originalUri = await persistVisitMedia(image.uri, 'photo');
+                const isLandscape = [Orientation.LANDSCAPE_LEFT, Orientation.LANDSCAPE_RIGHT].includes(image.orientation);
+                const { height, width } = calculateActualDimensions({
+                    aspectRatio: isLandscape ? '16:9' : '9:16',
+                    maxWidth: isLandscape ? 1200 : 900,
+                    maxHeight: isLandscape ? 900 : 1200,
+                });
+                let uri = originalUri;
+                try {
+                    const rotate = image.orientation === Orientation.LANDSCAPE_RIGHT ? -90
+                        : image.orientation === Orientation.LANDSCAPE_LEFT ? 90 : 0;
+                    const compressed = await manipulateAsync(originalUri,
+                        [...(rotate ? [{ rotate }] : []), { resize: { height, width } }], { compress: 0.6 });
+                    uri = await persistVisitMedia(compressed.uri, 'photo');
+                } catch {
+                    // Keep the original if compression/rotation fails. A denied
+                    // gallery permission must not discard the captured photo.
+                }
+                saveImages.push({ ...image, uri });
+                void saveImageOrVideoToGallery(uri).catch(() => undefined);
+            }
+            onSave({ photos: saveImages });
+        } catch {
+            Alert.alert('As fotos ainda não foram salvas',
+                'As capturas continuam nesta tela. Verifique o espaço disponível e tente salvar novamente.');
+        } finally {
+            setIsLoading(false);
         }
-
-        onSave({ photos: saveImages });
-
-        setIsLoading(false);
     }, [onSave, galleryImages]);
 
     const handleCancel = () => {

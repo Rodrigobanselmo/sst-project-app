@@ -43,6 +43,7 @@ export class RecMedRepository {
                 return newRecMed;
             } catch (error) {
                 console.error(error);
+                throw error;
             }
         });
     }

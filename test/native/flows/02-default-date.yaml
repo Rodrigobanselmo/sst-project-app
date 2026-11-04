@@ -1,0 +1,84 @@
+appId: com.simplesst.app
+name: Data e motivo comuns persistem ao reiniciar
+---
+- startRecording: 02-default-date
+- scrollUntilVisible:
+    element: Configurar data padrão da visita
+    direction: UP
+    timeout: 15000
+- tapOn: Configurar data padrão da visita
+- assertVisible: Data da visita
+- tapOn:
+    id: visit-effective-date
+- eraseText
+- inputText: ${COMMON_DATE_DIGITS}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: visit-preference-reason
+    direction: DOWN
+    centerElement: true
+    speed: 40
+- tapOn:
+    id: visit-preference-reason
+- eraseText
+- inputText: Revisita anual validada no simulador
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- assertVisible: Revisita anual validada no simulador
+- tapOn: Salvar padrão da visita
+- extendedWaitUntil:
+    notVisible: Data da visita
+    timeout: 10000
+- tapOn: Configurar data padrão da visita
+- assertVisible:
+    id: visit-effective-date
+    text: ${COMMON_DATE}
+- scrollUntilVisible:
+    element:
+      id: visit-preference-reason
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: visit-preference-reason
+    text: Revisita anual validada no simulador
+- tapOn: Voltar
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: .*${WORKSPACE_NAME}.*
+    timeout: 45000
+- tapOn: .*${WORKSPACE_NAME}.*
+- extendedWaitUntil:
+    visible: Cadastro atualizado no aparelho
+    timeout: 60000
+- assertVisible: .*0 no aparelho.*
+- tapOn: Configurar data padrão da visita
+- assertVisible:
+    id: visit-effective-date
+    text: ${COMMON_DATE}
+- scrollUntilVisible:
+    element:
+      id: visit-preference-reason
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: visit-preference-reason
+    text: Revisita anual validada no simulador
+- tapOn: Voltar
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          notVisible: 'Connect to Metro to develop JavaScript\.'
+          timeout: 20000
+- takeScreenshot: 02-padrao-preservado-apos-reinicio
+- stopRecording

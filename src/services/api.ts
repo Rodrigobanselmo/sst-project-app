@@ -1,111 +1,26 @@
-/* eslint-disable no-async-promise-executor */
 import { ApiRoutesEnum } from '@constants/enums/api-routes.enums';
 import { storageAuthTokenGet, storageAuthTokenSave } from '@libs/storage/disk/token';
-import { AppError } from '@utils/errors';
-import { DeduplicationEnum, deduplicator } from '@utils/helpers/deduplication';
-import axios, { AxiosError, AxiosInstance } from 'axios';
-
-type SignOut = () => void;
+import { storageUserGet } from '@libs/storage/disk/user';
+import axios, { AxiosInstance } from 'axios';
+import { installTokenManager } from './token-manager';
 
 interface APIInstanceProps extends AxiosInstance {
-    registerInterceptTokenManager: (signOut: SignOut) => () => void;
+    registerInterceptTokenManager: (signOut: () => void | Promise<void>) => () => void;
 }
 
-interface PromiseType {
-    onSuccess: (token: string) => void;
-    onFailure: (error: AxiosError) => void;
-}
+// Public build-time URL lets native test builds use an isolated API. Production keeps its existing default.
+const api = axios.create({ baseURL: process.env.EXPO_PUBLIC_API_URL || 'https://api.simplesst.com.br/' }) as APIInstanceProps;
 
-const api = axios.create({
-    baseURL: 'https://api.simplesst.com.br/',
-}) as APIInstanceProps;
-
-let failedQueued: Array<PromiseType> = [];
-let isRefreshing = false;
-
-api.registerInterceptTokenManager = (singOut) => {
-    const interceptTokenManager = api.interceptors.response.use(
-        (response) => response,
-        async (requestError) => {
-            if (requestError.response?.status === 401) {
-                if (requestError.response.data?.message === 'Unauthorized') {
-                    const { refresh_token } = await storageAuthTokenGet();
-
-                    if (!refresh_token) {
-                        singOut();
-                        return Promise.reject(requestError);
-                    }
-
-                    const originalRequestConfig = requestError.config;
-
-                    if (isRefreshing) {
-                        return new Promise((resolve, reject) => {
-                            failedQueued.push({
-                                onSuccess: (token: string) => {
-                                    if (originalRequestConfig.data) {
-                                        originalRequestConfig.data = JSON.parse(originalRequestConfig.data);
-                                    }
-                                    originalRequestConfig.headers = { Authorization: `Bearer ${token}` };
-                                    resolve(api(originalRequestConfig));
-                                },
-                                onFailure: (error: AxiosError) => {
-                                    reject(error);
-                                },
-                            });
-                        });
-                    }
-
-                    isRefreshing = true;
-
-                    return new Promise(async (resolve, reject) => {
-                        try {
-                            const { data } = await deduplicator.execute(
-                                async () => api.post(ApiRoutesEnum.REFRESH, { refresh_token, isApp: true }),
-                                DeduplicationEnum.REFRESH,
-                            );
-
-                            await storageAuthTokenSave({ token: data.token, refresh_token: data.refresh_token });
-
-                            if (originalRequestConfig.data) {
-                                originalRequestConfig.data = JSON.parse(originalRequestConfig.data);
-                            }
-
-                            originalRequestConfig.headers = { Authorization: `Bearer ${data.token}` };
-                            api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-
-                            failedQueued.forEach((request) => {
-                                request.onSuccess(data.token);
-                            });
-
-                            resolve(api(originalRequestConfig));
-                        } catch (error: any) {
-                            failedQueued.forEach((request) => {
-                                request.onFailure(error);
-                            });
-
-                            singOut();
-                            reject(error);
-                        } finally {
-                            isRefreshing = false;
-                            failedQueued = [];
-                        }
-                    });
-                }
-
-                singOut();
-            }
-
-            if (requestError.response && requestError.response.data) {
-                return Promise.reject(new AppError(requestError.response.data.message));
-            } else {
-                return Promise.reject(requestError);
-            }
-        },
-    );
-
-    return () => {
-        api.interceptors.response.eject(interceptTokenManager);
-    };
-};
+api.registerInterceptTokenManager = (signOut) => installTokenManager(api, {
+    getTokens: storageAuthTokenGet,
+    saveTokens: storageAuthTokenSave,
+    getRefreshContext: async () => ({ companyId: (await storageUserGet())?.companyId }),
+    getActor: async () => {
+        const user = await storageUserGet();
+        return user?.id ? `${user.id}:${user.companyId || ''}` : null;
+    },
+    signOut,
+    refreshPath: ApiRoutesEnum.REFRESH,
+});
 
 export { api };
